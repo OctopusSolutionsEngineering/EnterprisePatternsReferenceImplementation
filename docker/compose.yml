@@ -1,0 +1,58 @@
+version: '3'
+networks:
+  octopus:
+    external: false
+volumes:
+  giteadb:
+    driver: local
+  terraformdb:
+    driver: local
+services:
+  octopus:
+    ports:
+      - "18080:8080"
+    environment:
+      ADMIN_USERNAME: admin
+      ADMIN_EMAIL: octopusguides@gmail.com
+      ADMIN_PASSWORD: Password01!
+      ACCEPT_EULA: Y
+      DB_CONNECTION_STRING: Server=mssql,1433;Database=Octopus;User Id=SA;Password=Password01!;ConnectRetryCount=6
+      CONNSTRING: Server=mssql,1433;Database=Octopus;User Id=SA;Password=Password01!;ConnectRetryCount=6
+      MASTER_KEY: 6EdU6IWsCtMEwk0kPKflQQ==
+    image: octopusdeploy/octopusdeploy
+    networks:
+      - octopus
+    depends_on:
+      - mssql
+  mssql:
+    environment:
+      ACCEPT_EULA: Y
+      SA_PASSWORD: Password01!
+      MSSQL_PID: Express
+    image: mcr.microsoft.com/mssql/server:2017-latest-ubuntu
+    networks:
+      - octopus
+  giteadb:
+    image: postgres:14
+    restart: always
+    environment:
+      - POSTGRES_USER=gitea
+      - POSTGRES_PASSWORD=gitea
+      - POSTGRES_DB=gitea
+    networks:
+      - octopus
+    volumes:
+      - giteadb:/var/lib/postgresql/data
+  terraformdb:
+    image: postgres:14
+    ports:
+      - "15432:5432"
+    restart: always
+    environment:
+      - POSTGRES_USER=terraform
+      - POSTGRES_PASSWORD=terraform
+      - POSTGRES_DB=terraform
+    networks:
+      - octopus
+    volumes:
+      - terraformdb:/var/lib/postgresql/data
