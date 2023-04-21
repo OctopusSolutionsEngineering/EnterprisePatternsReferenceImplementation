@@ -10,8 +10,9 @@ volumes:
 services:
   octopus:
     ports:
-      - "18080:8080"
+      - "127.0.0.1:18080:8080"
     environment:
+      ADMIN_API_KEY: API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
       ADMIN_USERNAME: admin
       ADMIN_EMAIL: octopusguides@gmail.com
       ADMIN_PASSWORD: Password01!
@@ -46,7 +47,7 @@ services:
   terraformdb:
     image: postgres:14
     ports:
-      - "15432:5432"
+      - "127.0.0.1:15432:5432"
     restart: always
     environment:
       - POSTGRES_USER=terraform
