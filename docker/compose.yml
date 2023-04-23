@@ -5,6 +5,8 @@ networks:
 volumes:
   giteadb:
     driver: local
+  gitea:
+    driver: local
   terraformdb:
     driver: local
   sqlvolume:
@@ -64,16 +66,17 @@ services:
       - GITEA__database__NAME=gitea
       - GITEA__database__USER=gitea
       - GITEA__database__PASSWD=gitea
+      - GITEA__security__INSTALL_LOCK=true # https://discourse.gitea.io/t/unattended-gitea-installation-from-the-cli/3373/19
     restart: always
     networks:
-      - gitea
+      - octopus
     volumes:
-      - ./gitea:/data
+      - gitea:/data
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     ports:
-      - "3000:3000"
-      - "222:22"
+      - "127.0.0.1:3000:3000"
+      - "127.0.0.1:222:22"
   giteadb:
     image: postgres:14
     restart: always
