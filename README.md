@@ -1,4 +1,4 @@
-# Instructions
+# Stack Initialization
 
 Start the Octopus and Git stack with:
 
@@ -64,6 +64,42 @@ curl \
   -H "content-type: application/json" \
   -H "accept: application/json" \
   --data '{"name":"america-frontend"}'
+```
+
+# Octopus Initialization
+
+Add the git credentials for the Gitea server started with Docker Compose:
+
+```bash
+pushd shared/gitcreds/gitea/pgbackend
+terraform init -reconfigure
+terraform apply -auto-approve
+popd
+```
+
+Add the standard set of environments:
+
+```bash
+pushd shared/environments/dev_test_prod/pgbackend
+terraform init -reconfigure
+terraform apply -auto-approve
+popd
+```
+
+Add the common feeds:
+
+```bash
+pushd shared/feeds/maven/pgbackend
+terraform init -reconfigure
+terraform apply -auto-approve
+popd
+```
+
+```bash
+pushd shared/feeds/dockerhub/pgbackend
+terraform init -reconfigure
+terraform apply -auto-approve
+popd
 ```
 
 # Cleanup

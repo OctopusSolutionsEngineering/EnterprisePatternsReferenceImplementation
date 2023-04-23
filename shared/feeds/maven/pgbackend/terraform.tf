@@ -1,6 +1,6 @@
 terraform {
   backend "pg" {
-      conn_str = "postgres://terraform:terraform@localhost:15432/environments?sslmode=disable"
+      conn_str = "postgres://terraform:terraform@localhost:15432/mavenfeed?sslmode=disable"
   }
 }
 

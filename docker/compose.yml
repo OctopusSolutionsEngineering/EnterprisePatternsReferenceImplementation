@@ -94,10 +94,11 @@ services:
       - "127.0.0.1:15432:5432"
     restart: always
     environment:
-      - POSTGRES_USER=terraform
-      - POSTGRES_PASSWORD=terraform
-      - POSTGRES_DB=terraform
+      POSTGRES_USER: terraform
+      POSTGRES_PASSWORD: terraform
+      POSTGRES_MULTIPLE_DATABASES: gitcreds,environments,mavenfeed,dockerhubfeed
     networks:
       - octopus
     volumes:
       - terraformdb:/var/lib/postgresql/data
+      - ./docker-postgresql-multiple-databases:/docker-entrypoint-initdb.d

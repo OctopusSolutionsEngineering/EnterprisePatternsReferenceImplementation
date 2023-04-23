@@ -1,6 +1,6 @@
 terraform {
   backend "pg" {
-      conn_str = "postgres://terraform:terraform@localhost:15432/environments?sslmode=disable"
+    conn_str = "postgres://terraform:terraform@localhost:15432/gitcreds?sslmode=disable"
   }
 }
 
@@ -17,5 +17,7 @@ provider "octopusdeploy" {
 }
 
 module "octopus" {
-  source = "../octopus"
+  source       = "../octopus"
+  cac_username = "octopus"
+  cac_password = "Password01!"
 }
