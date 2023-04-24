@@ -10,10 +10,18 @@ terraform {
   }
 }
 
+variable "octopus_space_id" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "The ID of the Octopus space to populate."
+  default     = "Spaces-1"
+}
+
 provider "octopusdeploy" {
   address  = "http://localhost:18080"
   api_key  = "API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-  space_id = "Spaces-1"
+  space_id = var.octopus_space_id
 }
 
 variable "docker_username" {

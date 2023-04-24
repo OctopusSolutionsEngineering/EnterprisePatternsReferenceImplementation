@@ -84,26 +84,26 @@ done
 echo ""
 
 pushd shared/gitcreds/gitea/pgbackend
-terraform init -reconfigure
-terraform apply -auto-approve
+terraform init -reconfigure -upgrade
+terraform apply -auto-approve -var=octopus_space_id=Spaces-1
 popd
 
 pushd shared/environments/dev_test_prod/pgbackend
-terraform init -reconfigure
-terraform apply -auto-approve
+terraform init -reconfigure -upgrade
+terraform apply -auto-approve -var=octopus_space_id=Spaces-1
 popd
 
 pushd shared/feeds/maven/pgbackend
-terraform init -reconfigure
-terraform apply -auto-approve
+terraform init -reconfigure -upgrade
+terraform apply -auto-approve -var=octopus_space_id=Spaces-1
 popd
 
 pushd shared/feeds/dockerhub/pgbackend
-terraform init -reconfigure
-terraform apply -auto-approve
+terraform init -reconfigure -upgrade
+terraform apply -auto-approve -var=octopus_space_id=Spaces-1
 popd
 
 pushd spaces/pgbackend
-terraform init -reconfigure
+terraform init -reconfigure -upgrade
 terraform apply -auto-approve
 popd
