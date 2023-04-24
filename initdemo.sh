@@ -126,14 +126,14 @@ do
 done
 
 # Add the sample projects to the management instance
-
 pushd management_instance/projects/hello_world/pgbackend
 terraform init -reconfigure -upgrade
-terraform workspace new $space
-terraform workspace select $space
+terraform workspace new Spaces-1
+terraform workspace select Spaces-1
 terraform apply -auto-approve -var=octopus_space_id=Spaces-1
 popd
 
+# Add serialize and deploy runbooks to sample projects
 pushd management_instance/runbooks/serialize_and_deploy/pgbackend
 terraform init -reconfigure -upgrade
 terraform workspace new "Hello World"
