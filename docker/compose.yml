@@ -97,7 +97,7 @@ services:
     environment:
       POSTGRES_USER: terraform
       POSTGRES_PASSWORD: terraform
-      POSTGRES_MULTIPLE_DATABASES: gitcreds,environments,mavenfeed,dockerhubfeed,spaces,project_hello_world,serialize_and_deploy
+      POSTGRES_MULTIPLE_DATABASES: gitcreds,environments,mavenfeed,dockerhubfeed,spaces,project_hello_world,serialize_and_deploy,lib_var_this_instance,lib_var_octopus_server
     networks:
       - octopus
     volumes:

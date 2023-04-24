@@ -141,11 +141,29 @@ terraform workspace select "Hello World"
 terraform apply -auto-approve -var=octopus_space_id=Spaces-1 "-var=project_name=Hello World"
 popd
 
+# Setup library variable sets
+pushd shared/variables/octopus_server/pgbackend
+terraform init -reconfigure -upgrade
+terraform workspace new "Spaces-1"
+terraform workspace select "Spaces-1"
+terraform apply -auto-approve -var=octopus_space_id=Spaces-1
+popd
+
+pushd shared/variables/this_instance/pgbackend
+terraform init -reconfigure -upgrade
+terraform workspace new "Spaces-1"
+terraform workspace select "Spaces-1"
+terraform apply -auto-approve -var=octopus_space_id=Spaces-1
+popd
+
 # Push some utility packages
-curl \
-  --silent \
-  https://download.octopusdeploy.com/octopus-tools/9.0.0/OctopusTools.9.0.0.linux-x64.tar.gz \
-  --output OctopusTools.9.0.0.tar.gz
+if [[ ! -f OctopusTools.9.0.0.tar.gz ]]
+then
+  curl \
+    --silent \
+    https://download.octopusdeploy.com/octopus-tools/9.0.0/OctopusTools.9.0.0.linux-x64.tar.gz \
+    --output OctopusTools.9.0.0.tar.gz
+fi
 
 octo push \
     --apiKey API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA \
