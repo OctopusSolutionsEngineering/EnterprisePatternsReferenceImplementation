@@ -1,5 +1,35 @@
 #!/bin/bash
 
+if ! which docker
+then
+  echo "You must install Docker"
+  exit 1
+fi
+
+if ! which octo
+then
+  echo "You must install the Octopus client from https://octopus.com/downloads/octopuscli"
+  exit 1
+fi
+
+if ! which curl
+then
+  echo "You must install curl"
+  exit 1
+fi
+
+if ! which terraform
+then
+  echo "You must install terraform"
+  exit 1
+fi
+
+if [[ -z "${OCTOPUS_SERVER_BASE64_LICENSE}" ]]
+then
+  echo "You must set the OCTOPUS_SERVER_BASE64_LICENSE environment variable to the base 64 encoded representation of an Octopus license."
+  exit 1
+fi
+
 pushd docker
 docker-compose up -d
 popd
