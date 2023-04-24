@@ -140,3 +140,16 @@ terraform workspace new "Hello World"
 terraform workspace select "Hello World"
 terraform apply -auto-approve -var=octopus_space_id=Spaces-1 "-var=project_name=Hello World"
 popd
+
+# Push some utility packages
+curl \
+  --silent \
+  https://download.octopusdeploy.com/octopus-tools/9.0.0/OctopusTools.9.0.0.linux-x64.tar.gz \
+  --output OctopusTools.9.0.0.tar.gz
+
+octo push \
+    --apiKey API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA \
+    --server http://localhost:18080 \
+    --space Spaces-1 \
+    --package OctopusTools.9.0.0.tar.gz \
+    --replace-existing

@@ -31,5 +31,4 @@ date=$(date '+%Y.%m.%d.%H%M%S')
     --server #{ThisInstance.Server.Url}\
     --space #{Octopus.Space.Id} \
     --package "/${PWD}/export/#{Octopus.Project.Name | Replace "[^0-9a-zA-Z]" "_"}.${date}.zip" \
-    --replace-existing \
-    --debug
+    --replace-existing
