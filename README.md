@@ -19,3 +19,10 @@ Shut the Octopus and Git stack down with:
 ```bash
 ./cleanup.sh
 ```
+
+# Todo
+
+Create environment for synchronizing.
+Add tenants for managed spaces.
+Link tenants to sample projects.
+Test serialize and deploy.

@@ -27,6 +27,12 @@ data "octopusdeploy_feeds" "feed_octopus_server__built_in_" {
   take         = 1
 }
 
+data "octopusdeploy_library_variable_sets" "variable" {
+  partial_name = "This Instance"
+  skip         = 0
+  take         = 1
+}
+
 resource "octopusdeploy_deployment_process" "deployment_process_project_hello_world" {
   project_id = "${octopusdeploy_project.project_hello_world.id}"
 
@@ -78,7 +84,7 @@ resource "octopusdeploy_project" "project_hello_world" {
   is_version_controlled                = false
   lifecycle_id                         = "${data.octopusdeploy_lifecycles.lifecycle_simple.lifecycles[0].id}"
   project_group_id                     = "${octopusdeploy_project_group.project_group_hello_world.id}"
-  included_library_variable_sets       = []
+  included_library_variable_sets       = [data.octopusdeploy_library_variable_sets.variable.library_variable_sets[0].id]
   tenanted_deployment_participation    = "Untenanted"
 
   connectivity_policy {
