@@ -9,7 +9,7 @@ USER='octopus'
 if [[ "$EXISTING" == *"$USER"* ]]; then
   echo "User exists"
 else
-  # We expect these first few attempts to fail as Gitae is being setup by Docker
+  # We expect these first few attempts to fail as Gitae is being setup by Docker.
   echo "We expect to see errors here and so will retry until Gitea is started."
   max_retry=6
   counter=0
@@ -22,7 +22,7 @@ else
   done
 fi
 
-# Now go ahead and create the orgs and repos
+# Now go ahead and create the orgs and repos.
 curl \
   --output /dev/null \
   --silent \
@@ -73,7 +73,7 @@ curl \
   -H "accept: application/json" \
   --data '{"name":"america-frontend"}'
 
-# Wait for the Octopus server
+# Wait for the Octopus server.
 echo "Waiting for the Octopus server"
 until $(curl --output /dev/null --silent --fail http://localhost:18080/api)
 do
@@ -83,27 +83,44 @@ done
 
 echo ""
 
-pushd shared/gitcreds/gitea/pgbackend
-terraform init -reconfigure -upgrade
-terraform apply -auto-approve -var=octopus_space_id=Spaces-1
-popd
-
-pushd shared/environments/dev_test_prod/pgbackend
-terraform init -reconfigure -upgrade
-terraform apply -auto-approve -var=octopus_space_id=Spaces-1
-popd
-
-pushd shared/feeds/maven/pgbackend
-terraform init -reconfigure -upgrade
-terraform apply -auto-approve -var=octopus_space_id=Spaces-1
-popd
-
-pushd shared/feeds/dockerhub/pgbackend
-terraform init -reconfigure -upgrade
-terraform apply -auto-approve -var=octopus_space_id=Spaces-1
-popd
-
+# Start by creating the spaces.
 pushd spaces/pgbackend
 terraform init -reconfigure -upgrade
 terraform apply -auto-approve
 popd
+
+
+# Populate the spaces with shared resources.
+# Note the use of Terraform workspaces to manage the state of each space independently.
+for space in Spaces-1 Spaces-2 Spaces-3
+do
+
+  pushd shared/gitcreds/gitea/pgbackend
+  terraform init -reconfigure -upgrade
+  terraform workspace new $space
+  terraform workspace select $space
+  terraform apply -auto-approve -var=octopus_space_id=$space
+  popd
+
+  pushd shared/environments/dev_test_prod/pgbackend
+  terraform init -reconfigure -upgrade
+  terraform workspace new $space
+  terraform workspace select $space
+  terraform apply -auto-approve -var=octopus_space_id=$space
+  popd
+
+  pushd shared/feeds/maven/pgbackend
+  terraform init -reconfigure -upgrade
+  terraform workspace new $space
+  terraform workspace select $space
+  terraform apply -auto-approve -var=octopus_space_id=$space
+  popd
+
+  pushd shared/feeds/dockerhub/pgbackend
+  terraform init -reconfigure -upgrade
+  terraform workspace new $space
+  terraform workspace select $space
+  terraform apply -auto-approve -var=octopus_space_id=$space
+  popd
+
+done
