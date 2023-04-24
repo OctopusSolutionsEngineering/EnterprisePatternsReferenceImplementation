@@ -49,7 +49,7 @@ variable "runbook_backend_service_deploy_project_name" {
   nullable    = false
   sensitive   = false
   description = "The name of the project exported from Deploy Project"
-  default     = "Deploy Project"
+  default     = "2. Deploy Project"
 }
 
 resource "octopusdeploy_runbook" "runbook_backend_service_deploy_project" {
@@ -59,7 +59,7 @@ resource "octopusdeploy_runbook" "runbook_backend_service_deploy_project" {
   environments                = []
   force_package_download      = false
   default_guided_failure_mode = "EnvironmentDefault"
-  description                 = ""
+  description                 = "This project deploys the package created by the Serialize Project runbook. Typically you do not run this runbook manually, as it is triggered by the Serialize Project runbook."
   multi_tenancy_mode          = "Untenanted"
 
   retention_policy {
@@ -166,7 +166,7 @@ variable "runbook_backend_service_serialize_project_name" {
   nullable    = false
   sensitive   = false
   description = "The name of the project exported from Serialize Project"
-  default     = "Serialize Project"
+  default     = "1. Serialize Project"
 }
 
 resource "octopusdeploy_runbook" "runbook_backend_service_serialize_project" {
@@ -176,7 +176,7 @@ resource "octopusdeploy_runbook" "runbook_backend_service_serialize_project" {
   environments                = []
   force_package_download      = false
   default_guided_failure_mode = "EnvironmentDefault"
-  description                 = ""
+  description                 = "This runbook serializes a project to HCL, packages it up, and pushes the package to Octopus."
   multi_tenancy_mode          = "Untenanted"
 
   retention_policy {
