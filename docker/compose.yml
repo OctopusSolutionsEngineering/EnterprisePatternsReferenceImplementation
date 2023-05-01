@@ -79,6 +79,8 @@ services:
     ports:
       - "127.0.0.1:3000:3000"
       - "127.0.0.1:222:22"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
   giteadb:
     image: postgres:14
     restart: always
