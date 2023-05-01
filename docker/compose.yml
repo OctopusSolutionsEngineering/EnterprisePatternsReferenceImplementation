@@ -46,6 +46,7 @@ services:
       - taskLogs:/taskLogs
       - cache:/cache
       - import:/import
+      - /var/run/docker.sock:/var/run/docker.sock
   mssql:
     environment:
       ACCEPT_EULA: Y
@@ -91,15 +92,14 @@ services:
       - giteadb:/var/lib/postgresql/data
   terraformdb:
     image: postgres:14
+    container_name: terraformdb
     ports:
       - "127.0.0.1:15432:5432"
     restart: always
     environment:
       POSTGRES_USER: terraform
       POSTGRES_PASSWORD: terraform
-      POSTGRES_MULTIPLE_DATABASES: gitcreds,environments,mavenfeed,dockerhubfeed,spaces,project_hello_world,serialize_and_deploy,lib_var_this_instance,lib_var_octopus_server
     networks:
       - octopus
     volumes:
       - terraformdb:/var/lib/postgresql/data
-      - ./docker-postgresql-multiple-databases:/docker-entrypoint-initdb.d

@@ -39,7 +39,6 @@ USER='octopus'
 if [[ "$EXISTING" == *"$USER"* ]]; then
   echo "User exists"
 else
-  # We expect these first few attempts to fail as Gitae is being setup by Docker.
   echo "We expect to see errors here and so will retry until Gitea is started."
   max_retry=6
   counter=0
@@ -114,17 +113,18 @@ done
 echo ""
 
 # Start by creating the spaces.
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE spaces"'
 pushd spaces/pgbackend
 terraform init -reconfigure -upgrade
 terraform apply -auto-approve
 popd
-
 
 # Populate the spaces with shared resources.
 # Note the use of Terraform workspaces to manage the state of each space independently.
 for space in Spaces-1 Spaces-2 Spaces-3
 do
 
+  docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE gitcreds"'
   pushd shared/gitcreds/gitea/pgbackend
   terraform init -reconfigure -upgrade
   terraform workspace new $space
@@ -132,6 +132,7 @@ do
   terraform apply -auto-approve -var=octopus_space_id=$space
   popd
 
+  docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE environments"'
   pushd shared/environments/dev_test_prod/pgbackend
   terraform init -reconfigure -upgrade
   terraform workspace new $space
@@ -139,6 +140,15 @@ do
   terraform apply -auto-approve -var=octopus_space_id=$space
   popd
 
+  docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE sync_environment"'
+  pushd shared/environments/sync/pgbackend
+  terraform init -reconfigure -upgrade
+  terraform workspace new $space
+  terraform workspace select $space
+  terraform apply -auto-approve -var=octopus_space_id=$space
+  popd
+
+  docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE mavenfeed"'
   pushd shared/feeds/maven/pgbackend
   terraform init -reconfigure -upgrade
   terraform workspace new $space
@@ -146,6 +156,7 @@ do
   terraform apply -auto-approve -var=octopus_space_id=$space
   popd
 
+  docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE dockerhubfeed"'
   pushd shared/feeds/dockerhub/pgbackend
   terraform init -reconfigure -upgrade
   terraform workspace new $space
@@ -155,7 +166,25 @@ do
 
 done
 
+# Setup library variable sets
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE lib_var_octopus_server"'
+pushd shared/variables/octopus_server/pgbackend
+terraform init -reconfigure -upgrade
+terraform workspace new "Spaces-1"
+terraform workspace select "Spaces-1"
+terraform apply -auto-approve -var=octopus_space_id=Spaces-1
+popd
+
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE lib_var_this_instance"'
+pushd shared/variables/this_instance/pgbackend
+terraform init -reconfigure -upgrade
+terraform workspace new "Spaces-1"
+terraform workspace select "Spaces-1"
+terraform apply -auto-approve -var=octopus_space_id=Spaces-1
+popd
+
 # Add the sample projects to the management instance
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE project_hello_world"'
 pushd management_instance/projects/hello_world/pgbackend
 terraform init -reconfigure -upgrade
 terraform workspace new Spaces-1
@@ -164,26 +193,12 @@ terraform apply -auto-approve -var=octopus_space_id=Spaces-1
 popd
 
 # Add serialize and deploy runbooks to sample projects
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE serialize_and_deploy"'
 pushd management_instance/runbooks/serialize_and_deploy/pgbackend
 terraform init -reconfigure -upgrade
 terraform workspace new "Hello World"
 terraform workspace select "Hello World"
 terraform apply -auto-approve -var=octopus_space_id=Spaces-1 "-var=project_name=Hello World"
-popd
-
-# Setup library variable sets
-pushd shared/variables/octopus_server/pgbackend
-terraform init -reconfigure -upgrade
-terraform workspace new "Spaces-1"
-terraform workspace select "Spaces-1"
-terraform apply -auto-approve -var=octopus_space_id=Spaces-1
-popd
-
-pushd shared/variables/this_instance/pgbackend
-terraform init -reconfigure -upgrade
-terraform workspace new "Spaces-1"
-terraform workspace select "Spaces-1"
-terraform apply -auto-approve -var=octopus_space_id=Spaces-1
 popd
 
 # Push some utility packages

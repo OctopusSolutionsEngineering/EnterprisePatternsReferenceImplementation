@@ -22,8 +22,8 @@ Shut the Octopus and Git stack down with:
 
 # Todo
 
-Create environment for synchronizing.
-Scope runbooks to sync environment.
+Create environment for synchronizing. [DONE]
+Scope runbooks to sync environment. [DONE]
 Add unmanaged project deployment.
 Add self-service project deployment.
 Add tenants for managed spaces.
