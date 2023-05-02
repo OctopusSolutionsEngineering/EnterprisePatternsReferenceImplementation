@@ -47,14 +47,16 @@ fi
 
 # Test to see if we can merge the two branches together without conflict.
 # https://stackoverflow.com/a/501461/8246539
-if git merge --no-commit --no-ff upstream-$${BRANCH} 2>&1;
+if git merge --no-commit --no-ff upstream-$${BRANCH} > /dev/null 2>&1;
 then
   # All good, so actually do the merge
+  echo "Merging the upstream branch."
   git merge upstream-$${BRANCH} 2>&1
 
   # Test that a merge is being performed
   git merge HEAD &> /dev/null
   if [[ $? -ne 0 ]]; then
+    echo "Continuing the merge."
     GIT_EDITOR=/bin/true git merge --continue 2>&1
   fi
 
