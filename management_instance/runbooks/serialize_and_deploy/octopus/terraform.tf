@@ -62,7 +62,7 @@ variable "runbook_backend_service_deploy_project_name" {
 resource "octopusdeploy_runbook" "runbook_backend_service_deploy_project" {
   name                        = var.runbook_backend_service_deploy_project_name
   project_id                  = data.octopusdeploy_projects.project.projects[0].id
-  environment_scope           = "All"
+  environment_scope           = "Specified"
   environments                = [data.octopusdeploy_environments.sync.environments[0].id]
   force_package_download      = false
   default_guided_failure_mode = "EnvironmentDefault"

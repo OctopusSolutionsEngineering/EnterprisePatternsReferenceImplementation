@@ -1,12 +1,5 @@
-echo "##octopus[stdout-verbose]"
-docker pull octopussamples/octoterra
-echo "##octopus[stdout-default]"
-
-docker run \
-  --network=docker_octopus \
-  -v "${PWD}:${PWD}" \
-  octopussamples/octoterra \
-  -url #{ThisInstance.Server.DockerUrl} \
+  octoterra \
+  -url #{ThisInstance.Server.InternalUrl} \
   -apiKey #{ThisInstance.Api.Key} \
   -terraformBackend pg \
   -console \
