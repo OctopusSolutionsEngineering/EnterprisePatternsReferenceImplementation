@@ -279,7 +279,7 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_deploy
       properties                         = {
         "Octopus.Action.Terraform.GoogleCloudAccount"           = "False"
         "Octopus.Action.Terraform.TemplateDirectory"            = "space_population"
-        "Octopus.Action.Terraform.AdditionalActionParams"       = "-var=\"octopus_server=#{ThisInstance.Server.InternalUrl}\" -var=\"octopus_space_id=#{Octopus.Action[Get the Space ID].Output.SpaceID}\" -var=\"octopus_apikey=#{ThisInstance.Api.Key}\""
+        "Octopus.Action.Terraform.AdditionalActionParams"       = "-var=\"octopus_server=#{ThisInstance.Server.InternalUrl}\" -var=\"octopus_space_id=#{Octopus.Action[Get the Space ID].Output.SpaceID}\" -var=\"octopus_apikey=#{ThisInstance.Api.Key}\" -var=\"project_hello_world_cac_git_url=${local.cac_proto}://${local.cac_host}/${local.cac_org}/${local.new_repo}.git\""
         "Octopus.Action.Aws.AssumeRole"                         = "False"
         "Octopus.Action.Aws.Region"                             = ""
         "Octopus.Action.Terraform.AllowPluginDownloads"         = "True"
