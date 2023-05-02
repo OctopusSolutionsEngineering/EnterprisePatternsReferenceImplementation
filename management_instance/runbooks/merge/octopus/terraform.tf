@@ -13,6 +13,7 @@ locals {
   cac_username  = "octopus"
   cac_host      = "gitea:3000"
   cac_proto     = "http"
+  project_dir   = ".octopus/hello_world"
 }
 
 variable "project_name" {
@@ -77,7 +78,7 @@ resource "octopusdeploy_runbook" "runbook_merge_git" {
   environments                = [data.octopusdeploy_environments.sync.environments[0].id]
   force_package_download      = false
   default_guided_failure_mode = "EnvironmentDefault"
-  description                 = "This project deploys the package created by the Serialize Project runbook to a space."
+  description                 = "This project merges the changes from an upstream CaC repo into the downstream CaC repo."
   multi_tenancy_mode          = "Tenanted"
 
   retention_policy {
@@ -112,15 +113,16 @@ resource "octopusdeploy_runbook_process" "runbook_process_merge_git" {
       worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
       properties                         = {
         "Octopus.Action.Script.ScriptSource" = "Inline"
-        "Octopus.Action.Script.Syntax" = "Bash"
-        "Octopus.Action.Script.ScriptBody" = templatefile("../../shared_scripts/merge_repo.sh", {
+        "Octopus.Action.Script.Syntax"       = "Bash"
+        "Octopus.Action.Script.ScriptBody"   = templatefile("../../shared_scripts/merge_repo.sh", {
           cac_host      = local.cac_host,
           cac_proto     = local.cac_proto,
           cac_username  = local.cac_username,
           cac_org       = local.cac_org,
           cac_password  = local.cac_password,
           new_repo      = local.new_repo,
-          template_repo = local.template_repo
+          template_repo = local.template_repo,
+          project_dir   = local.project_dir,
         })
         "OctopusUseBundledTooling" = "False"
       }
