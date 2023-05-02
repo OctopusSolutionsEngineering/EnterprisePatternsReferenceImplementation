@@ -209,7 +209,7 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_deploy
       properties                         = {
         "Octopus.Action.Script.ScriptSource" = "Inline"
         "Octopus.Action.Script.Syntax"       = "Bash"
-        "Octopus.Action.Script.ScriptBody"   = "SPACE_ID=$(curl --silent -H 'X-Octopus-ApiKey: #{ThisInstance.Api.Key}' #{ThisInstance.Server.InternalUrl}/api/Spaces?name=#{Octopus.Deployment.Tenant.Name} | jq -r '.Items[0].Id')\necho $${SPACE_ID}\nset_octopusvariable \"SpaceID\" $${SPACE_ID}"
+        "Octopus.Action.Script.ScriptBody"   = "SPACE_ID=$(curl --silent -H 'X-Octopus-ApiKey: #{ThisInstance.Api.Key}' #{ThisInstance.Server.InternalUrl}/api/Spaces?partialName=#{Octopus.Deployment.Tenant.Name} | jq -r '.Items[0].Id')\necho $${SPACE_ID}\nset_octopusvariable \"SpaceID\" $${SPACE_ID}"
       }
       environments          = []
       excluded_environments = []
