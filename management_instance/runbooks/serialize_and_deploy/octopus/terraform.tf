@@ -60,8 +60,8 @@ variable "runbook_backend_service_deploy_project_name" {
 }
 
 resource "octopusdeploy_runbook" "runbook_backend_service_deploy_project" {
-  name                        = "${var.runbook_backend_service_deploy_project_name}"
-  project_id                  = "${data.octopusdeploy_projects.project.projects[0].id}"
+  name                        = var.runbook_backend_service_deploy_project_name
+  project_id                  = data.octopusdeploy_projects.project.projects[0].id
   environment_scope           = "All"
   environments                = [data.octopusdeploy_environments.sync.environments[0].id]
   force_package_download      = false
@@ -108,15 +108,6 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_serial
       excluded_environments = []
       channels              = []
       tenant_tags           = []
-
-      package {
-        name                      = "OctopusTools"
-        package_id                = "OctopusTools"
-        acquisition_location      = "Server"
-        extract_during_deployment = false
-        feed_id                   = "${data.octopusdeploy_feeds.feed_octopus_server__built_in_.feeds[0].id}"
-        properties                = { Extract = "True", Purpose = "", SelectionMode = "immediate" }
-      }
       features = []
     }
 
@@ -156,7 +147,7 @@ resource "octopusdeploy_runbook" "runbook_backend_service_serialize_project" {
 }
 
 resource "octopusdeploy_runbook_process" "runbook_process_backend_service_deploy_project" {
-  runbook_id = "${octopusdeploy_runbook.runbook_backend_service_deploy_project.id}"
+  runbook_id = octopusdeploy_runbook.runbook_backend_service_deploy_project.id
 
   step {
     condition           = "Success"
@@ -176,7 +167,38 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_deploy
       properties                         = {
         "Octopus.Action.Script.ScriptSource" = "Inline"
         "Octopus.Action.Script.Syntax"       = "Bash"
-        "Octopus.Action.Script.ScriptBody"   = "docker exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username \"$POSTGRES_USER\" -c \"CREATE DATABASE project_hello_world_#{Octopus.Deployment.Tenant.Name | ToLower}\"'\nexit 0"
+        "Octopus.Action.Script.ScriptBody"   = "docker exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username \"$POSTGRES_USER\" -c \"CREATE DATABASE project_hello_world_#{Octopus.Deployment.Tenant.Name | ToLower}\"' 2>&1\nexit 0"
+      }
+      environments          = []
+      excluded_environments = []
+      channels              = []
+      tenant_tags           = []
+      features              = []
+    }
+
+    properties   = {}
+    target_roles = []
+  }
+
+  step {
+    condition           = "Success"
+    name                = "Get the Space ID"
+    package_requirement = "LetOctopusDecide"
+    start_trigger       = "StartAfterPrevious"
+
+    action {
+      action_type                        = "Octopus.Script"
+      name                               = "Get the Space ID"
+      condition                          = "Success"
+      run_on_server                      = true
+      is_disabled                        = false
+      can_be_used_for_project_versioning = false
+      is_required                        = false
+      worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
+      properties                         = {
+        "Octopus.Action.Script.ScriptSource" = "Inline"
+        "Octopus.Action.Script.Syntax"       = "Bash"
+        "Octopus.Action.Script.ScriptBody"   = "SPACE_ID=$(curl --silent -H 'X-Octopus-ApiKey: #{ThisInstance.Api.Key}' #{ThisInstance.Server.InternalUrl}/api/Spaces?name=#{Octopus.Deployment.Tenant.Name} | jq -r '.Items[0].Id')\necho $${SPACE_ID}\nset_octopusvariable \"SpaceID\" $${SPACE_ID}"
       }
       environments          = []
       excluded_environments = []
@@ -206,8 +228,8 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_deploy
       worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
       properties                         = {
         "Octopus.Action.Terraform.GoogleCloudAccount"           = "False"
-        "Octopus.Action.Terraform.TemplateDirectory"            = "space_population"
-        "Octopus.Action.Terraform.AdditionalActionParams"       = "-var=\"octopus_server=http://localhost:18080\" -var=\"octopus_space_id=Spaces-2\" -var=\"octopus_apikey=#{ThisInstance.Api.Key}\""
+        "Octopus.Action.Terraform.TemplateDirectory"            = ""
+        "Octopus.Action.Terraform.AdditionalActionParams"       = "-var=\"octopus_server=#{ThisInstance.Server.InternalUrl}\" -var=\"octopus_space_id=#{Octopus.Action[Get the Space ID].Output.SpaceID}\" -var=\"octopus_apikey=#{ThisInstance.Api.Key}\""
         "Octopus.Action.Aws.AssumeRole"                         = "False"
         "Octopus.Action.Aws.Region"                             = ""
         "Octopus.Action.Terraform.AllowPluginDownloads"         = "True"
@@ -226,18 +248,13 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_deploy
         "Octopus.Action.Package.DownloadOnTentacle"             = "False"
       }
 
-      container {
-        feed_id = "${data.octopusdeploy_feeds.feed_docker.feeds[0].id}"
-        image   = "octopusdeploy/worker-tools:4.0.0-ubuntu.18.04"
-      }
-
       environments          = []
       excluded_environments = []
       channels              = []
       tenant_tags           = []
 
       primary_package {
-        package_id           = "Backend_Service"
+        package_id           = "Hello_World"
         acquisition_location = "Server"
         feed_id              = "${data.octopusdeploy_feeds.feed_octopus_server__built_in_.feeds[0].id}"
         properties           = { SelectionMode = "immediate" }

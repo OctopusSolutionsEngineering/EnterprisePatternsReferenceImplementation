@@ -31,6 +31,14 @@ data "octopusdeploy_environments" "production" {
   take         = 1
 }
 
+data "octopusdeploy_environments" "sync" {
+  ids          = []
+  partial_name = "Sync"
+  skip         = 0
+  take         = 1
+}
+
+
 data "octopusdeploy_projects" "project" {
   cloned_from_project_id = null
   ids                    = []
@@ -62,7 +70,7 @@ resource "octopusdeploy_tenant" "america" {
   depends_on = [octopusdeploy_tag.tag_regional]
 
   project_environment {
-    environments = [data.octopusdeploy_environments.development.environments[0].id, data.octopusdeploy_environments.test.environments[0].id, data.octopusdeploy_environments.production.environments[0].id]
+    environments = [data.octopusdeploy_environments.development.environments[0].id, data.octopusdeploy_environments.test.environments[0].id, data.octopusdeploy_environments.production.environments[0].id, data.octopusdeploy_environments.sync.environments[0].id]
     project_id   = data.octopusdeploy_projects.project.projects[0].id
   }
 }
@@ -74,7 +82,7 @@ resource "octopusdeploy_tenant" "europe" {
   depends_on = [octopusdeploy_tag.tag_regional]
 
   project_environment {
-    environments = [data.octopusdeploy_environments.development.environments[0].id, data.octopusdeploy_environments.test.environments[0].id, data.octopusdeploy_environments.production.environments[0].id]
+    environments = [data.octopusdeploy_environments.development.environments[0].id, data.octopusdeploy_environments.test.environments[0].id, data.octopusdeploy_environments.production.environments[0].id, data.octopusdeploy_environments.sync.environments[0].id]
     project_id   = data.octopusdeploy_projects.project.projects[0].id
   }
 }

@@ -210,18 +210,11 @@ terraform workspace select Spaces-1
 terraform apply -auto-approve -var=octopus_space_id=Spaces-1
 popd
 
-# Push some utility packages
-if [[ ! -f OctopusTools.9.0.0.tar.gz ]]
-then
-  curl \
-    --silent \
-    https://download.octopusdeploy.com/octopus-tools/9.0.0/OctopusTools.9.0.0.linux-x64.tar.gz \
-    --output OctopusTools.9.0.0.tar.gz
-fi
-
-octo push \
-    --apiKey API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA \
-    --server http://localhost:18080 \
-    --space Spaces-1 \
-    --package OctopusTools.9.0.0.tar.gz \
-    --replace-existing
+# Install all the tools we'll need to perform deployments
+docker-compose -f docker/compose.yml exec octopus sh -c 'apt-get install -y jq'
+docker-compose -f docker/compose.yml exec octopus sh -c 'apt update && apt install -y --no-install-recommends gnupg curl ca-certificates apt-transport-https && curl -sSfL https://apt.octopus.com/public.key | apt-key add - && sh -c "echo deb https://apt.octopus.com/ stable main > /etc/apt/sources.list.d/octopus.com.list" && apt update && apt install -y octopuscli'
+docker-compose -f docker/compose.yml exec octopus sh -c 'apt-get update && apt-get install -y gnupg software-properties-common'
+docker-compose -f docker/compose.yml exec octopus sh -c 'wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | tee /usr/share/keyrings/hashicorp-archive-keyring.gpg'
+docker-compose -f docker/compose.yml exec octopus sh -c 'echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list'
+docker-compose -f docker/compose.yml exec octopus sh -c 'apt update'
+docker-compose -f docker/compose.yml exec octopus sh -c 'apt-get install -y terraform'

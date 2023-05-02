@@ -2,8 +2,6 @@ echo "##octopus[stdout-verbose]"
 docker pull octopussamples/octoterra
 echo "##octopus[stdout-default]"
 
-chmod +x OctopusTools/octo
-
 docker run \
   --network=docker_octopus \
   -v "${PWD}:${PWD}" \
@@ -22,14 +20,14 @@ docker run \
   -dest "${PWD}/export"
 
 date=$(date '+%Y.%m.%d.%H%M%S')
-./OctopusTools/octo pack \
+octo pack \
     --format zip \
     --id "#{Octopus.Project.Name | Replace "[^0-9a-zA-Z]" "_"}" \
     --version "${date}" \
     --basePath "${PWD}/export" \
     --outFolder "${PWD}/export"
 
-./OctopusTools/octo push \
+octo push \
     --apiKey #{ThisInstance.Api.Key} \
     --server #{ThisInstance.Server.InternalUrl}\
     --space #{Octopus.Space.Id} \
