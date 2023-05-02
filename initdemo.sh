@@ -62,7 +62,7 @@ curl \
   -H "accept: application/json" \
   --data '{"username": "octopuscac"}'
 
-for repo in europe-product-service europe-frontend america-product-service america-frontend
+for repo in europe_product_service europe_frontend america_product_service america_frontend hello_world
 do
   # Create the repo
   curl \
@@ -178,6 +178,14 @@ popd
 # Add the sample projects to the management instance
 docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE project_hello_world"'
 pushd management_instance/projects/hello_world/pgbackend
+terraform init -reconfigure -upgrade
+terraform workspace new Spaces-1
+terraform workspace select Spaces-1
+terraform apply -auto-approve -var=octopus_space_id=Spaces-1
+popd
+
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE project_hello_world_cac"'
+pushd management_instance/projects/hello_world_cac/pgbackend
 terraform init -reconfigure -upgrade
 terraform workspace new Spaces-1
 terraform workspace select Spaces-1
