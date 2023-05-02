@@ -51,7 +51,7 @@ else
   done
 fi
 
-# Now go ahead and create the orgs and repos.
+# Now go ahead and create the orgs and repos and initialize the repo with an initial commit.
 curl \
   --output /dev/null \
   --silent \
@@ -62,81 +62,29 @@ curl \
   -H "accept: application/json" \
   --data '{"username": "octopuscac"}'
 
-curl \
-  --output /dev/null \
-  --silent \
-  -u "octopus:Password01!" \
-  -X POST \
-  "http://localhost:3000/api/v1/org/octopuscac/repos" \
-  -H "content-type: application/json" \
-  -H "accept: application/json" \
-  --data '{"name":"europe-product-service"}'
+for repo in europe-product-service europe-frontend america-product-service america-frontend
+do
+  # Create the repo
+  curl \
+    --output /dev/null \
+    --silent \
+    -u "octopus:Password01!" \
+    -X POST \
+    "http://localhost:3000/api/v1/org/octopuscac/repos" \
+    -H "content-type: application/json" \
+    -H "accept: application/json" \
+    --data "{\"name\":\"${repo}\"}"
 
-curl \
-  --output /dev/null \
-  --silent \
-  -u "octopus:Password01!" \
-  -X POST "http://localhost:3000/api/v1/repos/octopuscac/europe-product-service/contents/README.md" \
-  -H "accept: application/json" \
-  -H "Content-Type: application/json" \
-  -d "{ \"author\": { \"email\": \"user@example.com\", \"name\": \"Octopus\" }, \"branch\": \"main\", \"committer\": { \"email\": \"user@example.com\", \"name\": \"string\" }, \"content\": \"UkVBRE1FCg==\", \"dates\": { \"author\": \"2020-04-06T01:37:35.137Z\", \"committer\": \"2020-04-06T01:37:35.137Z\" }, \"message\": \"Initializing repo\"}"
-
-curl \
-  --output /dev/null \
-  --silent \
-  -u "octopus:Password01!" \
-  -X POST \
-  "http://localhost:3000/api/v1/org/octopuscac/repos" \
-  -H "content-type: application/json" \
-  -H "accept: application/json" \
-  --data '{"name":"europe-frontend"}'
-
-curl \
-  --output /dev/null \
-  --silent \
-  -u "octopus:Password01!" \
-  -X POST "http://localhost:3000/api/v1/repos/octopuscac/europe-frontend/contents/README.md" \
-  -H "accept: application/json" \
-  -H "Content-Type: application/json" \
-  -d "{ \"author\": { \"email\": \"user@example.com\", \"name\": \"Octopus\" }, \"branch\": \"main\", \"committer\": { \"email\": \"user@example.com\", \"name\": \"string\" }, \"content\": \"UkVBRE1FCg==\", \"dates\": { \"author\": \"2020-04-06T01:37:35.137Z\", \"committer\": \"2020-04-06T01:37:35.137Z\" }, \"message\": \"Initializing repo\"}"
-
-curl \
-  --output /dev/null \
-  --silent \
-  -u "octopus:Password01!" \
-  -X POST \
-  "http://localhost:3000/api/v1/org/octopuscac/repos" \
-  -H "content-type: application/json" \
-  -H "accept: application/json" \
-  --data '{"name":"america-product-service"}'
-
-curl \
-  --output /dev/null \
-  --silent \
-  -u "octopus:Password01!" \
-  -X POST "http://localhost:3000/api/v1/repos/octopuscac/america-product-service/contents/README.md" \
-  -H "accept: application/json" \
-  -H "Content-Type: application/json" \
-  -d "{ \"author\": { \"email\": \"user@example.com\", \"name\": \"Octopus\" }, \"branch\": \"main\", \"committer\": { \"email\": \"user@example.com\", \"name\": \"string\" }, \"content\": \"UkVBRE1FCg==\", \"dates\": { \"author\": \"2020-04-06T01:37:35.137Z\", \"committer\": \"2020-04-06T01:37:35.137Z\" }, \"message\": \"Initializing repo\"}"
-
-curl \
-  --output /dev/null \
-  --silent \
-  -u "octopus:Password01!" \
-  -X POST \
-  "http://localhost:3000/api/v1/org/octopuscac/repos" \
-  -H "content-type: application/json" \
-  -H "accept: application/json" \
-  --data '{"name":"america-frontend"}'
-
-curl \
-  --output /dev/null \
-  --silent \
-  -u "octopus:Password01!" \
-  -X POST "http://localhost:3000/api/v1/repos/octopuscac/america-frontend/contents/README.md" \
-  -H "accept: application/json" \
-  -H "Content-Type: application/json" \
-  -d "{ \"author\": { \"email\": \"user@example.com\", \"name\": \"Octopus\" }, \"branch\": \"main\", \"committer\": { \"email\": \"user@example.com\", \"name\": \"string\" }, \"content\": \"UkVBRE1FCg==\", \"dates\": { \"author\": \"2020-04-06T01:37:35.137Z\", \"committer\": \"2020-04-06T01:37:35.137Z\" }, \"message\": \"Initializing repo\"}"
+  # Add the first commit to initialize the repo
+  curl \
+    --output /dev/null \
+    --silent \
+    -u "octopus:Password01!" \
+    -X POST "http://localhost:3000/api/v1/repos/octopuscac/${repo}/contents/README.md" \
+    -H "accept: application/json" \
+    -H "Content-Type: application/json" \
+    -d "{ \"author\": { \"email\": \"user@example.com\", \"name\": \"Octopus\" }, \"branch\": \"main\", \"committer\": { \"email\": \"user@example.com\", \"name\": \"string\" }, \"content\": \"UkVBRE1FCg==\", \"dates\": { \"author\": \"2020-04-06T01:37:35.137Z\", \"committer\": \"2020-04-06T01:37:35.137Z\" }, \"message\": \"Initializing repo\"}"
+done
 
 # Wait for the Octopus server.
 echo "Waiting for the Octopus server"
@@ -194,6 +142,14 @@ do
 
   docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE dockerhubfeed"'
   pushd shared/feeds/dockerhub/pgbackend
+  terraform init -reconfigure -upgrade
+  terraform workspace new $space
+  terraform workspace select $space
+  terraform apply -auto-approve -var=octopus_space_id=$space
+  popd
+
+  docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE project_group_hello_world"'
+  pushd shared/project_group/hello_world/pgbackend
   terraform init -reconfigure -upgrade
   terraform workspace new $space
   terraform workspace select $space

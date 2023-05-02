@@ -68,14 +68,16 @@ resource "octopusdeploy_deployment_process" "deployment_process_project_hello_wo
   }
 }
 
-resource "octopusdeploy_project_group" "project_group_hello_world" {
-  name        = "Hello World"
-  description = ""
+data "octopusdeploy_project_groups" "project_group_hello_world" {
+  ids          = null
+  partial_name = "Hello World"
+  skip         = 0
+  take         = 1
 }
 
 resource "octopusdeploy_project" "project_hello_world" {
   name                                 = "Hello World"
-  description                          = "This project is initially created by Terraform, able to be updated in the Octopus UI, serialized to Terraform again with octoterra, and deployed to managed spaces."
+  description                          = "This project is initially created by Terraform and is then able to be updated in the Octopus UI, serialized to Terraform again with octoterra, and deployed to managed spaces."
   auto_create_release                  = false
   default_guided_failure_mode          = "EnvironmentDefault"
   default_to_skip_if_already_installed = false
@@ -83,7 +85,7 @@ resource "octopusdeploy_project" "project_hello_world" {
   is_disabled                          = false
   is_version_controlled                = false
   lifecycle_id                         = data.octopusdeploy_lifecycles.lifecycle_simple.lifecycles[0].id
-  project_group_id                     = octopusdeploy_project_group.project_group_hello_world.id
+  project_group_id                     = data.octopusdeploy_project_groups.project_group_hello_world.project_groups[0].id
   included_library_variable_sets       = [data.octopusdeploy_library_variable_sets.variable.library_variable_sets[0].id]
   tenanted_deployment_participation    = "Untenanted"
 

@@ -228,7 +228,7 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_deploy
       worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
       properties                         = {
         "Octopus.Action.Terraform.GoogleCloudAccount"           = "False"
-        "Octopus.Action.Terraform.TemplateDirectory"            = ""
+        "Octopus.Action.Terraform.TemplateDirectory"            = "space_population"
         "Octopus.Action.Terraform.AdditionalActionParams"       = "-var=\"octopus_server=#{ThisInstance.Server.InternalUrl}\" -var=\"octopus_space_id=#{Octopus.Action[Get the Space ID].Output.SpaceID}\" -var=\"octopus_apikey=#{ThisInstance.Api.Key}\""
         "Octopus.Action.Aws.AssumeRole"                         = "False"
         "Octopus.Action.Aws.Region"                             = ""
@@ -238,7 +238,7 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_deploy
         "Octopus.Action.GoogleCloud.UseVMServiceAccount"        = "True"
         "Octopus.Action.Script.ScriptSource"                    = "Package"
         "Octopus.Action.Terraform.RunAutomaticFileSubstitution" = "False"
-        "Octopus.Action.Terraform.AdditionalInitParams"         = "-backend-config=\"conn_str=postgres://terraform:terraform@localhost:15432/project_hello_world_#{Octopus.Deployment.Tenant.Name | ToLower}?sslmode=disable\""
+        "Octopus.Action.Terraform.AdditionalInitParams"         = "-backend-config=\"conn_str=postgres://terraform:terraform@terraformdb:5432/project_hello_world_#{Octopus.Deployment.Tenant.Name | ToLower}?sslmode=disable\""
         "Octopus.Action.GoogleCloud.ImpersonateServiceAccount"  = "False"
         "Octopus.Action.Terraform.PlanJsonOutput"               = "False"
         "Octopus.Action.Terraform.ManagedAccount"               = ""
