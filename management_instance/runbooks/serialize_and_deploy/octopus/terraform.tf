@@ -5,7 +5,7 @@ terraform {
 }
 
 locals {
-  workspace = "#{Octopus.Deployment.Tenant.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_#{Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
+  workspace = "#{Octopus.Deployment.Tenant.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
 }
 
 variable "project_name" {

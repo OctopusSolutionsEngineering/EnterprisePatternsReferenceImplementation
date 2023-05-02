@@ -30,7 +30,7 @@ Shut the Octopus and Git stack down with:
 * Add tenants for managed spaces. [DONE]
 * Link tenants to sample projects. [DONE]
 * Add tenant specific octopus variables.
-* Test serialize and deploy.
+* Test serialize and deploy. [DONE]
 * Add CaC enabled projects.
   * Allow CaC url to be overridden.
   * Ignore versioning strategy for CaC enabled projects.
