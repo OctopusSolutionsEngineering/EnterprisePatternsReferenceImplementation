@@ -27,6 +27,8 @@ Shut the Octopus and Git stack down with:
 * Add managed project deployment. [DONE]
 * Add unmanaged project deployment.
 * Add self-service project deployment.
+  * Add management instance shared variables.
+  * deploy a "run a runbook" step
 * Add tenants for managed spaces. [DONE]
 * Link tenants to sample projects. [DONE]
 * Add tenant specific octopus variables.
@@ -39,4 +41,5 @@ Shut the Octopus and Git stack down with:
 * Create development, test/production spaces.
 * Add sample project to development.
 * Use variable sets for database connection string.
+  * Allow variables to be ignored. 
 * Add promotion runbook.
