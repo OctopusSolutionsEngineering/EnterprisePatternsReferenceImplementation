@@ -10,6 +10,7 @@
   -detachProjectTemplates \
   -excludeRunbook "Serialize Project" \
   -excludeRunbook "Deploy Project" \
+  -excludeLibraryVariableSet "This Instance" \
   -dest "${PWD}/export"
 
 date=$(date '+%Y.%m.%d.%H%M%S')
