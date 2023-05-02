@@ -56,6 +56,7 @@ then
   # Test that a merge is being performed
   git merge HEAD &> /dev/null
   if [[ $? -ne 0 ]]; then
+    # We need to commit the changes
     echo "Continuing the merge."
     GIT_EDITOR=/bin/true git merge --continue 2>&1
   fi
