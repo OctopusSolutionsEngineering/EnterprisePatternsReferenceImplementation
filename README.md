@@ -34,7 +34,7 @@ Shut the Octopus and Git stack down with:
 * Add CaC enabled projects.
   * Allow CaC url to be overridden.
   * Ignore versioning strategy for CaC enabled projects.
-* Add merge runbooks.
+* Add merge runbooks. [DONE]
 
 * Create development, test/production spaces.
 * Add sample project to development.
