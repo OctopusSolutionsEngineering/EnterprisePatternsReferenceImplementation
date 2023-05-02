@@ -1,7 +1,9 @@
 # All of this is to essentially fork a repo within the same organisation
 
-CAC_URL=${cac_url}
+CAC_PROTO=${cac_proto}
+CAC_HOST=${cac_host}
 CAC_ORG=${cac_org}
+CAC_USERNAME=${cac_username}
 CAC_PASSWORD=${cac_password}
 NEW_REPO="${new_repo}"
 TEMPLATE_REPO="${template_repo}"
@@ -12,12 +14,12 @@ curl \
   --output /dev/null \
   --silent \
   --fail \
-  -u "octopus:$${CAC_PASSWORD}" \
+  -u "$${CAC_USERNAME}:$${CAC_PASSWORD}" \
   -X GET \
-  "$${CAC_URL}/$${CAC_ORG}/$${TEMPLATE_REPO}.git"
+  "$${CAC_PROTO}://$${CAC_HOST}/$${CAC_ORG}/$${TEMPLATE_REPO}.git"
 
 if [[ $? != "0" ]]; then
-    >&2 echo "Could not find the template repo at $${CAC_URL}/$${CAC_ORG}/$${TEMPLATE_REPO}.git"
+    >&2 echo "Could not find the template repo at $${CAC_PROTO}://$${CAC_HOST}/$${CAC_ORG}/$${TEMPLATE_REPO}.git"
     exit 1
 fi
 
@@ -28,32 +30,31 @@ curl \
   --output /dev/null \
   --silent \
   --fail \
-  -u "octopus:Password01!" \
+  -u "$${CAC_USERNAME}:Password01!" \
   -X GET \
-  "$${CAC_URL}/$${CAC_ORG}/$${NEW_REPO}.git"
+  "$${CAC_PROTO}://$${CAC_HOST}/$${CAC_ORG}/$${NEW_REPO}.git"
 
 if [[ $? != "0" ]]; then
     # If we could not view the repo, assume it needs to be created.
     curl \
       --output /dev/null \
       --silent \
-      -u "octopus:Password01!" \
+      -u "$${CAC_USERNAME}:Password01!" \
       -X POST \
-      "$${CAC_URL}/api/v1/org/$${CAC_ORG}/repos" \
+      "$${CAC_PROTO}://$${CAC_HOST}/api/v1/org/$${CAC_ORG}/repos" \
       -H "content-type: application/json" \
       -H "accept: application/json" \
       --data "{\"name\":\"$${NEW_REPO}\"}"
-
 fi
 
 # Clone the repo
-git clone $${CAC_URL}/$${CAC_ORG}/$${NEW_REPO}.git 2>&1
+git clone $${CAC_PROTO}://$${CAC_USERNAME}:$${CAC_PASSWORD}@$${CAC_HOST}/$${CAC_ORG}/$${NEW_REPO}.git 2>&1
 
 # Enter the repo.
 cd $${NEW_REPO}
 
 # Link the template repo as a new remote.
-git remote add upstream $${CAC_URL}/$${CAC_ORG}/$${TEMPLATE_REPO}.git 2>&1
+git remote add upstream $${CAC_PROTO}://$${CAC_USERNAME}:$${CAC_PASSWORD}@$${CAC_HOST}/$${CAC_ORG}/$${TEMPLATE_REPO}.git 2>&1
 
 # Fetch all the code from the upstream remots.
 git fetch --all 2>&1
@@ -83,4 +84,4 @@ git reset --hard upstream/$${BRANCH} 2>&1
 git push origin $${BRANCH} 2>&1
 
 echo "##octopus[stdout-default]"
-echo "Repo was forked from $${CAC_URL}/$${CAC_ORG}/$${TEMPLATE_REPO} to $${CAC_URL}/$${CAC_ORG}/$${NEW_REPO}"
+echo "Repo was forked from $${CAC_PROTO}://$${CAC_HOST}/$${CAC_ORG}/$${TEMPLATE_REPO} to $${CAC_PROTO}://$${CAC_HOST}/$${CAC_ORG}/$${NEW_REPO}"

@@ -5,12 +5,14 @@ terraform {
 }
 
 locals {
-  workspace     = "#{Octopus.Deployment.Tenant.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_#{Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
-  new_repo      = "#{Octopus.Deployment.Tenant.Name | ToLower}_#{Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
+  workspace     = "#{Octopus.Deployment.Tenant.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
+  new_repo      = "#{Octopus.Deployment.Tenant.Name | ToLower}_#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
   template_repo = "hello_world"
-  cac_url       = "http://gitea:3000"
   cac_org       = "octopuscac"
   cac_password  = "Password01!"
+  cac_username  = "octopus"
+  cac_host      = "gitea:3000"
+  cac_proto     = "http"
 }
 
 variable "project_name" {
@@ -238,7 +240,9 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_deploy
       properties                         = {
         "Octopus.Action.Script.Syntax"     = "Bash"
         "Octopus.Action.Script.ScriptBody" = templatefile("../../shared_scripts/fork_repo.sh", {
-          cac_url       = local.cac_url,
+          cac_host      = local.cac_host,
+          cac_proto     = local.cac_proto,
+          cac_username  = local.cac_username,
           cac_org       = local.cac_org,
           cac_password  = local.cac_password,
           new_repo      = local.new_repo,
