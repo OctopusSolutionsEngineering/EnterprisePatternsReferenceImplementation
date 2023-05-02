@@ -22,17 +22,18 @@ Shut the Octopus and Git stack down with:
 
 # Todo
 
-Create environment for synchronizing. [DONE]
-Scope runbooks to sync environment. [DONE]
-Add unmanaged project deployment.
-Add self-service project deployment.
-Add tenants for managed spaces.
-Link tenants to sample projects.
-Test serialize and deploy.
-Add CaC enabled projects.
-Add merge runbooks.
+* Create environment for synchronizing. [DONE]
+* Scope runbooks to sync environment. [DONE]
+* Add managed project deployment.
+* Add unmanaged project deployment.
+* Add self-service project deployment.
+* Add tenants for managed spaces. [DONE]
+* Link tenants to sample projects. [DONE]
+* Test serialize and deploy.
+* Add CaC enabled projects.
+* Add merge runbooks.
 
-Create development, test/production spaces.
-Add sample project to development.
-Use variable sets for database connection string.
-Add promotion runbook.
+* Create development, test/production spaces.
+* Add sample project to development.
+* Use variable sets for database connection string.
+* Add promotion runbook.
