@@ -52,14 +52,7 @@ then
   # All good, so actually do the merge
   echo "Merging the upstream branch."
   git merge upstream-$${BRANCH} 2>&1
-
-  # Test that a merge is being performed
-  git merge HEAD &> /dev/null
-  if [[ $? -ne 0 ]]; then
-    # We need to commit the changes
-    echo "Continuing the merge."
-    GIT_EDITOR=/bin/true git merge --continue 2>&1
-  fi
+  GIT_EDITOR=/bin/true git merge --continue 2>&1
 
   # Test that some changes need to be pushed
   if ! git diff --quiet --exit-code @{upstream};
@@ -67,7 +60,7 @@ then
     echo "Pushing merged changes."
     git push origin 2>&1
   else
-    echo "No merge is required."
+    echo "No changes found."
   fi
 else
     >&2 echo "Template repo branch could not be automatically merged into project branch. This merge will need to be resolved manually."
