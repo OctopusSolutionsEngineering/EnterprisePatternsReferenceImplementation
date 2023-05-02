@@ -32,6 +32,8 @@ Shut the Octopus and Git stack down with:
 * Add tenant specific octopus variables.
 * Test serialize and deploy.
 * Add CaC enabled projects.
+  * Allow CaC url to be overridden.
+  * Ignore versioning strategy for CaC enabled projects.
 * Add merge runbooks.
 
 * Create development, test/production spaces.

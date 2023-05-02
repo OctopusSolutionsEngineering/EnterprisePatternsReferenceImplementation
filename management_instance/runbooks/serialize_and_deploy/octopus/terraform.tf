@@ -261,7 +261,7 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_deploy
       primary_package {
         package_id           = "Hello_World"
         acquisition_location = "Server"
-        feed_id              = "${data.octopusdeploy_feeds.feed_octopus_server__built_in_.feeds[0].id}"
+        feed_id              = data.octopusdeploy_feeds.feed_octopus_server__built_in_.feeds[0].id
         properties           = { SelectionMode = "immediate" }
       }
 

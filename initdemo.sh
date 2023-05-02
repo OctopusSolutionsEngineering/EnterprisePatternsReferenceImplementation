@@ -209,6 +209,14 @@ terraform workspace select "hello_world_cac_sync_runbooks"
 terraform apply -auto-approve -var=octopus_space_id=Spaces-1 "-var=project_name=Hello World CaC"
 popd
 
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE runbooks_merge"'
+pushd management_instance/runbooks/merge/pgbackend
+terraform init -reconfigure -upgrade
+terraform workspace new "hello_world_cac_merge_runbooks"
+terraform workspace select "hello_world_cac_merge_runbooks"
+terraform apply -auto-approve -var=octopus_space_id=Spaces-1 "-var=project_name=Hello World CaC"
+popd
+
 # Add serialize and deploy runbooks to sample projects
 docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE management_tenants"'
 pushd management_instance/tenants/regional_tenants/pgbackend
