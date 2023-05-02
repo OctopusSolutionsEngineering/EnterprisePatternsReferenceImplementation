@@ -24,11 +24,12 @@ Shut the Octopus and Git stack down with:
 
 * Create environment for synchronizing. [DONE]
 * Scope runbooks to sync environment. [DONE]
-* Add managed project deployment.
+* Add managed project deployment. [DONE]
 * Add unmanaged project deployment.
 * Add self-service project deployment.
 * Add tenants for managed spaces. [DONE]
 * Link tenants to sample projects. [DONE]
+* Add tenant specific octopus variables.
 * Test serialize and deploy.
 * Add CaC enabled projects.
 * Add merge runbooks.

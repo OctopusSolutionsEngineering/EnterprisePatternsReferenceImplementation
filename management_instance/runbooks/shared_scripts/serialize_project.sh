@@ -8,9 +8,8 @@
   -lookupProjectDependencies \
   -defaultSecretVariableValues \
   -detachProjectTemplates \
-  -excludeRunbook "Serialize Project" \
-  -excludeRunbook "Deploy Project" \
-  -excludeLibraryVariableSet "This Instance" \
+  -excludeRunbook "1. Serialize Project" \
+  -excludeRunbook "2. Deploy Project" \
   -dest "${PWD}/export"
 
 date=$(date '+%Y.%m.%d.%H%M%S')
