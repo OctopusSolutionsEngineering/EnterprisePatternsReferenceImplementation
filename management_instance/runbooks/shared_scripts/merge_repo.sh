@@ -45,20 +45,27 @@ else
   git checkout -b $${BRANCH} origin/$${BRANCH} 2>&1
 fi
 
-if git merge --no-commit upstream-$${BRANCH} 2>&1;
+# Test to see if we can merge the two branches together without conflict.
+# https://stackoverflow.com/a/501461/8246539
+if git merge --no-commit --no-ff upstream-$${BRANCH} 2>&1;
 then
-    echo "Merge is able to be performed automatically, or no merge is required."
-    git merge upstream-$${BRANCH} 2>&1
+  # All good, so actually do the merge
+  git merge upstream-$${BRANCH} 2>&1
 
-    # Test that some changes need to be pushed
-    if ! git diff --quiet --exit-code @{upstream};
-    then
-      GIT_EDITOR=/bin/true git merge --continue 2>&1
-      echo "Pushing merged changes."
-      git push origin 2>&1
-    else
-      echo "No merge is required."
-    fi
+  # Test that a merge is being performed
+  git merge HEAD &> /dev/null
+  if [[ $? -ne 0 ]]; then
+    GIT_EDITOR=/bin/true git merge --continue 2>&1
+  fi
+
+  # Test that some changes need to be pushed
+  if ! git diff --quiet --exit-code @{upstream};
+  then
+    echo "Pushing merged changes."
+    git push origin 2>&1
+  else
+    echo "No merge is required."
+  fi
 else
     >&2 echo "Template repo branch could not be automatically merged into project branch. This merge will need to be resolved manually."
     exit 1
