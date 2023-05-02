@@ -31,10 +31,10 @@ Shut the Octopus and Git stack down with:
   * deploy a "run a runbook" step
 * Add tenants for managed spaces. [DONE]
 * Link tenants to sample projects. [DONE]
-* Add tenant specific octopus variables.
+* Add tenant specific octopus variables. [DONE]
 * Test serialize and deploy. [DONE]
-* Add CaC enabled projects.
-  * Allow CaC url to be overridden.
+* Add CaC enabled projects. [DONE]
+  * Allow CaC url to be overridden. [DONE]
   * Ignore versioning strategy for CaC enabled projects.
 * Add merge runbooks. [DONE]
 * Add ocl check during merge.

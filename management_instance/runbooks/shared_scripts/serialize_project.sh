@@ -12,6 +12,8 @@
   -excludeRunbook "2. Deploy Project" \
   -excludeRunbook "2. Fork and Deploy Project" \
   -excludeRunbook "3. Merge Changes" \
+  -excludeLibraryVariableSet "Octopus Server" \
+  -excludeLibraryVariableSet "This Instance" \
   -dest "${PWD}/export"
 
 date=$(date '+%Y.%m.%d.%H%M%S')

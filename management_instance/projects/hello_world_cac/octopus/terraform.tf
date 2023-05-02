@@ -33,6 +33,12 @@ data "octopusdeploy_library_variable_sets" "variable" {
   take         = 1
 }
 
+data "octopusdeploy_library_variable_sets" "octopus_server" {
+  partial_name = "Octopus Server"
+  skip         = 0
+  take         = 1
+}
+
 resource "octopusdeploy_deployment_process" "deployment_process_project_hello_world" {
   project_id = "${octopusdeploy_project.project_hello_world.id}"
 
@@ -92,7 +98,7 @@ resource "octopusdeploy_project" "project_hello_world" {
   is_version_controlled                = false
   lifecycle_id                         = data.octopusdeploy_lifecycles.lifecycle_simple.lifecycles[0].id
   project_group_id                     = data.octopusdeploy_project_groups.project_group_hello_world.project_groups[0].id
-  included_library_variable_sets       = [data.octopusdeploy_library_variable_sets.variable.library_variable_sets[0].id]
+  included_library_variable_sets       = [data.octopusdeploy_library_variable_sets.variable.library_variable_sets[0].id, data.octopusdeploy_library_variable_sets.octopus_server.library_variable_sets[0].id]
   tenanted_deployment_participation    = "Untenanted"
 
   connectivity_policy {

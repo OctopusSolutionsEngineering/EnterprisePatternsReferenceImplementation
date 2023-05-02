@@ -193,37 +193,6 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_deploy
 
   step {
     condition           = "Success"
-    name                = "Get the Space ID"
-    package_requirement = "LetOctopusDecide"
-    start_trigger       = "StartAfterPrevious"
-
-    action {
-      action_type                        = "Octopus.Script"
-      name                               = "Get the Space ID"
-      condition                          = "Success"
-      run_on_server                      = true
-      is_disabled                        = false
-      can_be_used_for_project_versioning = false
-      is_required                        = false
-      worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
-      properties                         = {
-        "Octopus.Action.Script.ScriptSource" = "Inline"
-        "Octopus.Action.Script.Syntax"       = "Bash"
-        "Octopus.Action.Script.ScriptBody"   = "SPACE_ID=$(curl --silent -H 'X-Octopus-ApiKey: #{ThisInstance.Api.Key}' #{ThisInstance.Server.InternalUrl}/api/Spaces?partialName=#{Octopus.Deployment.Tenant.Name} | jq -r '.Items[0].Id')\necho $${SPACE_ID}\nset_octopusvariable \"SpaceID\" $${SPACE_ID}"
-      }
-      environments          = []
-      excluded_environments = []
-      channels              = []
-      tenant_tags           = []
-      features              = []
-    }
-
-    properties   = {}
-    target_roles = []
-  }
-
-  step {
-    condition           = "Success"
     name                = "Fork Git Repo"
     package_requirement = "LetOctopusDecide"
     start_trigger       = "StartAfterPrevious"
@@ -279,7 +248,7 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_deploy
       properties                         = {
         "Octopus.Action.Terraform.GoogleCloudAccount"           = "False"
         "Octopus.Action.Terraform.TemplateDirectory"            = "space_population"
-        "Octopus.Action.Terraform.AdditionalActionParams"       = "-var=\"octopus_server=#{ThisInstance.Server.InternalUrl}\" -var=\"octopus_space_id=#{Octopus.Action[Get the Space ID].Output.SpaceID}\" -var=\"octopus_apikey=#{ThisInstance.Api.Key}\" -var=\"project_hello_world_cac_git_url=${local.cac_proto}://${local.cac_host}/${local.cac_org}/${local.new_repo}.git\""
+        "Octopus.Action.Terraform.AdditionalActionParams"       = "-var=\"octopus_server=#{ManagedTenant.Octopus.Server}\" -var=\"octopus_space_id=#{ManagedTenant.Octopus.SpaceId}\" -var=\"octopus_apikey=#{ManagedTenant.Octopus.ApiKey}\" -var=\"project_hello_world_cac_git_url=${local.cac_proto}://${local.cac_host}/${local.cac_org}/${local.new_repo}.git\""
         "Octopus.Action.Aws.AssumeRole"                         = "False"
         "Octopus.Action.Aws.Region"                             = ""
         "Octopus.Action.Terraform.AllowPluginDownloads"         = "True"

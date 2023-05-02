@@ -31,6 +31,7 @@ then
 fi
 
 pushd docker
+docker-compose pull
 docker-compose up -d
 popd
 

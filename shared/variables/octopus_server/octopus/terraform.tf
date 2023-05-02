@@ -6,7 +6,7 @@ terraform {
 
 resource "octopusdeploy_library_variable_set" "octopus_library_variable_set" {
   name = "Octopus Server"
-  description = "Variables related to interacting with an Octopus server"
+  description = "Exposes templates that tenants must populate to indicate how to reach the server and space they are hosted on."
 
   template {
     name = "ManagedTenant.Octopus.Server"
