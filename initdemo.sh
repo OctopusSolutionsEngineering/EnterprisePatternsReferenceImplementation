@@ -201,6 +201,14 @@ terraform workspace select "hello_world_sync_runbooks"
 terraform apply -auto-approve -var=octopus_space_id=Spaces-1 "-var=project_name=Hello World"
 popd
 
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE runbooks_fork"'
+pushd management_instance/runbooks/fork/pgbackend
+terraform init -reconfigure -upgrade
+terraform workspace new "hello_world_cac_sync_runbooks"
+terraform workspace select "hello_world_cac_sync_runbooks"
+terraform apply -auto-approve -var=octopus_space_id=Spaces-1 "-var=project_name=Hello World CaC"
+popd
+
 # Add serialize and deploy runbooks to sample projects
 docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE management_tenants"'
 pushd management_instance/tenants/regional_tenants/pgbackend
@@ -211,7 +219,7 @@ terraform apply -auto-approve -var=octopus_space_id=Spaces-1
 popd
 
 # Install all the tools we'll need to perform deployments
-docker-compose -f docker/compose.yml exec octopus sh -c 'apt-get install -y jq'
+docker-compose -f docker/compose.yml exec octopus sh -c 'apt-get install -y jq git'
 docker-compose -f docker/compose.yml exec octopus sh -c 'apt update && apt install -y --no-install-recommends gnupg curl ca-certificates apt-transport-https && curl -sSfL https://apt.octopus.com/public.key | apt-key add - && sh -c "echo deb https://apt.octopus.com/ stable main > /etc/apt/sources.list.d/octopus.com.list" && apt update && apt install -y octopuscli'
 docker-compose -f docker/compose.yml exec octopus sh -c 'apt-get update && apt-get install -y gnupg software-properties-common'
 docker-compose -f docker/compose.yml exec octopus sh -c 'wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | tee /usr/share/keyrings/hashicorp-archive-keyring.gpg'

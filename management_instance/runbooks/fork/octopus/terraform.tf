@@ -5,7 +5,12 @@ terraform {
 }
 
 locals {
-  workspace = "#{Octopus.Deployment.Tenant.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_#{Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
+  workspace     = "#{Octopus.Deployment.Tenant.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_#{Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
+  new_repo      = "#{Octopus.Deployment.Tenant.Name | ToLower}_#{Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
+  template_repo = "hello_world"
+  cac_url       = "http://gitea:3000"
+  cac_org       = "octopuscac"
+  cac_password  = "Password01!"
 }
 
 variable "project_name" {
@@ -60,7 +65,7 @@ variable "runbook_backend_service_deploy_project_name" {
   nullable    = false
   sensitive   = false
   description = "The name of the project exported from Deploy Project"
-  default     = "2. Deploy Project"
+  default     = "2. Fork and Deploy Project"
 }
 
 resource "octopusdeploy_runbook" "runbook_backend_service_deploy_project" {
@@ -102,7 +107,7 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_serial
       is_disabled                        = false
       can_be_used_for_project_versioning = true
       is_required                        = false
-      worker_pool_id                     = "${data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id}"
+      worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
       properties                         = {
         "Octopus.Action.Script.Syntax"       = "Bash"
         "Octopus.Action.Script.ScriptBody"   = file("../../shared_scripts/serialize_project.sh")
@@ -112,7 +117,7 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_serial
       excluded_environments = []
       channels              = []
       tenant_tags           = []
-      features = []
+      features              = []
     }
 
     properties   = {}
@@ -129,13 +134,13 @@ variable "runbook_backend_service_serialize_project_name" {
 }
 
 resource "octopusdeploy_runbook" "runbook_backend_service_serialize_project" {
-  name                        = "${var.runbook_backend_service_serialize_project_name}"
-  project_id                  = "${data.octopusdeploy_projects.project.projects[0].id}"
+  name                        = var.runbook_backend_service_serialize_project_name
+  project_id                  = data.octopusdeploy_projects.project.projects[0].id
   environment_scope           = "Specified"
   environments                = [data.octopusdeploy_environments.sync.environments[0].id]
   force_package_download      = false
   default_guided_failure_mode = "EnvironmentDefault"
-  description                 = "This runbook serializes a project to HCL, packages it up, and pushes the package to Octopus."
+  description                 = "This runbook forks a CaC repo, serializes a project to HCL, packages it up, and pushes the package to Octopus."
   multi_tenancy_mode          = "Untenanted"
 
   retention_policy {
@@ -171,7 +176,7 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_deploy
       properties                         = {
         "Octopus.Action.Script.ScriptSource" = "Inline"
         "Octopus.Action.Script.Syntax"       = "Bash"
-        "Octopus.Action.Script.ScriptBody"   = "docker exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username \"$POSTGRES_USER\" -c \"CREATE DATABASE project_hello_world_#{Octopus.Deployment.Tenant.Name | ToLower}\"' 2>&1\nexit 0"
+        "Octopus.Action.Script.ScriptBody"   = "docker exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username \"$POSTGRES_USER\" -c \"CREATE DATABASE project_hello_world_cac_#{Octopus.Deployment.Tenant.Name | ToLower}\"' 2>&1\nexit 0"
       }
       environments          = []
       excluded_environments = []
@@ -217,6 +222,43 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_deploy
 
   step {
     condition           = "Success"
+    name                = "Fork Git Repo"
+    package_requirement = "LetOctopusDecide"
+    start_trigger       = "StartAfterPrevious"
+
+    action {
+      action_type                        = "Octopus.Script"
+      name                               = "Fork Git Repo"
+      condition                          = "Success"
+      run_on_server                      = true
+      is_disabled                        = false
+      can_be_used_for_project_versioning = true
+      is_required                        = false
+      worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
+      properties                         = {
+        "Octopus.Action.Script.Syntax"     = "Bash"
+        "Octopus.Action.Script.ScriptBody" = templatefile("../../shared_scripts/fork_repo.sh", {
+          cac_url       = local.cac_url,
+          cac_org       = local.cac_org,
+          cac_password  = local.cac_password,
+          new_repo      = local.new_repo,
+          template_repo = local.template_repo
+        })
+        "Octopus.Action.Script.ScriptSource" = "Inline"
+      }
+      environments          = []
+      excluded_environments = []
+      channels              = []
+      tenant_tags           = []
+      features              = []
+    }
+
+    properties   = {}
+    target_roles = []
+  }
+
+  step {
+    condition           = "Success"
     name                = "Deploy the Project"
     package_requirement = "LetOctopusDecide"
     start_trigger       = "StartAfterPrevious"
@@ -242,7 +284,7 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_deploy
         "Octopus.Action.GoogleCloud.UseVMServiceAccount"        = "True"
         "Octopus.Action.Script.ScriptSource"                    = "Package"
         "Octopus.Action.Terraform.RunAutomaticFileSubstitution" = "False"
-        "Octopus.Action.Terraform.AdditionalInitParams"         = "-backend-config=\"conn_str=postgres://terraform:terraform@terraformdb:5432/project_hello_world_#{Octopus.Deployment.Tenant.Name | ToLower}?sslmode=disable\""
+        "Octopus.Action.Terraform.AdditionalInitParams"         = "-backend-config=\"conn_str=postgres://terraform:terraform@terraformdb:5432/project_hello_world_cac_#{Octopus.Deployment.Tenant.Name | ToLower}?sslmode=disable\""
         "Octopus.Action.GoogleCloud.ImpersonateServiceAccount"  = "False"
         "Octopus.Action.Terraform.PlanJsonOutput"               = "False"
         "Octopus.Action.Terraform.ManagedAccount"               = ""
@@ -259,9 +301,9 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_deploy
       tenant_tags           = []
 
       primary_package {
-        package_id           = "Hello_World"
+        package_id           = "Hello_World_CaC"
         acquisition_location = "Server"
-        feed_id              = "${data.octopusdeploy_feeds.feed_octopus_server__built_in_.feeds[0].id}"
+        feed_id              = data.octopusdeploy_feeds.feed_octopus_server__built_in_.feeds[0].id
         properties           = { SelectionMode = "immediate" }
       }
 

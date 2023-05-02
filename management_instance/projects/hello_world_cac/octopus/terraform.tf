@@ -82,7 +82,7 @@ data "octopusdeploy_git_credentials" "git" {
 }
 
 resource "octopusdeploy_project" "project_hello_world" {
-  name                                 = "Hello World (CaC)"
+  name                                 = "Hello World CaC"
   description                          = "This project is initially created by Terraform and is then able to be updated in the Octopus UI, serialized to Terraform again with octoterra, and deployed to managed spaces."
   auto_create_release                  = false
   default_guided_failure_mode          = "EnvironmentDefault"

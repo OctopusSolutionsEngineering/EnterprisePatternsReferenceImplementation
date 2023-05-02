@@ -49,6 +49,16 @@ data "octopusdeploy_projects" "project" {
   take                   = 1
 }
 
+data "octopusdeploy_projects" "project_cac" {
+  cloned_from_project_id = null
+  ids                    = []
+  is_clone               = false
+  name                   = "Hello World CaC"
+  partial_name           = null
+  skip                   = 0
+  take                   = 1
+}
+
 resource "octopusdeploy_tag_set" "type" {
   name        = "tenant_type"
   description = "Tenant Type"
@@ -73,6 +83,11 @@ resource "octopusdeploy_tenant" "america" {
     environments = [data.octopusdeploy_environments.development.environments[0].id, data.octopusdeploy_environments.test.environments[0].id, data.octopusdeploy_environments.production.environments[0].id, data.octopusdeploy_environments.sync.environments[0].id]
     project_id   = data.octopusdeploy_projects.project.projects[0].id
   }
+
+  project_environment {
+    environments = [data.octopusdeploy_environments.development.environments[0].id, data.octopusdeploy_environments.test.environments[0].id, data.octopusdeploy_environments.production.environments[0].id, data.octopusdeploy_environments.sync.environments[0].id]
+    project_id   = data.octopusdeploy_projects.project_cac.projects[0].id
+  }
 }
 
 resource "octopusdeploy_tenant" "europe" {
@@ -84,5 +99,10 @@ resource "octopusdeploy_tenant" "europe" {
   project_environment {
     environments = [data.octopusdeploy_environments.development.environments[0].id, data.octopusdeploy_environments.test.environments[0].id, data.octopusdeploy_environments.production.environments[0].id, data.octopusdeploy_environments.sync.environments[0].id]
     project_id   = data.octopusdeploy_projects.project.projects[0].id
+  }
+
+  project_environment {
+    environments = [data.octopusdeploy_environments.development.environments[0].id, data.octopusdeploy_environments.test.environments[0].id, data.octopusdeploy_environments.production.environments[0].id, data.octopusdeploy_environments.sync.environments[0].id]
+    project_id   = data.octopusdeploy_projects.project_cac.projects[0].id
   }
 }
