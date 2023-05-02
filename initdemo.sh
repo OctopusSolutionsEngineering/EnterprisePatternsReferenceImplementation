@@ -227,7 +227,7 @@ do
   popd
 done
 
-# Add serialize and deploy runbooks to sample projects
+# Add the tenants
 docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE management_tenants"'
 pushd management_instance/tenants/regional_tenants/pgbackend
 terraform init -reconfigure -upgrade
