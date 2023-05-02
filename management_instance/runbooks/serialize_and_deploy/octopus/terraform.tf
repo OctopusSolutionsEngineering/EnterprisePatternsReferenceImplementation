@@ -66,7 +66,7 @@ resource "octopusdeploy_runbook" "runbook_backend_service_deploy_project" {
   environments                = [data.octopusdeploy_environments.sync.environments[0].id]
   force_package_download      = false
   default_guided_failure_mode = "EnvironmentDefault"
-  description                 = "This project deploys the package created by the Serialize Project runbook."
+  description                 = "This project deploys the package created by the Serialize Project runbook to a space."
   multi_tenancy_mode          = "Tenanted"
 
   retention_policy {

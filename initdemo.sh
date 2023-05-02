@@ -76,11 +76,29 @@ curl \
   --output /dev/null \
   --silent \
   -u "octopus:Password01!" \
+  -X POST "http://localhost:3000/api/v1/repos/octopuscac/europe-product-service/contents/README.md" \
+  -H "accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d "{ \"author\": { \"email\": \"user@example.com\", \"name\": \"Octopus\" }, \"branch\": \"main\", \"committer\": { \"email\": \"user@example.com\", \"name\": \"string\" }, \"content\": \"UkVBRE1FCg==\", \"dates\": { \"author\": \"2020-04-06T01:37:35.137Z\", \"committer\": \"2020-04-06T01:37:35.137Z\" }, \"message\": \"Initializing repo\"}"
+
+curl \
+  --output /dev/null \
+  --silent \
+  -u "octopus:Password01!" \
   -X POST \
   "http://localhost:3000/api/v1/org/octopuscac/repos" \
   -H "content-type: application/json" \
   -H "accept: application/json" \
   --data '{"name":"europe-frontend"}'
+
+curl \
+  --output /dev/null \
+  --silent \
+  -u "octopus:Password01!" \
+  -X POST "http://localhost:3000/api/v1/repos/octopuscac/europe-frontend/contents/README.md" \
+  -H "accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d "{ \"author\": { \"email\": \"user@example.com\", \"name\": \"Octopus\" }, \"branch\": \"main\", \"committer\": { \"email\": \"user@example.com\", \"name\": \"string\" }, \"content\": \"UkVBRE1FCg==\", \"dates\": { \"author\": \"2020-04-06T01:37:35.137Z\", \"committer\": \"2020-04-06T01:37:35.137Z\" }, \"message\": \"Initializing repo\"}"
 
 curl \
   --output /dev/null \
@@ -96,11 +114,29 @@ curl \
   --output /dev/null \
   --silent \
   -u "octopus:Password01!" \
+  -X POST "http://localhost:3000/api/v1/repos/octopuscac/america-product-service/contents/README.md" \
+  -H "accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d "{ \"author\": { \"email\": \"user@example.com\", \"name\": \"Octopus\" }, \"branch\": \"main\", \"committer\": { \"email\": \"user@example.com\", \"name\": \"string\" }, \"content\": \"UkVBRE1FCg==\", \"dates\": { \"author\": \"2020-04-06T01:37:35.137Z\", \"committer\": \"2020-04-06T01:37:35.137Z\" }, \"message\": \"Initializing repo\"}"
+
+curl \
+  --output /dev/null \
+  --silent \
+  -u "octopus:Password01!" \
   -X POST \
   "http://localhost:3000/api/v1/org/octopuscac/repos" \
   -H "content-type: application/json" \
   -H "accept: application/json" \
   --data '{"name":"america-frontend"}'
+
+curl \
+  --output /dev/null \
+  --silent \
+  -u "octopus:Password01!" \
+  -X POST "http://localhost:3000/api/v1/repos/octopuscac/america-frontend/contents/README.md" \
+  -H "accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d "{ \"author\": { \"email\": \"user@example.com\", \"name\": \"Octopus\" }, \"branch\": \"main\", \"committer\": { \"email\": \"user@example.com\", \"name\": \"string\" }, \"content\": \"UkVBRE1FCg==\", \"dates\": { \"author\": \"2020-04-06T01:37:35.137Z\", \"committer\": \"2020-04-06T01:37:35.137Z\" }, \"message\": \"Initializing repo\"}"
 
 # Wait for the Octopus server.
 echo "Waiting for the Octopus server"
