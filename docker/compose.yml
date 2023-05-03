@@ -25,6 +25,7 @@ services:
   octopus:
     ports:
       - "127.0.0.1:18080:8080"
+    privileged: true
     environment:
       - ADMIN_API_KEY=API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
       - ADMIN_USERNAME=admin
@@ -46,7 +47,6 @@ services:
       - taskLogs:/taskLogs
       - cache:/cache
       - import:/import
-      - /var/run/docker.sock:/var/run/docker.sock
   mssql:
     environment:
       ACCEPT_EULA: Y

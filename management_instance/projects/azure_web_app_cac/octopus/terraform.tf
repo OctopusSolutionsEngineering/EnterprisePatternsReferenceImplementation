@@ -174,11 +174,6 @@ resource "octopusdeploy_variable" "cloud_discovery" {
          "OctopusUseBundledTooling"           = "False"
        }
 
-       container {
-         feed_id = data.octopusdeploy_feeds.docker.feeds[0].id
-         image   = "octopusdeploy/worker-tools:5.0.0-ubuntu.22.04"
-       }
-
        environments          = []
        excluded_environments = [data.octopusdeploy_environments.security.environments[0].id]
        channels              = []
