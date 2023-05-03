@@ -80,7 +80,7 @@ resource "octopusdeploy_runbook" "runbook_backend_service_deploy_project" {
   environments                = [data.octopusdeploy_environments.sync.environments[0].id]
   force_package_download      = false
   default_guided_failure_mode = "EnvironmentDefault"
-  description                 = "This project deploys the package created by the Serialize Project runbook to a space."
+  description                 = "This project forks the repoholding this project and deploys the package created by the Serialize Project runbook to a new space setting the CaC URL to the forked repo."
   multi_tenancy_mode          = "Tenanted"
 
   retention_policy {
@@ -145,7 +145,7 @@ resource "octopusdeploy_runbook" "runbook_backend_service_serialize_project" {
   environments                = [data.octopusdeploy_environments.sync.environments[0].id]
   force_package_download      = false
   default_guided_failure_mode = "EnvironmentDefault"
-  description                 = "This runbook forks a CaC repo, serializes a project to HCL, packages it up, and pushes the package to Octopus."
+  description                 = "This serializes a project to HCL (excluding the deployment process if it is a CaC project), packages it up, and pushes the package to Octopus."
   multi_tenancy_mode          = "Untenanted"
 
   retention_policy {
