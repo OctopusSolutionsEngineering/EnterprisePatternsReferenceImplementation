@@ -75,7 +75,7 @@ data "octopusdeploy_projects" "project_init_space" {
   cloned_from_project_id = null
   ids                    = []
   is_clone               = false
-  name                   = "_ Initialize Space"
+  name                   = "_ Initialize Space for Azure"
   partial_name           = null
   skip                   = 0
   take                   = 1
