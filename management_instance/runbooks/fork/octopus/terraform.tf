@@ -5,14 +5,17 @@ terraform {
 }
 
 locals {
-  workspace     = "#{Octopus.Deployment.Tenant.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
-  new_repo      = "#{Octopus.Deployment.Tenant.Name | ToLower}_#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
-  template_repo = "hello_world"
-  cac_org       = "octopuscac"
-  cac_password  = "Password01!"
-  cac_username  = "octopus"
-  cac_host      = "gitea:3000"
-  cac_proto     = "http"
+  workspace        = "#{Octopus.Deployment.Tenant.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
+  new_repo         = "#{Octopus.Deployment.Tenant.Name | ToLower}_#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
+  cac_org          = "octopuscac"
+  cac_password     = "Password01!"
+  cac_username     = "octopus"
+  cac_host         = "gitea:3000"
+  cac_proto        = "http"
+  package          = "#{Octopus.Project.Name | Replace \"[^a-zA-Z0-9]\" \"_\"}"
+  # We know this value by convention
+  git_url_var_name = "project_#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_git_url"
+  template_repo    = "#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
 }
 
 variable "project_name" {
@@ -178,7 +181,7 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_deploy
       properties                         = {
         "Octopus.Action.Script.ScriptSource" = "Inline"
         "Octopus.Action.Script.Syntax"       = "Bash"
-        "Octopus.Action.Script.ScriptBody"   = "docker exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username \"$POSTGRES_USER\" -c \"CREATE DATABASE project_hello_world_cac_#{Octopus.Deployment.Tenant.Name | ToLower}\"' 2>&1\nexit 0"
+        "Octopus.Action.Script.ScriptBody"   = "docker exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username \"$POSTGRES_USER\" -c \"CREATE DATABASE project_sync\"' 2>&1\nexit 0"
       }
       environments          = []
       excluded_environments = []
@@ -248,7 +251,7 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_deploy
       properties                         = {
         "Octopus.Action.Terraform.GoogleCloudAccount"           = "False"
         "Octopus.Action.Terraform.TemplateDirectory"            = "space_population"
-        "Octopus.Action.Terraform.AdditionalActionParams"       = "-var=\"octopus_server=#{ManagedTenant.Octopus.Server}\" -var=\"octopus_space_id=#{ManagedTenant.Octopus.SpaceId}\" -var=\"octopus_apikey=#{ManagedTenant.Octopus.ApiKey}\" -var=\"project_hello_world_cac_git_url=${local.cac_proto}://${local.cac_host}/${local.cac_org}/${local.new_repo}.git\""
+        "Octopus.Action.Terraform.AdditionalActionParams"       = "-var=\"octopus_server=#{ManagedTenant.Octopus.Server}\" -var=\"octopus_space_id=#{ManagedTenant.Octopus.SpaceId}\" -var=\"octopus_apikey=#{ManagedTenant.Octopus.ApiKey}\" -var=\"${local.git_url_var_name}=${local.cac_proto}://${local.cac_host}/${local.cac_org}/${local.new_repo}.git\""
         "Octopus.Action.Aws.AssumeRole"                         = "False"
         "Octopus.Action.Aws.Region"                             = ""
         "Octopus.Action.Terraform.AllowPluginDownloads"         = "True"
@@ -257,7 +260,7 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_deploy
         "Octopus.Action.GoogleCloud.UseVMServiceAccount"        = "True"
         "Octopus.Action.Script.ScriptSource"                    = "Package"
         "Octopus.Action.Terraform.RunAutomaticFileSubstitution" = "False"
-        "Octopus.Action.Terraform.AdditionalInitParams"         = "-backend-config=\"conn_str=postgres://terraform:terraform@terraformdb:5432/project_hello_world_cac_#{Octopus.Deployment.Tenant.Name | ToLower}?sslmode=disable\""
+        "Octopus.Action.Terraform.AdditionalInitParams"         = "-backend-config=\"conn_str=postgres://terraform:terraform@terraformdb:5432/project_sync?sslmode=disable\""
         "Octopus.Action.GoogleCloud.ImpersonateServiceAccount"  = "False"
         "Octopus.Action.Terraform.PlanJsonOutput"               = "False"
         "Octopus.Action.Terraform.ManagedAccount"               = ""
@@ -274,7 +277,7 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_deploy
       tenant_tags           = []
 
       primary_package {
-        package_id           = "Hello_World_CaC"
+        package_id           = local.package
         acquisition_location = "Server"
         feed_id              = data.octopusdeploy_feeds.feed_octopus_server__built_in_.feeds[0].id
         properties           = { SelectionMode = "immediate" }

@@ -109,8 +109,8 @@ resource "octopusdeploy_project" "project_hello_world" {
 
   git_library_persistence_settings {
     git_credential_id  = data.octopusdeploy_git_credentials.git.git_credentials[0].id
-    url                = "http://gitea:3000/octopuscac/hello_world.git"
-    base_path          = ".octopus/hello_world"
+    url                = "http://gitea:3000/octopuscac/hello_world_cac.git"
+    base_path          = ".octopus/project"
     default_branch     = "main"
     protected_branches = []
   }

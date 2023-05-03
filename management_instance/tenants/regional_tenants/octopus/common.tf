@@ -16,6 +16,12 @@ data "octopusdeploy_library_variable_sets" "octopus_server" {
   take = 1
 }
 
+data "octopusdeploy_library_variable_sets" "azure" {
+  partial_name = "Azure"
+  skip = 0
+  take = 1
+}
+
 data "octopusdeploy_environments" "development" {
   ids          = []
   partial_name = "Development"
@@ -60,6 +66,26 @@ data "octopusdeploy_projects" "project_cac" {
   ids                    = []
   is_clone               = false
   name                   = "Hello World CaC"
+  partial_name           = null
+  skip                   = 0
+  take                   = 1
+}
+
+data "octopusdeploy_projects" "project_init_space" {
+  cloned_from_project_id = null
+  ids                    = []
+  is_clone               = false
+  name                   = "_ Initialize Space"
+  partial_name           = null
+  skip                   = 0
+  take                   = 1
+}
+
+data "octopusdeploy_projects" "project_web_app_cac" {
+  cloned_from_project_id = null
+  ids                    = []
+  is_clone               = false
+  name                   = "Azure Web App CaC"
   partial_name           = null
   skip                   = 0
   take                   = 1

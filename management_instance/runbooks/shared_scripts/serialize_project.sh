@@ -14,6 +14,7 @@
   -excludeRunbook "3. Merge Changes" \
   -excludeLibraryVariableSet "Octopus Server" \
   -excludeLibraryVariableSet "This Instance" \
+  -excludeLibraryVariableSet "Azure" \
   -dest "${PWD}/export"
 
 date=$(date '+%Y.%m.%d.%H%M%S')

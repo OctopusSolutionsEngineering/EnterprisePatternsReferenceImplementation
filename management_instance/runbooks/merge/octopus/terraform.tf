@@ -7,13 +7,13 @@ terraform {
 locals {
   workspace     = "#{Octopus.Deployment.Tenant.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
   new_repo      = "#{Octopus.Deployment.Tenant.Name | ToLower}_#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
-  template_repo = "hello_world"
   cac_org       = "octopuscac"
   cac_password  = "Password01!"
   cac_username  = "octopus"
   cac_host      = "gitea:3000"
   cac_proto     = "http"
-  project_dir   = ".octopus/hello_world"
+  template_repo = "#{Octopus.Deployment.Tenant.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
+  project_dir = ".octopus/project"
 }
 
 variable "project_name" {

@@ -63,7 +63,7 @@ curl \
   -H "accept: application/json" \
   --data '{"username": "octopuscac"}'
 
-for repo in europe_product_service europe_frontend america_product_service america_frontend hello_world
+for repo in europe_product_service europe_frontend america_product_service america_frontend hello_world_cac azure_web_app_cac
 do
   # Create the repo
   curl \
@@ -157,6 +157,14 @@ do
   terraform apply -auto-approve -var=octopus_space_id=$space
   popd
 
+  docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE project_group_azure"'
+  pushd shared/project_group/azure/pgbackend
+  terraform init -reconfigure -upgrade
+  terraform workspace new $space
+  terraform workspace select $space
+  terraform apply -auto-approve -var=octopus_space_id=$space
+  popd
+
   docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE lib_var_this_instance"'
   pushd shared/variables/this_instance/pgbackend
   terraform init -reconfigure -upgrade
@@ -170,6 +178,14 @@ done
 # Setup library variable sets
 docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE lib_var_octopus_server"'
 pushd shared/variables/octopus_server/pgbackend
+terraform init -reconfigure -upgrade
+terraform workspace new "Spaces-1"
+terraform workspace select "Spaces-1"
+terraform apply -auto-approve -var=octopus_space_id=Spaces-1
+popd
+
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE lib_var_azure"'
+pushd shared/variables/azure/pgbackend
 terraform init -reconfigure -upgrade
 terraform workspace new "Spaces-1"
 terraform workspace select "Spaces-1"
@@ -193,6 +209,23 @@ terraform workspace select Spaces-1
 terraform apply -auto-approve -var=octopus_space_id=Spaces-1
 popd
 
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE project_azure_web_app_cac"'
+pushd management_instance/projects/azure_web_app_cac/pgbackend
+terraform init -reconfigure -upgrade
+terraform workspace new Spaces-1
+terraform workspace select Spaces-1
+terraform apply -auto-approve -var=octopus_space_id=Spaces-1
+popd
+
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE project_azure_space_initialization"'
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE project_initialize_azure_space"'
+pushd management_instance/projects/azure_space_initialization/pgbackend
+terraform init -reconfigure -upgrade
+terraform workspace new Spaces-1
+terraform workspace select Spaces-1
+terraform apply -auto-approve -var=octopus_space_id=Spaces-1
+popd
+
 # Add serialize and deploy runbooks to sample projects.
 # These runbooks are common across these kinds of projects, but benefit from being able to reference the project they
 # are associated with. So they are linked up to each project individually, even though they all come from the same soure.
@@ -209,9 +242,11 @@ done
 
 # Link up the CaC selection of runbooks. Like above, these runbooks are copied into each CaC project that is to be
 # serialized and shared with other spaces.
-for project in "Hello World CaC"
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE runbooks_fork"'
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE runbooks_merge"'
+
+for project in "Hello World CaC" "Azure Web App CaC"
 do
-  docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE runbooks_fork"'
   pushd management_instance/runbooks/fork/pgbackend
   terraform init -reconfigure -upgrade
   terraform workspace new "${project//[^[:alnum:]]/_}"
@@ -219,7 +254,7 @@ do
   terraform apply -auto-approve -var=octopus_space_id=Spaces-1 "-var=project_name=${project}"
   popd
 
-  docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE runbooks_merge"'
+
   pushd management_instance/runbooks/merge/pgbackend
   terraform init -reconfigure -upgrade
   terraform workspace new "${project//[^[:alnum:]]/_}"
@@ -234,6 +269,15 @@ pushd management_instance/tenants/regional_tenants/pgbackend
 terraform init -reconfigure -upgrade
 terraform workspace new Spaces-1
 terraform workspace select Spaces-1
+terraform apply -auto-approve -var=octopus_space_id=Spaces-1
+popd
+
+# Setup accounts
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE account_azure"'
+pushd shared/accounts/azure/pgbackend
+terraform init -reconfigure -upgrade
+terraform workspace new "Spaces-1"
+terraform workspace select "Spaces-1"
 terraform apply -auto-approve -var=octopus_space_id=Spaces-1
 popd
 
