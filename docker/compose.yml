@@ -21,6 +21,8 @@ volumes:
     driver: local
   import:
     driver: local
+  dockercache:
+    driver: local
 services:
   octopus:
     ports:
@@ -47,6 +49,7 @@ services:
       - taskLogs:/taskLogs
       - cache:/cache
       - import:/import
+      - dockercache:/var/lib/docker/
   mssql:
     environment:
       ACCEPT_EULA: Y

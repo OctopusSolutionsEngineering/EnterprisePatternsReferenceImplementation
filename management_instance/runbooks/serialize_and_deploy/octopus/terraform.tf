@@ -171,7 +171,14 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_deploy
       properties                         = {
         "Octopus.Action.Script.ScriptSource" = "Inline"
         "Octopus.Action.Script.Syntax"       = "Bash"
-        "Octopus.Action.Script.ScriptBody"   = "docker exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username \"$POSTGRES_USER\" -c \"CREATE DATABASE project_hello_world_#{Octopus.Deployment.Tenant.Name | ToLower}\"' 2>&1\nexit 0"
+        "Octopus.Action.Script.ScriptBody"   = <<EOT
+          echo "##octopus[stdout-verbose]"
+          docker pull postgres
+          echo "##octopus[stdout-DEFAULT]"
+          DATABASE=$(dig +short terraformdb)
+          docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/psql' postgres -h $${DATABASE} -v ON_ERROR_STOP=1 --username "terraform" -c "CREATE DATABASE project_sync"
+          exit 0
+          EOT
       }
       environments          = []
       excluded_environments = []
