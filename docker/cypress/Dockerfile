@@ -1,3 +1,4 @@
+# docker build . -t octopussamples/cypress-included:12.8.1
 FROM cypress/included:12.8.1
 RUN apt-get update; \
 apt-get install -y libicu67 zip
