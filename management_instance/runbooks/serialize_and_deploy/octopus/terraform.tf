@@ -172,13 +172,13 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_deploy
         "Octopus.Action.Script.ScriptSource" = "Inline"
         "Octopus.Action.Script.Syntax"       = "Bash"
         "Octopus.Action.Script.ScriptBody"   = <<EOT
-          echo "##octopus[stdout-verbose]"
-          docker pull postgres
-          echo "##octopus[stdout-default]"
-          DATABASE=$(dig +short terraformdb)
-          docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/psql' postgres -h $${DATABASE} -v ON_ERROR_STOP=1 --username "terraform" -c "CREATE DATABASE project_sync"
-          exit 0
-          EOT
+echo "##octopus[stdout-verbose]"
+docker pull postgres
+echo "##octopus[stdout-default]"
+DATABASE=$(dig +short terraformdb)
+docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/psql' postgres -h $${DATABASE} -v ON_ERROR_STOP=1 --username "terraform" -c "CREATE DATABASE project_sync"
+exit 0
+EOT
       }
       environments          = []
       excluded_environments = []
