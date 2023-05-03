@@ -62,7 +62,7 @@ data "octopusdeploy_environments" "sync" {
 
 resource "octopusdeploy_project" "project_hello_world" {
   # We want this project to be sorted higher than the template projects, so start with an underscore
-  name                                 = "_ Initialize Space for Azure"
+  name                                 = "__ Initialize Space for Azure"
   description                          = "This project is used to populate a space with any common Azure resources."
   auto_create_release                  = false
   default_guided_failure_mode          = "EnvironmentDefault"
