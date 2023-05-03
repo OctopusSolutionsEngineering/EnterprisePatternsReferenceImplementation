@@ -128,7 +128,7 @@ resource "octopusdeploy_project" "project" {
 
   git_library_persistence_settings {
     git_credential_id  = data.octopusdeploy_git_credentials.gitcredential.git_credentials[0].id
-    url                = "http://gitea:3000/octopuscac/azure_web_app.git"
+    url                = "http://gitea:3000/octopuscac/azure_web_app_cac.git"
     base_path          = ".octopus/project"
     default_branch     = "main"
     protected_branches = []

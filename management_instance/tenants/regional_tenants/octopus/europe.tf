@@ -3,7 +3,6 @@ variable "europe_azure_application_id" {
   nullable    = false
   sensitive   = false
   description = "The Azure application ID."
-  default     = "00000000-0000-0000-0000-000000000000"
 }
 
 variable "europe_azure_subscription_id" {
@@ -11,7 +10,6 @@ variable "europe_azure_subscription_id" {
   nullable    = false
   sensitive   = false
   description = "The Azure subscription ID."
-  default     = "00000000-0000-0000-0000-000000000000"
 }
 
 variable "europe_azure_password" {
@@ -19,7 +17,6 @@ variable "europe_azure_password" {
   nullable    = false
   sensitive   = true
   description = "The Azure password."
-  default     = "dummy"
 }
 
 variable "europe_azure_tenant_id" {
@@ -27,14 +24,12 @@ variable "europe_azure_tenant_id" {
   nullable    = false
   sensitive   = false
   description = "The Azure tenant ID."
-  default     = "00000000-0000-0000-0000-000000000000"
 }
 
 resource "octopusdeploy_tenant" "europe" {
   name        = "Europe"
   description = "Tenant representing the European region Octopus space"
   tenant_tags = ["tenant_type/regional"]
-  depends_on = [octopusdeploy_tag.tag_regional]
 
   project_environment {
     environments = [data.octopusdeploy_environments.development.environments[0].id, data.octopusdeploy_environments.test.environments[0].id, data.octopusdeploy_environments.production.environments[0].id, data.octopusdeploy_environments.sync.environments[0].id]

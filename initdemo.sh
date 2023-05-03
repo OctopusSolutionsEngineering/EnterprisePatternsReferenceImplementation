@@ -30,11 +30,13 @@ then
   exit 1
 fi
 
+# Start the Docker Compose stack
 pushd docker
 docker-compose pull
 docker-compose up -d
 popd
 
+# Set the initial Gitea user
 EXISTING=$(docker exec -it gitea su git bash -c "gitea admin user list")
 USER='octopus'
 if [[ "$EXISTING" == *"$USER"* ]]; then
@@ -52,7 +54,7 @@ else
   done
 fi
 
-# Now go ahead and create the orgs and repos and initialize the repo with an initial commit.
+# Create the orgs.
 curl \
   --output /dev/null \
   --silent \
@@ -63,6 +65,7 @@ curl \
   -H "accept: application/json" \
   --data '{"username": "octopuscac"}'
 
+# Create the repos and populate with an initial commit.
 for repo in europe_product_service europe_frontend america_product_service america_frontend hello_world_cac azure_web_app_cac
 do
   # Create the repo
@@ -76,7 +79,7 @@ do
     -H "accept: application/json" \
     --data "{\"name\":\"${repo}\"}"
 
-  # Add the first commit to initialize the repo
+  # Add the first commit to initialize the repo.
   curl \
     --output /dev/null \
     --silent \
@@ -175,6 +178,24 @@ do
 
 done
 
+# Add the tenant tags
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE management_tenant_tags"'
+pushd management_instance/tenant_tags/regional/pgbackend
+terraform init -reconfigure -upgrade
+terraform workspace new Spaces-1
+terraform workspace select Spaces-1
+terraform apply -auto-approve -var=octopus_space_id=Spaces-1
+popd
+
+# Setup accounts
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE account_azure"'
+pushd shared/accounts/azure/pgbackend
+terraform init -reconfigure -upgrade
+terraform workspace new "Spaces-1"
+terraform workspace select "Spaces-1"
+terraform apply -auto-approve -var=octopus_space_id=Spaces-1
+popd
+
 # Setup library variable sets
 docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE lib_var_octopus_server"'
 pushd shared/variables/octopus_server/pgbackend
@@ -226,9 +247,18 @@ terraform workspace select Spaces-1
 terraform apply -auto-approve -var=octopus_space_id=Spaces-1
 popd
 
+# Add the tenants
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE management_tenants"'
+pushd management_instance/tenants/regional_tenants/pgbackend
+terraform init -reconfigure -upgrade
+terraform workspace new Spaces-1
+terraform workspace select Spaces-1
+terraform apply -auto-approve -var=octopus_space_id=Spaces-1
+popd
+
 # Add serialize and deploy runbooks to sample projects.
 # These runbooks are common across these kinds of projects, but benefit from being able to reference the project they
-# are associated with. So they are linked up to each project individually, even though they all come from the same soure.
+# are associated with. So they are linked up to each project individually, even though they all come from the same source.
 for project in "Hello World"
 do
   docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE serialize_and_deploy"'
@@ -262,24 +292,6 @@ do
   terraform apply -auto-approve -var=octopus_space_id=Spaces-1 "-var=project_name=${project}"
   popd
 done
-
-# Add the tenants
-docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE management_tenants"'
-pushd management_instance/tenants/regional_tenants/pgbackend
-terraform init -reconfigure -upgrade
-terraform workspace new Spaces-1
-terraform workspace select Spaces-1
-terraform apply -auto-approve -var=octopus_space_id=Spaces-1
-popd
-
-# Setup accounts
-docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE account_azure"'
-pushd shared/accounts/azure/pgbackend
-terraform init -reconfigure -upgrade
-terraform workspace new "Spaces-1"
-terraform workspace select "Spaces-1"
-terraform apply -auto-approve -var=octopus_space_id=Spaces-1
-popd
 
 # Install all the tools we'll need to perform deployments
 docker-compose -f docker/compose.yml exec octopus sh -c 'apt-get install -y jq git'

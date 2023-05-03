@@ -9,7 +9,6 @@ variable "azure_application_id" {
   nullable    = false
   sensitive   = false
   description = "The Azure application ID."
-  default     = "00000000-0000-0000-0000-000000000000"
 }
 
 variable "azure_subscription_id" {
@@ -17,7 +16,6 @@ variable "azure_subscription_id" {
   nullable    = false
   sensitive   = false
   description = "The Azure subscription ID."
-  default     = "00000000-0000-0000-0000-000000000000"
 }
 
 variable "azure_password" {
@@ -25,7 +23,6 @@ variable "azure_password" {
   nullable    = false
   sensitive   = true
   description = "The Azure password."
-  default     = "dummy"
 }
 
 variable "azure_tenant_id" {
@@ -33,7 +30,6 @@ variable "azure_tenant_id" {
   nullable    = false
   sensitive   = false
   description = "The Azure tenant ID."
-  default     = "00000000-0000-0000-0000-000000000000"
 }
 
 resource "octopusdeploy_azure_service_principal" "account_azure" {
