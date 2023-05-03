@@ -294,7 +294,7 @@ do
 done
 
 # Install all the tools we'll need to perform deployments
-docker-compose -f docker/compose.yml exec octopus sh -c 'apt-get install -y jq git dnsutils nodejs npm zip'
+docker-compose -f docker/compose.yml exec octopus sh -c 'apt-get install -y jq git dnsutils zip'
 docker-compose -f docker/compose.yml exec octopus sh -c 'apt update && apt install -y --no-install-recommends gnupg curl ca-certificates apt-transport-https && curl -sSfL https://apt.octopus.com/public.key | apt-key add - && sh -c "echo deb https://apt.octopus.com/ stable main > /etc/apt/sources.list.d/octopus.com.list" && apt update && apt install -y octopuscli'
 docker-compose -f docker/compose.yml exec octopus sh -c 'apt-get update && apt-get install -y gnupg software-properties-common'
 docker-compose -f docker/compose.yml exec octopus sh -c 'wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | tee /usr/share/keyrings/hashicorp-archive-keyring.gpg'
