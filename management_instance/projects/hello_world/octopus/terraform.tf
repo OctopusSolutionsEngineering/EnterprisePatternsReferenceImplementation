@@ -39,6 +39,13 @@ data "octopusdeploy_library_variable_sets" "octopus_server" {
   take         = 1
 }
 
+data "octopusdeploy_worker_pools" "workerpool_default" {
+  name = "Default Worker Pool"
+  ids  = null
+  skip = 0
+  take = 1
+}
+
 resource "octopusdeploy_deployment_process" "deployment_process_project_hello_world" {
   project_id = "${octopusdeploy_project.project_hello_world.id}"
 
@@ -106,11 +113,4 @@ resource "octopusdeploy_project" "project_hello_world" {
     exclude_unhealthy_targets       = false
     skip_machine_behavior           = "None"
   }
-}
-
-data "octopusdeploy_worker_pools" "workerpool_default" {
-  name = "Default Worker Pool"
-  ids  = null
-  skip = 0
-  take = 1
 }
