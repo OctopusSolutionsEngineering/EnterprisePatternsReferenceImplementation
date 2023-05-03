@@ -12,8 +12,8 @@ locals {
   cac_username  = "octopus"
   cac_host      = "gitea:3000"
   cac_proto     = "http"
-  template_repo = "#{Octopus.Deployment.Tenant.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
-  project_dir = ".octopus/project"
+  template_repo = "#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
+  project_dir   = ".octopus/project"
 }
 
 variable "project_name" {
