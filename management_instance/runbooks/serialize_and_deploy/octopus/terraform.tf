@@ -218,7 +218,7 @@ EOT
         "Octopus.Action.GoogleCloud.UseVMServiceAccount"        = "True"
         "Octopus.Action.Script.ScriptSource"                    = "Package"
         "Octopus.Action.Terraform.RunAutomaticFileSubstitution" = "False"
-        "Octopus.Action.Terraform.AdditionalInitParams"         = "-backend-config=\"conn_str=postgres://terraform:terraform@terraformdb:5432/project_hello_world_#{Octopus.Deployment.Tenant.Name | ToLower}?sslmode=disable\""
+        "Octopus.Action.Terraform.AdditionalInitParams"         = "-backend-config=\"conn_str=postgres://terraform:terraform@terraformdb:5432/project_sync?sslmode=disable\""
         "Octopus.Action.GoogleCloud.ImpersonateServiceAccount"  = "False"
         "Octopus.Action.Terraform.PlanJsonOutput"               = "False"
         "Octopus.Action.Terraform.ManagedAccount"               = ""

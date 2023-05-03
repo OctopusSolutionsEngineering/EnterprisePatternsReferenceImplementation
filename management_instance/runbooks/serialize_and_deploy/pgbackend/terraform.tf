@@ -1,6 +1,6 @@
 terraform {
   backend "pg" {
-    conn_str = "postgres://terraform:terraform@localhost:15432/project_sync?sslmode=disable"
+    conn_str = "postgres://terraform:terraform@localhost:15432/serialize_and_deploy?sslmode=disable"
   }
 }
 

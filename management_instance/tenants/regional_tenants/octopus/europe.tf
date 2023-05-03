@@ -96,9 +96,9 @@ resource "octopusdeploy_tenant_common_variable" "europe_azure_application_id" {
     for tmp in data.octopusdeploy_library_variable_sets.azure.library_variable_sets[0].template :
     tmp.id if tmp.name == "Tenant.Azure.ApplicationId"
   ])[0]
-  tenant_id               = octopusdeploy_tenant.america.id
+  tenant_id               = octopusdeploy_tenant.europe.id
   value                   = var.europe_azure_application_id
-  depends_on              = [octopusdeploy_tenant.america]
+  depends_on              = [octopusdeploy_tenant.europe]
 }
 
 resource "octopusdeploy_tenant_common_variable" "europe_azure_subscription_id" {
@@ -107,9 +107,9 @@ resource "octopusdeploy_tenant_common_variable" "europe_azure_subscription_id" {
     for tmp in data.octopusdeploy_library_variable_sets.azure.library_variable_sets[0].template :
     tmp.id if tmp.name == "Tenant.Azure.SubscriptionId"
   ])[0]
-  tenant_id               = octopusdeploy_tenant.america.id
+  tenant_id               = octopusdeploy_tenant.europe.id
   value                   = var.europe_azure_subscription_id
-  depends_on              = [octopusdeploy_tenant.america]
+  depends_on              = [octopusdeploy_tenant.europe]
 }
 
 resource "octopusdeploy_tenant_common_variable" "europe_azure_tenant_id" {
@@ -118,9 +118,9 @@ resource "octopusdeploy_tenant_common_variable" "europe_azure_tenant_id" {
     for tmp in data.octopusdeploy_library_variable_sets.azure.library_variable_sets[0].template :
     tmp.id if tmp.name == "Tenant.Azure.TenantId"
   ])[0]
-  tenant_id               = octopusdeploy_tenant.america.id
+  tenant_id               = octopusdeploy_tenant.europe.id
   value                   = var.europe_azure_tenant_id
-  depends_on              = [octopusdeploy_tenant.america]
+  depends_on              = [octopusdeploy_tenant.europe]
 }
 
 resource "octopusdeploy_tenant_common_variable" "europe_azure_password" {
@@ -129,7 +129,7 @@ resource "octopusdeploy_tenant_common_variable" "europe_azure_password" {
     for tmp in data.octopusdeploy_library_variable_sets.azure.library_variable_sets[0].template :
     tmp.id if tmp.name == "Tenant.Azure.Password"
   ])[0]
-  tenant_id               = octopusdeploy_tenant.america.id
+  tenant_id               = octopusdeploy_tenant.europe.id
   value                   = var.europe_azure_password
-  depends_on              = [octopusdeploy_tenant.america]
+  depends_on              = [octopusdeploy_tenant.europe]
 }
