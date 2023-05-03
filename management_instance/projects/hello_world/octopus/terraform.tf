@@ -42,6 +42,12 @@ data "octopusdeploy_library_variable_sets" "octopus_server" {
 resource "octopusdeploy_deployment_process" "deployment_process_project_hello_world" {
   project_id = "${octopusdeploy_project.project_hello_world.id}"
 
+  lifecycle {
+    ignore_changes = [
+      step,
+    ]
+  }
+
   step {
     condition           = "Success"
     name                = "Hello world (using Bash)"
