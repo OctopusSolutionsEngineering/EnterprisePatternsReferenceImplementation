@@ -1,3 +1,8 @@
+echo "Pulling the Cypress image"
+echo "##octopus[stdout-verbose]"
+docker pull octopussamples/cypress-included:12.8.1
+echo "##octopus[stdout-default]"
+
 cd octopub-cypress
 
 docker run -e "NO_COLOR=1" -e "CYPRESS_BASE_URL=https://#{Octopus.Action[Create Web App].Output.HostName}/" -v $PWD:/e2e -w /e2e octopussamples/cypress-included:12.8.1 2>&1
