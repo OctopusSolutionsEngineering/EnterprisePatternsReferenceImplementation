@@ -1,0 +1,1 @@
+This directory holds Terraform modules used to create the initial client spaces.

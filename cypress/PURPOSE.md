@@ -1,0 +1,1 @@
+This directory holds the source files for the Cypress end-to-end test.
