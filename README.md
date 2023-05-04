@@ -53,6 +53,7 @@ Shut the Octopus and Git stack down with:
 * Add one-to-many project deployments. [DONE]
 * Add merge all runbook
 * Add merge conflict check runbook
+* Add runbook variable scoping
 
 * Create development, test/production spaces.
 * Add sample project to development.
