@@ -22,6 +22,12 @@ data "octopusdeploy_library_variable_sets" "azure" {
   take = 1
 }
 
+data "octopusdeploy_library_variable_sets" "k8s" {
+  partial_name = "Kubernetes"
+  skip = 0
+  take = 1
+}
+
 data "octopusdeploy_environments" "development" {
   ids          = []
   partial_name = "Development"

@@ -27,6 +27,8 @@ services:
   octopus:
     ports:
       - "127.0.0.1:18080:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     privileged: true
     environment:
       - ADMIN_API_KEY=API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA

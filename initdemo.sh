@@ -231,6 +231,14 @@ terraform workspace select "Spaces-1"
 terraform apply -auto-approve -var=octopus_space_id=Spaces-1
 popd
 
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE lib_var_k8s"'
+pushd shared/variables/k8s/pgbackend
+terraform init -reconfigure -upgrade
+terraform workspace new "Spaces-1"
+terraform workspace select "Spaces-1"
+terraform apply -auto-approve -var=octopus_space_id=Spaces-1
+popd
+
 # Add the sample projects to the management instance
 docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE project_hello_world"'
 pushd management_instance/projects/hello_world/pgbackend
@@ -271,7 +279,10 @@ pushd management_instance/tenants/regional_tenants/pgbackend
 terraform init -reconfigure -upgrade
 terraform workspace new Spaces-1
 terraform workspace select Spaces-1
-terraform apply -auto-approve -var=octopus_space_id=Spaces-1
+terraform apply -auto-approve \
+  "-var=octopus_space_id=Spaces-1" \
+  "-var=america_k8s_cert=${COMBINED_CERT}" \
+  "-var=america_k8s_url=https://host.docker.internal:${CLUSTER_PORT}"
 popd
 
 # Add serialize and deploy runbooks to sample projects.
