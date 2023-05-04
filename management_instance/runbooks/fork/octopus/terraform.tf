@@ -236,6 +236,7 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_deploy
         "Octopus.Action.Script.ScriptSource" = "Inline"
         "Octopus.Action.Script.Syntax"       = "Bash"
         "Octopus.Action.Script.ScriptBody"   = <<EOT
+echo "Pulling postgres image"
 echo "##octopus[stdout-verbose]"
 docker pull postgres
 echo "##octopus[stdout-default]"
