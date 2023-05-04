@@ -5,8 +5,8 @@ terraform {
 }
 
 locals {
-  workspace     = "#{Octopus.Deployment.Tenant.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
-  new_repo      = "#{Octopus.Deployment.Tenant.Name | ToLower}_#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
+  workspace     = "#{Octopus.Deployment.Tenant.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_#{Exported.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
+  new_repo      = "#{Octopus.Deployment.Tenant.Name | ToLower}_#{OExported.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
   cac_org       = "octopuscac"
   cac_password  = "Password01!"
   cac_username  = "octopus"

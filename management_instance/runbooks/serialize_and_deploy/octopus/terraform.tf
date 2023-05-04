@@ -16,6 +16,22 @@ variable "project_name" {
   description = "The name of the project to attach the runbooks to."
 }
 
+variable "ignore_project_changes" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "Whether to ignore changes to properties in the exported project."
+  default     = "false"
+}
+
+variable "ignore_project_variable_changes" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "Whether to ignore changes in the exported project variables."
+  default     = "false"
+}
+
 data "octopusdeploy_worker_pools" "workerpool_default" {
   name = "Default Worker Pool"
   ids  = null
@@ -64,7 +80,7 @@ variable "runbook_backend_service_deploy_project_name" {
   default     = "2. Deploy Project"
 }
 
-resource "octopusdeploy_variable" "octopus_api_key" {
+resource "octopusdeploy_variable" "project_name" {
   name         = "Exported.Project.Name"
   type         = "String"
   description  = "The name of the new project"
@@ -77,6 +93,44 @@ resource "octopusdeploy_variable" "octopus_api_key" {
     description = "The name of the new project"
     label       = "Project Name"
     is_required = true
+  }
+}
+
+resource "octopusdeploy_variable" "ignore_project_changes" {
+  name         = "Exported.Project.IgnoreChanges"
+  type         = "String"
+  description  = "Select this option to ignore changes to the project once it is deployed."
+  is_sensitive = false
+  is_editable  = true
+  owner_id     = data.octopusdeploy_projects.project.projects[0].id
+  value        = "False"
+
+  prompt {
+    description = "Check this box to ignore changes to the deployed project"
+    label       = "Ignore Project Changes"
+    is_required = true
+    display_settings {
+      control_type = "Checkbox"
+    }
+  }
+}
+
+resource "octopusdeploy_variable" "ignore_project_variable_changes" {
+  name         = "Exported.Project.IgnoreVariableChanges"
+  type         = "String"
+  description  = "Select this option to ignore changes to the project's variables once it is deployed. This is implied by selecting the \"Ignore Project Changes\" option. "
+  is_sensitive = false
+  is_editable  = true
+  owner_id     = data.octopusdeploy_projects.project.projects[0].id
+  value        = "False"
+
+  prompt {
+    description = "Check this box to ignore changes to the deployed project's variables"
+    label       = "Ignore Project Variable Changes"
+    is_required = true
+    display_settings {
+      control_type = "Checkbox"
+    }
   }
 }
 
@@ -121,8 +175,11 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_serial
       is_required                        = false
       worker_pool_id                     = "${data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id}"
       properties                         = {
-        "Octopus.Action.Script.Syntax"       = "Bash"
-        "Octopus.Action.Script.ScriptBody"   = file("../../shared_scripts/serialize_project.sh")
+        "Octopus.Action.Script.Syntax"     = "Bash"
+        "Octopus.Action.Script.ScriptBody" = templatefile("../../shared_scripts/serialize_project.sh", {
+          ignore_project_changes          = var.ignore_project_changes
+          ignore_project_variable_changes = var.ignore_project_variable_changes
+        })
         "Octopus.Action.Script.ScriptSource" = "Inline"
       }
       environments          = []
@@ -226,7 +283,7 @@ EOT
       properties                         = {
         "Octopus.Action.Terraform.GoogleCloudAccount"           = "False"
         "Octopus.Action.Terraform.TemplateDirectory"            = "space_population"
-        "Octopus.Action.Terraform.AdditionalActionParams"       = "-var=\"octopus_server=#{ManagedTenant.Octopus.Server}\" -var=\"octopus_space_id=#{ManagedTenant.Octopus.SpaceId}\" -var=\"octopus_apikey=#{ManagedTenant.Octopus.ApiKey}\" -var=\"${local.project_name_variable}=#{Exported.Project.Name}}"
+        "Octopus.Action.Terraform.AdditionalActionParams"       = "-var=\"octopus_server=#{ManagedTenant.Octopus.Server}\" -var=\"octopus_space_id=#{ManagedTenant.Octopus.SpaceId}\" -var=\"octopus_apikey=#{ManagedTenant.Octopus.ApiKey}\" -var=\"${local.project_name_variable}=#{Exported.Project.Name}\" -var=\"ignore_project_changes=#{Exported.Project.IgnoreChanges}\" -var=\"ignoreProjectVariableChanges=#{Exported.Project.IgnoreVariableChanges}\""
         "Octopus.Action.Aws.AssumeRole"                         = "False"
         "Octopus.Action.Aws.Region"                             = ""
         "Octopus.Action.Terraform.AllowPluginDownloads"         = "True"

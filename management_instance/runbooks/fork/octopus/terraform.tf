@@ -5,17 +5,17 @@ terraform {
 }
 
 locals {
-  workspace        = "#{Octopus.Deployment.Tenant.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
-  new_repo         = "#{Octopus.Deployment.Tenant.Name | ToLower}_#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
-  cac_org          = "octopuscac"
-  cac_password     = "Password01!"
-  cac_username     = "octopus"
-  cac_host         = "gitea:3000"
-  cac_proto        = "http"
-  package          = "#{Octopus.Project.Name | Replace \"[^a-zA-Z0-9]\" \"_\"}"
-  # We know this value by convention
-  git_url_var_name = "project_#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_git_url"
-  template_repo    = "#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
+  workspace             = "#{Octopus.Deployment.Tenant.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_#{Exported.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
+  new_repo              = "#{Octopus.Deployment.Tenant.Name | ToLower}_#{Exported.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
+  project_name_variable = "project_#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_name"
+  cac_org               = "octopuscac"
+  cac_password          = "Password01!"
+  cac_username          = "octopus"
+  cac_host              = "gitea:3000"
+  cac_proto             = "http"
+  package               = "#{Octopus.Project.Name | Replace \"[^a-zA-Z0-9]\" \"_\"}"
+  git_url_var_name      = "project_#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_git_url"
+  template_repo         = "#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
 }
 
 variable "project_name" {
@@ -65,6 +65,22 @@ data "octopusdeploy_environments" "sync" {
   take         = 1
 }
 
+resource "octopusdeploy_variable" "octopus_api_key" {
+  name         = "Exported.Project.Name"
+  type         = "String"
+  description  = "The name of the new project"
+  is_sensitive = false
+  is_editable  = true
+  owner_id     = data.octopusdeploy_projects.project.projects[0].id
+  value        = "#{Octopus.Project.Name}"
+
+  prompt {
+    description = "The name of the new project"
+    label       = "Project Name"
+    is_required = true
+  }
+}
+
 variable "runbook_backend_service_deploy_project_name" {
   type        = string
   nullable    = false
@@ -80,7 +96,7 @@ resource "octopusdeploy_runbook" "runbook_backend_service_deploy_project" {
   environments                = [data.octopusdeploy_environments.sync.environments[0].id]
   force_package_download      = false
   default_guided_failure_mode = "EnvironmentDefault"
-  description                 = "This project forks the repoholding this project and deploys the package created by the Serialize Project runbook to a new space setting the CaC URL to the forked repo."
+  description                 = "This project forks the repo holding this project and deploys the package created by the Serialize Project runbook to a new space setting the CaC URL to the forked repo."
   multi_tenancy_mode          = "Tenanted"
 
   retention_policy {
@@ -258,7 +274,7 @@ EOT
       properties                         = {
         "Octopus.Action.Terraform.GoogleCloudAccount"           = "False"
         "Octopus.Action.Terraform.TemplateDirectory"            = "space_population"
-        "Octopus.Action.Terraform.AdditionalActionParams"       = "-var=\"octopus_server=#{ManagedTenant.Octopus.Server}\" -var=\"octopus_space_id=#{ManagedTenant.Octopus.SpaceId}\" -var=\"octopus_apikey=#{ManagedTenant.Octopus.ApiKey}\" -var=\"${local.git_url_var_name}=${local.cac_proto}://${local.cac_host}/${local.cac_org}/${local.new_repo}.git\""
+        "Octopus.Action.Terraform.AdditionalActionParams"       = "-var=\"octopus_server=#{ManagedTenant.Octopus.Server}\" -var=\"octopus_space_id=#{ManagedTenant.Octopus.SpaceId}\" -var=\"octopus_apikey=#{ManagedTenant.Octopus.ApiKey}\" -var=\"${local.git_url_var_name}=${local.cac_proto}://${local.cac_host}/${local.cac_org}/${local.new_repo}.git\" -var=\"${local.project_name_variable}=#{Exported.Project.Name}\""
         "Octopus.Action.Aws.AssumeRole"                         = "False"
         "Octopus.Action.Aws.Region"                             = ""
         "Octopus.Action.Terraform.AllowPluginDownloads"         = "True"

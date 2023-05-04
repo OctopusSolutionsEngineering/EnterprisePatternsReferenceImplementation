@@ -20,6 +20,14 @@ Shut the Octopus and Git stack down with:
 ./cleanup.sh
 ```
 
+# Goals
+
+* Deploy unmanaged project
+* Deploy managed project
+* Deploy shared project
+* Self-service projects
+* Deploy one-to-many
+
 # Todo
 
 * Create environment for synchronizing. [DONE]
@@ -38,6 +46,9 @@ Shut the Octopus and Git stack down with:
   * Ignore versioning strategy for CaC enabled projects.[DONE]
 * Add merge runbooks. [DONE]
 * Add ocl check during merge.
+* Add one-to-many project deployments
+* Add merge all runbook
+* Add merge conflict check runbook
 
 * Create development, test/production spaces.
 * Add sample project to development.
