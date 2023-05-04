@@ -118,11 +118,6 @@ resource octopusdeploy_kubernetes_cluster_deployment_target test_eks{
     namespace              = ""
     skip_tls_verification  = true
     default_worker_pool_id = ""
-
-    authentication {
-      authentication_type = "KubernetesCertificate"
-      client_certificate = octopusdeploy_certificate.certificate_kind_ca.id
-    }
   }
 
   certificate_authentication {

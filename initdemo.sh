@@ -352,10 +352,11 @@ docker-compose -f docker/compose.yml exec octopus sh -c 'echo "deb [signed-by=/u
 docker-compose -f docker/compose.yml exec octopus sh -c 'apt update'
 docker-compose -f docker/compose.yml exec octopus sh -c 'apt-get install -y terraform'
 docker-compose -f docker/compose.yml exec octopus sh -c 'curl -sL https://aka.ms/InstallAzureCLIDeb | bash'
-docker-compose -f docker/compose.yml exec octopus sh -c 'curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl; install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl"'
+docker-compose -f docker/compose.yml exec octopus sh -c 'curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"; install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl'
 
 # This gets a custom terraform provider build installed
-docker cp /home/matthew/Code/terraform-provider-octopusdeploy/terraform-provider-octopusdeploy docker_octopus_1:/terraform
+docker-compose -f docker/compose.yml exec octopus sh -c 'mkdir -p /terraform'
+docker cp /home/matthew/Code/terraform-provider-octopusdeploy/terraform-provider-octopusdeploy docker_octopus_1:/terraform/terraform-provider-octopusdeploy
 docker cp config/.terraformrc docker_octopus_1:/root
 
 # This installs octoterra locally
