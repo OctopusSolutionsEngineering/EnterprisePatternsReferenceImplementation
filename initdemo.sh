@@ -36,6 +36,12 @@ then
   exit 1
 fi
 
+# Start the Docker Compose stack
+pushd docker
+docker-compose pull
+docker-compose up -d
+popd
+
 # Create a new cluster
 kind create cluster --config k8s/kind.yml --name octopus --kubeconfig /tmp/octoconfig.yml
 CLUSTER_URL=$(docker run --rm -v /tmp:/workdir mikefarah/yq '.clusters[0].cluster.server' octoconfig.yml)
@@ -50,12 +56,6 @@ echo "${CLIENT_KEY_DATA}" | base64 -d > /tmp/kind.key
 openssl pkcs12 -export -name "test.com" -password "pass:Password01!" -out /tmp/kind.pfx -inkey /tmp/kind.key -in /tmp/kind.crt
 
 COMBINED_CERT=$(cat /tmp/kind.pfx | base64 -w0)
-
-# Start the Docker Compose stack
-pushd docker
-docker-compose pull
-docker-compose up -d
-popd
 
 # Set the initial Gitea user
 EXISTING=$(docker exec -it gitea su git bash -c "gitea admin user list")
