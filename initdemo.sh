@@ -301,6 +301,6 @@ docker-compose -f docker/compose.yml exec octopus sh -c 'wget -O- https://apt.re
 docker-compose -f docker/compose.yml exec octopus sh -c 'echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list'
 docker-compose -f docker/compose.yml exec octopus sh -c 'apt update'
 docker-compose -f docker/compose.yml exec octopus sh -c 'apt-get install -y terraform'
-docker-compose -f docker/compose.yml exec octopus sh -c 'curl --silent -L -o /usr/bin/octoterra https://github.com/OctopusSolutionsEngineering/OctopusTerraformExport/releases/latest/download/octoterra_linux_amd64'
+#docker-compose -f docker/compose.yml exec octopus sh -c 'curl --silent -L -o /usr/bin/octoterra https://github.com/OctopusSolutionsEngineering/OctopusTerraformExport/releases/latest/download/octoterra_linux_amd64'
 docker-compose -f docker/compose.yml exec octopus sh -c 'chmod +x /usr/bin/octoterra'
 docker-compose -f docker/compose.yml exec octopus sh -c 'curl -sL https://aka.ms/InstallAzureCLIDeb | bash'

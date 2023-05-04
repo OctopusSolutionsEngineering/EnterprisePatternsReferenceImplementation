@@ -81,6 +81,44 @@ resource "octopusdeploy_variable" "octopus_api_key" {
   }
 }
 
+resource "octopusdeploy_variable" "ignore_project_changes" {
+  name         = "Exported.Project.IgnoreChanges"
+  type         = "String"
+  description  = "Select this option to ignore changes to the project once it is deployed."
+  is_sensitive = false
+  is_editable  = true
+  owner_id     = data.octopusdeploy_projects.project.projects[0].id
+  value        = "False"
+
+  prompt {
+    description = "Check this box to ignore changes to the deployed project"
+    label       = "Ignore Project Changes"
+    is_required = true
+    display_settings {
+      control_type = "Checkbox"
+    }
+  }
+}
+
+resource "octopusdeploy_variable" "ignore_project_variable_changes" {
+  name         = "Exported.Project.IgnoreVariableChanges"
+  type         = "String"
+  description  = "Select this option to ignore changes to the project's variables once it is deployed. This is implied by selecting the \"Ignore Project Changes\" option. "
+  is_sensitive = false
+  is_editable  = true
+  owner_id     = data.octopusdeploy_projects.project.projects[0].id
+  value        = "False"
+
+  prompt {
+    description = "Check this box to ignore changes to the deployed project's variables. This is also enabled by selecting the \"Ignore Project Changes\" option. "
+    label       = "Ignore Project Variable Changes"
+    is_required = true
+    display_settings {
+      control_type = "Checkbox"
+    }
+  }
+}
+
 variable "runbook_backend_service_deploy_project_name" {
   type        = string
   nullable    = false

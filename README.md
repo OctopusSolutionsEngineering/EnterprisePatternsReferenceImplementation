@@ -28,6 +28,10 @@ Shut the Octopus and Git stack down with:
 * Self-service projects
 * Deploy one-to-many
 
+# Enterprise patterns MVP
+
+* Tenant for space
+
 # Todo
 
 * Create environment for synchronizing. [DONE]
