@@ -6,7 +6,10 @@ echo "##octopus[stdout-default]"
 # Find out the IP address of the Octopus container
 OCTOPUS=$(dig +short octopus)
 
-docker run "--add-host=octopus:$${OCTOPUS}" octopussamples/octoterra \
+docker run \
+  "--add-host=octopus:$${OCTOPUS}" \
+  -v "$${PWD}/export:/export" \
+  octopussamples/octoterra \
   -url "#{ThisInstance.Server.DockerUrl}"                                   `# the url of the instance` \
   -apiKey "#{ThisInstance.Api.Key}"                                         `# the api key used to access the instance` \
   -terraformBackend pg                                                      `# add a postgres backend to the generated modules` \
@@ -29,7 +32,7 @@ docker run "--add-host=octopus:$${OCTOPUS}" octopussamples/octoterra \
   -excludeProjectVariable "Exported.Project.Name"                           `# This variable is only used by the management runbooks, and se we don't want to include it in the export` \
   -excludeProjectVariable "Exported.Project.IgnoreChanges"                  `# This variable is only used by the management runbooks, and se we don't want to include it in the export` \
   -excludeProjectVariable "Exported.Project.IgnoreVariableChanges"          `# This variable is only used by the management runbooks, and se we don't want to include it in the export` \
-  -dest "$${PWD}/export"                                                    `# The directory where the exported files will be saved`
+  -dest "/export"                                                           `# The directory where the exported files will be saved`
 
 date=$(date '+%Y.%m.%d.%H%M%S')
 octo pack \
