@@ -39,6 +39,7 @@ fi
 # Create a new cluster
 kind create cluster --name octopus --kubeconfig /tmp/octoconfig.yml
 CLUSTER_URL=$(docker run --rm -v /tmp:/workdir mikefarah/yq '.clusters[0].cluster.server' octoconfig.yml)
+CLUSTER_PORT=${CLUSTER_URL: -5}
 CLIENT_CERTIFICATE_DATA=$(docker run --rm -v /tmp:/workdir mikefarah/yq '.users[0].user.client-certificate-data' octoconfig.yml)
 CLIENT_KEY_DATA=$(docker run --rm -v /tmp:/workdir mikefarah/yq '.users[0].user.client-key-data' octoconfig.yml)
 
