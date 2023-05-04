@@ -103,11 +103,11 @@ resource "octopusdeploy_variable" "ignore_project_changes" {
 resource "octopusdeploy_variable" "ignore_project_variable_changes" {
   name         = "Exported.Project.IgnoreVariableChanges"
   type         = "String"
-  description  = "Select this option to ignore changes to the project's variables once it is deployed. This is implied by selecting the \"Ignore Project Changes\" option. "
+  description  = "Select this option to ignore changes to the project's secret variables once it is deployed (note non-secret variables are managed by CaC). This is implied by selecting the \"Ignore Project Changes\" option. "
   is_sensitive = false
   is_editable  = true
   owner_id     = data.octopusdeploy_projects.project.projects[0].id
-  value        = "False"
+  value        = "True"
 
   prompt {
     description = "Check this box to ignore changes to the deployed project's variables. This is also enabled by selecting the \"Ignore Project Changes\" option. "
