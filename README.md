@@ -58,5 +58,5 @@ Shut the Octopus and Git stack down with:
 * Create development, test/production spaces.
 * Add sample project to development.
 * Use variable sets for database connection string.
-  * Allow variables to be ignored. 
+  * Allow variables to be ignored. [DONE]
 * Add promotion runbook.
