@@ -186,6 +186,14 @@ do
   terraform apply -auto-approve -var=octopus_space_id=$space
   popd
 
+  docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE project_group_k8s"'
+  pushd shared/project_group/k8s/pgbackend
+  terraform init -reconfigure -upgrade
+  terraform workspace new $space
+  terraform workspace select $space
+  terraform apply -auto-approve -var=octopus_space_id=$space
+  popd
+
   docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE lib_var_this_instance"'
   pushd shared/variables/this_instance/pgbackend
   terraform init -reconfigure -upgrade
