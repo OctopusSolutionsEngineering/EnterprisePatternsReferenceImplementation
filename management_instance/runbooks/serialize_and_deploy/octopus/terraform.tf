@@ -125,7 +125,7 @@ resource "octopusdeploy_variable" "ignore_project_variable_changes" {
   value        = "False"
 
   prompt {
-    description = "Check this box to ignore changes to the deployed project's variables"
+    description = "Check this box to ignore changes to the deployed project's variables. This is also enabled by selecting the \"Ignore Project Changes\" option. "
     label       = "Ignore Project Variable Changes"
     is_required = true
     display_settings {
