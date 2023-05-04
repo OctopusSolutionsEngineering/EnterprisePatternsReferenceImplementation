@@ -72,7 +72,10 @@ resource "octopusdeploy_project" "project_hello_world" {
   is_version_controlled                = false
   lifecycle_id                         = data.octopusdeploy_lifecycles.lifecycle_simple.lifecycles[0].id
   project_group_id                     = data.octopusdeploy_project_groups.project_group_azure.project_groups[0].id
-  included_library_variable_sets       = [data.octopusdeploy_library_variable_sets.octopus_server.library_variable_sets[0].id, data.octopusdeploy_library_variable_sets.azure.library_variable_sets[0].id]
+  included_library_variable_sets       = [
+    data.octopusdeploy_library_variable_sets.octopus_server.library_variable_sets[0].id,
+    data.octopusdeploy_library_variable_sets.azure.library_variable_sets[0].id
+  ]
   tenanted_deployment_participation    = "Untenanted"
 
   connectivity_policy {
@@ -123,30 +126,31 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_serial
       is_required                        = false
       worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
       properties                         = {
-        "Octopus.Action.Terraform.Template" = file("../terrform_scripts/azure.tf")
+        "Octopus.Action.Terraform.Template"           = file("../terrform_scripts/azure.tf")
         "Octopus.Action.Terraform.TemplateParameters" = jsonencode({
-          "azure_application_id" = "#{Tenant.Azure.ApplicationId}"
+          "azure_application_id"  = "#{Tenant.Azure.ApplicationId}"
           "azure_subscription_id" = "#{Tenant.Azure.SubscriptionId}"
-          "azure_password" = "#{Tenant.Azure.Password}"
-          "azure_tenant_id" = "#{Tenant.Azure.TenantId}"
-          "octopus_apikey" = "#{ManagedTenant.Octopus.ApiKey}"
-          "octopus_url" = "#{ManagedTenant.Octopus.Server}"
-          "octopus_space_id" = "#{ManagedTenant.Octopus.SpaceId}"
+          "azure_password"        = "#{Tenant.Azure.Password}"
+          "azure_tenant_id"       = "#{Tenant.Azure.TenantId}"
+          "octopus_apikey"        = "#{ManagedTenant.Octopus.ApiKey}"
+          "octopus_url"           = "#{ManagedTenant.Octopus.Server}"
+          "octopus_space_id"      = "#{ManagedTenant.Octopus.SpaceId}"
         })
-        "Octopus.Action.Aws.AssumeRole" = "False"
-        "Octopus.Action.Terraform.PlanJsonOutput" = "False"
-        "Octopus.Action.AwsAccount.UseInstanceRole" = "False"
-        "Octopus.Action.AwsAccount.Variable" = "AWS"
+        "Octopus.Action.Aws.AssumeRole"                         = "False"
+        "Octopus.Action.Terraform.PlanJsonOutput"               = "False"
+        "Octopus.Action.AwsAccount.UseInstanceRole"             = "False"
+        "Octopus.Action.AwsAccount.Variable"                    = "AWS"
         "Octopus.Action.Terraform.RunAutomaticFileSubstitution" = "True"
-        "Octopus.Action.GoogleCloud.ImpersonateServiceAccount" = "False"
-        "Octopus.Action.Aws.Region" = "ap-southeast-2"
-        "Octopus.Action.GoogleCloud.UseVMServiceAccount" = "True"
-        "OctopusUseBundledTooling" = "False"
-        "Octopus.Action.Terraform.ManagedAccount" = "None"
-        "Octopus.Action.Script.ScriptSource" = "Inline"
-        "Octopus.Action.Terraform.GoogleCloudAccount" = "False"
-        "Octopus.Action.Terraform.AzureAccount" = "False"
-        "Octopus.Action.Terraform.AllowPluginDownloads" = "True"
+        "Octopus.Action.GoogleCloud.ImpersonateServiceAccount"  = "False"
+        "Octopus.Action.Aws.Region"                             = "ap-southeast-2"
+        "Octopus.Action.GoogleCloud.UseVMServiceAccount"        = "True"
+        "OctopusUseBundledTooling"                              = "False"
+        "Octopus.Action.Terraform.ManagedAccount"               = "None"
+        "Octopus.Action.Script.ScriptSource"                    = "Inline"
+        "Octopus.Action.Terraform.GoogleCloudAccount"           = "False"
+        "Octopus.Action.Terraform.AzureAccount"                 = "False"
+        "Octopus.Action.Terraform.AllowPluginDownloads"         = "True"
+        "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name}"
       }
 
       environments          = []
