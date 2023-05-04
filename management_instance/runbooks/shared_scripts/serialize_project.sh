@@ -16,6 +16,7 @@
   -excludeLibraryVariableSet "Octopus Server"       `# This is library variable set used by excluded runbooks, and so we don't want to link to it in the export` \
   -excludeLibraryVariableSet "This Instance"        `# This is library variable set used by excluded runbooks, and so we don't want to link to it in the export` \
   -excludeLibraryVariableSet "Azure"                `# This is library variable set used by excluded runbooks, and so we don't want to link to it in the export` \
+  -excludeProjectVariable "Exported.Project.Name"   `# This variable is only used by the management runbooks, and se we don't want to include it in the export` \
   -dest "${PWD}/export"                             `# The directory where the exported files will be saved`
 
 date=$(date '+%Y.%m.%d.%H%M%S')

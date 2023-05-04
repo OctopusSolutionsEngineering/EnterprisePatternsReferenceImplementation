@@ -5,7 +5,8 @@ terraform {
 }
 
 locals {
-  workspace = "#{Octopus.Deployment.Tenant.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
+  workspace             = "#{Octopus.Deployment.Tenant.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_#{Exported.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
+  project_name_variable = "project_#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_name"
 }
 
 variable "project_name" {
@@ -63,6 +64,22 @@ variable "runbook_backend_service_deploy_project_name" {
   default     = "2. Deploy Project"
 }
 
+resource "octopusdeploy_variable" "octopus_api_key" {
+  name         = "Exported.Project.Name"
+  type         = "String"
+  description  = "The name of the new project"
+  is_sensitive = false
+  is_editable  = true
+  owner_id     = data.octopusdeploy_projects.project.projects[0].id
+  value        = "#{Octopus.Project.Name}"
+
+  prompt {
+    description = "The name of the new project"
+    label       = "Project Name"
+    is_required = true
+  }
+}
+
 resource "octopusdeploy_runbook" "runbook_backend_service_deploy_project" {
   name                        = var.runbook_backend_service_deploy_project_name
   project_id                  = data.octopusdeploy_projects.project.projects[0].id
@@ -112,7 +129,7 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_serial
       excluded_environments = []
       channels              = []
       tenant_tags           = []
-      features = []
+      features              = []
     }
 
     properties   = {}
@@ -209,7 +226,7 @@ EOT
       properties                         = {
         "Octopus.Action.Terraform.GoogleCloudAccount"           = "False"
         "Octopus.Action.Terraform.TemplateDirectory"            = "space_population"
-        "Octopus.Action.Terraform.AdditionalActionParams"       = "-var=\"octopus_server=#{ManagedTenant.Octopus.Server}\" -var=\"octopus_space_id=#{ManagedTenant.Octopus.SpaceId}\" -var=\"octopus_apikey=#{ManagedTenant.Octopus.ApiKey}\""
+        "Octopus.Action.Terraform.AdditionalActionParams"       = "-var=\"octopus_server=#{ManagedTenant.Octopus.Server}\" -var=\"octopus_space_id=#{ManagedTenant.Octopus.SpaceId}\" -var=\"octopus_apikey=#{ManagedTenant.Octopus.ApiKey}\" -var=\"${local.project_name_variable}=#{Exported.Project.Name}}"
         "Octopus.Action.Aws.AssumeRole"                         = "False"
         "Octopus.Action.Aws.Region"                             = ""
         "Octopus.Action.Terraform.AllowPluginDownloads"         = "True"
