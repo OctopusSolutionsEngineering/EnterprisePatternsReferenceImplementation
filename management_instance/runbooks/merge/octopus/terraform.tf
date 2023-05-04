@@ -68,7 +68,7 @@ variable "runbook_backend_service_deploy_project_name" {
   nullable    = false
   sensitive   = false
   description = "The name of the project exported from Deploy Project"
-  default     = "3. Merge Changes"
+  default     = "__ 3. Merge with Downstream Project"
 }
 
 resource "octopusdeploy_runbook" "runbook_merge_git" {

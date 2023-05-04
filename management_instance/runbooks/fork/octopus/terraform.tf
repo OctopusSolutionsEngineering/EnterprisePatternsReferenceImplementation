@@ -86,7 +86,7 @@ variable "runbook_backend_service_deploy_project_name" {
   nullable    = false
   sensitive   = false
   description = "The name of the project exported from Deploy Project"
-  default     = "2. Fork and Deploy Project"
+  default     = "__ 2. Fork and Deploy Project"
 }
 
 resource "octopusdeploy_runbook" "runbook_backend_service_deploy_project" {
@@ -151,7 +151,7 @@ variable "runbook_backend_service_serialize_project_name" {
   nullable    = false
   sensitive   = false
   description = "The name of the project exported from Serialize Project"
-  default     = "1. Serialize Project"
+  default     = "__ 1. Serialize Project"
 }
 
 resource "octopusdeploy_runbook" "runbook_backend_service_serialize_project" {
