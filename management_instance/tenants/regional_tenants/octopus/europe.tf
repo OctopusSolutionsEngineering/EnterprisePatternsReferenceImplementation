@@ -26,6 +26,20 @@ variable "europe_azure_tenant_id" {
   description = "The Azure tenant ID."
 }
 
+variable "europe_k8s_cert" {
+  type        = string
+  nullable    = false
+  sensitive   = true
+  description = "The K8s user cert."
+}
+
+variable "europe_k8s_url" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "The K8s URL."
+}
+
 resource "octopusdeploy_tenant" "europe" {
   name        = "Europe"
   description = "Tenant representing the European region Octopus space"
@@ -131,5 +145,27 @@ resource "octopusdeploy_tenant_common_variable" "europe_azure_password" {
   ])[0]
   tenant_id               = octopusdeploy_tenant.europe.id
   value                   = var.europe_azure_password
+  depends_on              = [octopusdeploy_tenant.europe]
+}
+
+resource "octopusdeploy_tenant_common_variable" "europe_k8s_cert" {
+  library_variable_set_id = data.octopusdeploy_library_variable_sets.k8s.library_variable_sets[0].id
+  template_id             = tolist([
+    for tmp in data.octopusdeploy_library_variable_sets.k8s.library_variable_sets[0].template :
+    tmp.id if tmp.name == "Tenant.K8S.CertificateData"
+  ])[0]
+  tenant_id               = octopusdeploy_tenant.europe.id
+  value                   = var.europe_k8s_cert
+  depends_on              = [octopusdeploy_tenant.europe]
+}
+
+resource "octopusdeploy_tenant_common_variable" "europe_k8s_url" {
+  library_variable_set_id = data.octopusdeploy_library_variable_sets.k8s.library_variable_sets[0].id
+  template_id             = tolist([
+    for tmp in data.octopusdeploy_library_variable_sets.k8s.library_variable_sets[0].template :
+    tmp.id if tmp.name == "Tenant.K8S.Url"
+  ])[0]
+  tenant_id               = octopusdeploy_tenant.europe.id
+  value                   = var.europe_k8s_url
   depends_on              = [octopusdeploy_tenant.europe]
 }

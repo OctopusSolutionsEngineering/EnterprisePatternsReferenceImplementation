@@ -282,7 +282,9 @@ terraform workspace select Spaces-1
 terraform apply -auto-approve \
   "-var=octopus_space_id=Spaces-1" \
   "-var=america_k8s_cert=${COMBINED_CERT}" \
-  "-var=america_k8s_url=https://host.docker.internal:${CLUSTER_PORT}"
+  "-var=america_k8s_url=https://host.docker.internal:${CLUSTER_PORT}" \
+  "-var=europe_k8s_cert=${COMBINED_CERT}" \
+  "-var=europe_k8s_url=https://host.docker.internal:${CLUSTER_PORT}"
 popd
 
 # Add serialize and deploy runbooks to sample projects.
