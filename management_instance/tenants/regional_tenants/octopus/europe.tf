@@ -71,6 +71,13 @@ resource "octopusdeploy_tenant" "europe" {
     ]
     project_id   = data.octopusdeploy_projects.project_init_space.projects[0].id
   }
+
+  project_environment {
+    environments = [
+      data.octopusdeploy_environments.sync.environments[0].id
+    ]
+    project_id   = data.octopusdeploy_projects.project_init_space_k8s.projects[0].id
+  }
 }
 
 data "octopusdeploy_spaces" "europe_space" {

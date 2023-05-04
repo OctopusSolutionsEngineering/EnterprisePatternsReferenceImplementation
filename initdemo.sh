@@ -44,9 +44,11 @@ CLIENT_CERTIFICATE_DATA=$(docker run --rm -v /tmp:/workdir mikefarah/yq '.users[
 CLIENT_KEY_DATA=$(docker run --rm -v /tmp:/workdir mikefarah/yq '.users[0].user.client-key-data' octoconfig.yml)
 
 echo "${CLIENT_CERTIFICATE_DATA}" | base64 -d > /tmp/kind.crt
-echo "${CLIENT_KEY_DATA}" | base64 -d >> /tmp/kind.crt
+echo "${CLIENT_KEY_DATA}" | base64 -d > /tmp/kind.key
 
-COMBINED_CERT=$(cat /tmp/kind.crt | base64 -w0)
+openssl pkcs12 -export -name "test.com" -password "pass:Password01!" -out /tmp/kind.pfx -inkey /tmp/kind.key -in /tmp/kind.crt
+
+COMBINED_CERT=$(cat /tmp/kind.pfx | base64 -w0)
 
 # Start the Docker Compose stack
 pushd docker
@@ -281,6 +283,15 @@ terraform workspace select Spaces-1
 terraform apply -auto-approve -var=octopus_space_id=Spaces-1
 popd
 
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE project_k8s_space_initialization"'
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE project_initialize_k8s_space"'
+pushd management_instance/projects/k8s_space_initialization/pgbackend
+terraform init -reconfigure -upgrade
+terraform workspace new Spaces-1
+terraform workspace select Spaces-1
+terraform apply -auto-approve -var=octopus_space_id=Spaces-1
+popd
+
 # Add the tenants
 docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE management_tenants"'
 pushd management_instance/tenants/regional_tenants/pgbackend
@@ -340,6 +351,13 @@ docker-compose -f docker/compose.yml exec octopus sh -c 'wget -O- https://apt.re
 docker-compose -f docker/compose.yml exec octopus sh -c 'echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list'
 docker-compose -f docker/compose.yml exec octopus sh -c 'apt update'
 docker-compose -f docker/compose.yml exec octopus sh -c 'apt-get install -y terraform'
-#docker-compose -f docker/compose.yml exec octopus sh -c 'curl --silent -L -o /usr/bin/octoterra https://github.com/OctopusSolutionsEngineering/OctopusTerraformExport/releases/latest/download/octoterra_linux_amd64'
-docker-compose -f docker/compose.yml exec octopus sh -c 'chmod +x /usr/bin/octoterra'
 docker-compose -f docker/compose.yml exec octopus sh -c 'curl -sL https://aka.ms/InstallAzureCLIDeb | bash'
+docker-compose -f docker/compose.yml exec octopus sh -c 'curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl; install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl"'
+
+# This gets a custom terraform provider build installed
+docker cp /home/matthew/Code/terraform-provider-octopusdeploy/terraform-provider-octopusdeploy docker_octopus_1:/terraform
+docker cp config/.terraformrc docker_octopus_1:/root
+
+# This installs octoterra locally
+#docker-compose -f docker/compose.yml exec octopus sh -c 'curl --silent -L -o /usr/bin/octoterra https://github.com/OctopusSolutionsEngineering/OctopusTerraformExport/releases/latest/download/octoterra_linux_amd64'
+#docker-compose -f docker/compose.yml exec octopus sh -c 'chmod +x /usr/bin/octoterra'
