@@ -16,22 +16,6 @@ variable "project_name" {
   description = "The name of the project to attach the runbooks to."
 }
 
-variable "ignore_project_changes" {
-  type        = string
-  nullable    = false
-  sensitive   = false
-  description = "Whether to ignore changes to properties in the exported project."
-  default     = "false"
-}
-
-variable "ignore_project_variable_changes" {
-  type        = string
-  nullable    = false
-  sensitive   = false
-  description = "Whether to ignore changes in the exported project variables."
-  default     = "false"
-}
-
 data "octopusdeploy_worker_pools" "workerpool_default" {
   name = "Default Worker Pool"
   ids  = null
@@ -176,10 +160,7 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_serial
       worker_pool_id                     = "${data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id}"
       properties                         = {
         "Octopus.Action.Script.Syntax"     = "Bash"
-        "Octopus.Action.Script.ScriptBody" = templatefile("../../shared_scripts/serialize_project.sh", {
-          ignore_project_changes          = var.ignore_project_changes
-          ignore_project_variable_changes = var.ignore_project_variable_changes
-        })
+        "Octopus.Action.Script.ScriptBody" = templatefile("../../shared_scripts/serialize_project.sh", {})
         "Octopus.Action.Script.ScriptSource" = "Inline"
       }
       environments          = []
@@ -283,7 +264,7 @@ EOT
       properties                         = {
         "Octopus.Action.Terraform.GoogleCloudAccount"           = "False"
         "Octopus.Action.Terraform.TemplateDirectory"            = "space_population"
-        "Octopus.Action.Terraform.AdditionalActionParams"       = "-var=\"octopus_server=#{ManagedTenant.Octopus.Server}\" -var=\"octopus_space_id=#{ManagedTenant.Octopus.SpaceId}\" -var=\"octopus_apikey=#{ManagedTenant.Octopus.ApiKey}\" -var=\"${local.project_name_variable}=#{Exported.Project.Name}\" -var=\"ignore_project_changes=#{Exported.Project.IgnoreChanges}\" -var=\"ignoreProjectVariableChanges=#{Exported.Project.IgnoreVariableChanges}\""
+        "Octopus.Action.Terraform.AdditionalActionParams"       = "-var=\"octopus_server=#{ManagedTenant.Octopus.Server}\" -var=\"octopus_space_id=#{ManagedTenant.Octopus.SpaceId}\" -var=\"octopus_apikey=#{ManagedTenant.Octopus.ApiKey}\" -var=\"${local.project_name_variable}=#{Exported.Project.Name}\""
         "Octopus.Action.Aws.AssumeRole"                         = "False"
         "Octopus.Action.Aws.Region"                             = ""
         "Octopus.Action.Terraform.AllowPluginDownloads"         = "True"
