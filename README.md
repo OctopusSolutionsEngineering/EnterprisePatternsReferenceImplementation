@@ -37,7 +37,7 @@ Shut the Octopus and Git stack down with:
 * Create environment for synchronizing. [DONE]
 * Scope runbooks to sync environment. [DONE]
 * Add managed project deployment. [DONE]
-* Add unmanaged project deployment.
+* Add unmanaged project deployment. [DONE]
 * Add self-service project deployment.
   * Add management instance shared variables.
   * deploy a "run a runbook" step
@@ -50,7 +50,7 @@ Shut the Octopus and Git stack down with:
   * Ignore versioning strategy for CaC enabled projects.[DONE]
 * Add merge runbooks. [DONE]
 * Add ocl check during merge.
-* Add one-to-many project deployments
+* Add one-to-many project deployments. [DONE]
 * Add merge all runbook
 * Add merge conflict check runbook
 
