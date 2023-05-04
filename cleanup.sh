@@ -9,3 +9,5 @@ do
   fi
 done
 popd || exit
+
+kind delete cluster --name octopus

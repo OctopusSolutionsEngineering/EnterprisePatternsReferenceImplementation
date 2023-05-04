@@ -24,11 +24,28 @@ then
   exit 1
 fi
 
+if ! which kind
+then
+  echo "You must install kind: https://kind.sigs.k8s.io/docs/user/quick-start/"
+  exit 1
+fi
+
 if [[ -z "${OCTOPUS_SERVER_BASE64_LICENSE}" ]]
 then
   echo "You must set the OCTOPUS_SERVER_BASE64_LICENSE environment variable to the base 64 encoded representation of an Octopus license."
   exit 1
 fi
+
+# Create a new cluster
+kind create cluster --name octopus --kubeconfig /tmp/octoconfig.yml
+CLUSTER_URL=$(docker run --rm -v /tmp:/workdir mikefarah/yq '.clusters[0].cluster.server' octoconfig.yml)
+CLIENT_CERTIFICATE_DATA=$(docker run --rm -v /tmp:/workdir mikefarah/yq '.users[0].user.client-certificate-data' octoconfig.yml)
+CLIENT_KEY_DATA=$(docker run --rm -v /tmp:/workdir mikefarah/yq '.users[0].user.client-key-data' octoconfig.yml)
+
+echo "${CLIENT_CERTIFICATE_DATA}" | base64 -d > /tmp/kind.crt
+echo "${CLIENT_KEY_DATA}" | base64 -d >> /tmp/kind.crt
+
+COMBINED_CERT=$(cat /tmp/kind.crt | base64 -w0)
 
 # Start the Docker Compose stack
 pushd docker
