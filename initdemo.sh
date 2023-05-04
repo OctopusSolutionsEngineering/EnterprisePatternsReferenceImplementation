@@ -37,8 +37,9 @@ then
 fi
 
 # Create a new cluster
-kind create cluster --name octopus --kubeconfig /tmp/octoconfig.yml
+kind create cluster --config k8s/kind.yml --name octopus --kubeconfig /tmp/octoconfig.yml
 CLUSTER_URL=$(docker run --rm -v /tmp:/workdir mikefarah/yq '.clusters[0].cluster.server' octoconfig.yml)
+DOCKER_HOST_IP=$(docker network inspect docker_octopus | jq -r '.[0].IPAM.Config[0].Gateway')
 CLUSTER_PORT=${CLUSTER_URL: -5}
 CLIENT_CERTIFICATE_DATA=$(docker run --rm -v /tmp:/workdir mikefarah/yq '.users[0].user.client-certificate-data' octoconfig.yml)
 CLIENT_KEY_DATA=$(docker run --rm -v /tmp:/workdir mikefarah/yq '.users[0].user.client-key-data' octoconfig.yml)
@@ -301,9 +302,9 @@ terraform workspace select Spaces-1
 terraform apply -auto-approve \
   "-var=octopus_space_id=Spaces-1" \
   "-var=america_k8s_cert=${COMBINED_CERT}" \
-  "-var=america_k8s_url=https://host.docker.internal:${CLUSTER_PORT}" \
+  "-var=america_k8s_url=https://${DOCKER_HOST_IP}:${CLUSTER_PORT}" \
   "-var=europe_k8s_cert=${COMBINED_CERT}" \
-  "-var=europe_k8s_url=https://host.docker.internal:${CLUSTER_PORT}"
+  "-var=europe_k8s_url=https://${DOCKER_HOST_IP}:${CLUSTER_PORT}"
 popd
 
 # Add serialize and deploy runbooks to sample projects.
