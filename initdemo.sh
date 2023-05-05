@@ -104,7 +104,7 @@ curl \
   --data '{"username": "octopuscac"}'
 
 # Create the repos and populate with an initial commit.
-for repo in europe_product_service europe_frontend america_product_service america_frontend hello_world_cac azure_web_app_cac
+for repo in europe_product_service europe_frontend america_product_service america_frontend hello_world_cac azure_web_app_cac k8s_microservice_template
 do
   # Create the repo
   curl \
@@ -286,6 +286,14 @@ popd
 
 docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE project_azure_web_app_cac"'
 pushd management_instance/projects/azure_web_app_cac/pgbackend
+terraform init -reconfigure -upgrade
+terraform workspace new Spaces-1
+terraform workspace select Spaces-1
+terraform apply -auto-approve -var=octopus_space_id=Spaces-1
+popd
+
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE project_k8s_microservice"'
+pushd management_instance/projects/k8s_microservice/pgbackend
 terraform init -reconfigure -upgrade
 terraform workspace new Spaces-1
 terraform workspace select Spaces-1
