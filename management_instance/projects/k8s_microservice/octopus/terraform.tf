@@ -57,6 +57,15 @@ resource "octopusdeploy_variable" "k8s_application_group" {
   is_sensitive = false
 }
 
+resource "octopusdeploy_variable" "k8s_port" {
+  owner_id     = octopusdeploy_project.project_ad_service.id
+  value        = "9555"
+  name         = "Kubernetes.Application.Port"
+  type         = "String"
+  description  = "The port exposed by the application."
+  is_sensitive = false
+}
+
 resource "octopusdeploy_variable" "ad_service_octopusprintvariables_1" {
   owner_id     = "${octopusdeploy_project.project_ad_service.id}"
   value        = "${var.ad_service_octopusprintvariables_1}"
@@ -117,14 +126,14 @@ resource "octopusdeploy_deployment_process" "deployment_process_project_ad_servi
         "Octopus.Action.KubernetesContainers.PodSecurityRunAsGroup"         = "1000"
         "Octopus.Action.KubernetesContainers.DeploymentWait"                = "Wait"
         "Octopus.Action.KubernetesContainers.DeploymentStyle"               = "RollingUpdate"
-        "Octopus.Action.KubernetesContainers.Namespace"                     = "#{Octopus.Space.Name | Replace \"[^A-Za-z0-9]\" \"_\" | ToLower}-#{Kubernetes.Application.Group}-#{Octopus.Environment.Name | Replace \" .*\" \"\" | ToLower}"
+        "Octopus.Action.KubernetesContainers.Namespace"                     = "#{Octopus.Space.Name | Replace \"[^A-Za-z0-9]\" \"-\" | ToLower}-#{Kubernetes.Application.Group}-#{Octopus.Environment.Name | Replace \" .*\" \"\" | ToLower}"
         "Octopus.Action.KubernetesContainers.PodAntiAffinity"               = jsonencode([])
         "OctopusUseBundledTooling"                                          = "False"
         "Octopus.Action.KubernetesContainers.CombinedVolumes"               = jsonencode([])
         "Octopus.Action.KubernetesContainers.NodeAffinity"                  = jsonencode([])
         "Octopus.Action.KubernetesContainers.Tolerations"                   = jsonencode([])
         "Octopus.Action.KubernetesContainers.PodAnnotations"                = jsonencode([])
-        "Octopus.Action.KubernetesContainers.DeploymentName"                = "#{Octopus.Action.Package[service].PackageId | Replace \"[^A-Za-z0-9]\" \"_\" | ToLower}#{unless Octopus.Release.Channel.Name == \"Mainline\"}-#{Octopus.Release.Channel.Name}#{/unless}"
+        "Octopus.Action.KubernetesContainers.DeploymentName"                = "#{Octopus.Action.Package[service].PackageId | Replace \"[^A-Za-z0-9]\" \"-\" | ToLower}#{unless Octopus.Release.Channel.Name == \"Mainline\"}-#{Octopus.Release.Channel.Name}#{/unless}"
         "Octopus.Action.KubernetesContainers.PodAffinity"                   = jsonencode([])
         "Octopus.Action.KubernetesContainers.IngressAnnotations"            = jsonencode([])
         "Octopus.Action.KubernetesContainers.Containers"                    = jsonencode([
@@ -136,7 +145,7 @@ resource "octopusdeploy_deployment_process" "deployment_process_project_ad_servi
             "EnvironmentVariables"          = [
               {
                 "key"   = "PORT"
-                "value" = "9555"
+                "value" = "#{Kubernetes.Application.Port}"
               },
               {
                 "key"   = "DISABLE_STATS"
@@ -177,7 +186,7 @@ resource "octopusdeploy_deployment_process" "deployment_process_project_ad_servi
               "exec"           = {
                 "command" = [
                   "/bin/grpc_health_probe",
-                  "-addr=:9555",
+                  "-addr=:#{Kubernetes.Application.Port}",
                 ]
               }
               "successThreshold"    = ""
@@ -238,7 +247,7 @@ resource "octopusdeploy_deployment_process" "deployment_process_project_ad_servi
               "exec" = {
                 "command" = [
                   "/bin/grpc_health_probe",
-                  "-addr=:9555",
+                  "-addr=:#{Kubernetes.Application.Port}",
                 ]
               }
               "initialDelaySeconds" = "20"
@@ -266,7 +275,7 @@ resource "octopusdeploy_deployment_process" "deployment_process_project_ad_servi
             "PackageId"                    = "octopussamples/adservice"
             "Ports"                        = [
               {
-                "value" = "9555"
+                "value" = "#{Kubernetes.Application.Port}"
               },
             ]
             "SecretEnvFromSource" = []
@@ -275,18 +284,18 @@ resource "octopusdeploy_deployment_process" "deployment_process_project_ad_servi
         "Octopus.Action.KubernetesContainers.DnsConfigOptions" = jsonencode([])
         "Octopus.Action.KubernetesContainers.ServicePorts"     = jsonencode([
           {
-            "port"       = "9555"
-            "targetPort" = "9555"
+            "port"       = "#{Kubernetes.Application.Port}"
+            "targetPort" = "#{Kubernetes.Application.Port}"
             "name"       = "grpc"
           },
         ])
         "Octopus.Action.KubernetesContainers.DeploymentLabels" = jsonencode({
-          "app" = "#{Octopus.Action.Package[service].PackageId | Replace \"[^A-Za-z0-9]\" \"_\" | ToLower}"
+          "app" = "#{Octopus.Action.Package[service].PackageId | Replace \"[^A-Za-z0-9]\" \"-\" | ToLower}"
         })
         "Octopus.Action.KubernetesContainers.PodSecurityRunAsUser"    = "1000"
         "Octopus.Action.KubernetesContainers.PodSecurityFsGroup"      = "1000"
         "Octopus.Action.KubernetesContainers.Replicas"                = "1"
-        "Octopus.Action.KubernetesContainers.ServiceName"             = "#{Octopus.Action.Package[service].PackageId | Replace \"[^A-Za-z0-9]\" \"_\" | ToLower}#{unless Octopus.Release.Channel.Name == \"Mainline\"}-#{Octopus.Release.Channel.Name}#{/unless}"
+        "Octopus.Action.KubernetesContainers.ServiceName"             = "#{Octopus.Action.Package[service].PackageId | Replace \"[^A-Za-z0-9]\" \"-\" | ToLower}#{unless Octopus.Release.Channel.Name == \"Mainline\"}-#{Octopus.Release.Channel.Name}#{/unless}"
         "Octopus.Action.KubernetesContainers.LoadBalancerAnnotations" = jsonencode([])
       }
 
