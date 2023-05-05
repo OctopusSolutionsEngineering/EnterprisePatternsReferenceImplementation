@@ -36,6 +36,12 @@ then
   exit 1
 fi
 
+if ! which jq
+then
+  echo "You must install jq"
+  exit 1
+fi
+
 if [[ -z "${OCTOPUS_SERVER_BASE64_LICENSE}" ]]
 then
   echo "You must set the OCTOPUS_SERVER_BASE64_LICENSE environment variable to the base 64 encoded representation of an Octopus license."
@@ -50,6 +56,16 @@ popd
 
 # Create a new cluster with a custom configuration that binds to all network addresses
 kind create cluster --config k8s/kind.yml --name octopus --kubeconfig /tmp/octoconfig.yml
+
+max_retry=6
+counter=0
+until [[ -n $(docker run --rm -v /tmp:/workdir mikefarah/yq '.clusters[0].cluster.server' octoconfig.yml) ]]
+do
+   sleep 10
+   [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
+   echo "Waiting for Docker network. Try #$counter"
+   ((counter++))
+done
 
 # Extract the cluster URL. This will be a 127.0.0.1 address though, which is not quite what we need.
 CLUSTER_URL=$(docker run --rm -v /tmp:/workdir mikefarah/yq '.clusters[0].cluster.server' octoconfig.yml)
