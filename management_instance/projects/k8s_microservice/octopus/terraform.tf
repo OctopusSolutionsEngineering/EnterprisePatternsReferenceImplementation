@@ -7,7 +7,7 @@ terraform {
 locals {
   # This value is used in a few places, like the deployment name. It is the name of the Docker image, minus the repo, lowercase, and with
   # special chars removed.
-  app_name = "#{Octopus.Action.Package[service].PackageId | Replace \"^.*/\" \"\" | Replace \"[^A-Za-z0-9]\" \"-\" | ToLower}"
+  app_name = "#{Octopus.Action[Deploy App].Package[service].PackageId | Replace \"^.*/\" \"\" | Replace \"[^A-Za-z0-9]\" \"-\" | ToLower}"
 }
 
 data "octopusdeploy_project_groups" "project_group_google_microservice_demo" {
@@ -115,6 +115,52 @@ resource "octopusdeploy_deployment_process" "deployment_process_project_ad_servi
 
   step {
     condition           = "Success"
+    name                = "Deploy Env Var ConfigMap"
+    package_requirement = "LetOctopusDecide"
+    start_trigger       = "StartAfterPrevious"
+
+    action {
+      action_type                        = "Octopus.KubernetesDeployRawYaml"
+      name                               = "Deploy Env Var ConfigMap"
+      condition                          = "Success"
+      run_on_server                      = true
+      is_disabled                        = false
+      can_be_used_for_project_versioning = false
+      is_required                        = false
+      worker_pool_id                     = ""
+      worker_pool_variable               = ""
+      properties                         = {
+        "Octopus.Action.KubernetesContainers.CustomResourceYaml" = <<EOT
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: "#{Octopus.Space.Name | Replace \"[^A-Za-z0-9]\" \"-\" | ToLower}-#{Kubernetes.Application.Group}-#{Octopus.Environment.Name | Replace \" .*\" \"\" | ToLower}"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "${local.app_name}#{unless Octopus.Release.Channel.Name == \"Mainline\"}-#{Octopus.Release.Channel.Name}#{/unless}"
+  namespace: "#{Octopus.Space.Name | Replace \"[^A-Za-z0-9]\" \"-\" | ToLower}-#{Kubernetes.Application.Group}-#{Octopus.Environment.Name | Replace \" .*\" \"\" | ToLower}"
+data:
+  # Replace the properties below with your own environment variables
+  KEY1: Value1
+  KEY2: Value2
+EOT
+        "Octopus.Action.Script.ScriptSource" = "Inline"
+      }
+      environments                       = []
+      excluded_environments              = []
+      channels                           = []
+      tenant_tags                        = []
+      features                           = []
+    }
+
+    properties   = {}
+    target_roles = ["k8s"]
+  }
+
+  step {
+    condition           = "Success"
     name                = "Deploy App"
     package_requirement = "LetOctopusDecide"
     start_trigger       = "StartAfterPrevious"
@@ -155,21 +201,17 @@ resource "octopusdeploy_deployment_process" "deployment_process_project_ad_servi
           {
             "AcquisitionLocation"           = "NotAcquired"
             "Args"                          = []
-            "ConfigMapEnvFromSource"        = []
+            "ConfigMapEnvFromSource" = [
+              {
+                "key" = "${local.app_name}#{unless Octopus.Release.Channel.Name == \"Mainline\"}-#{Octopus.Release.Channel.Name}#{/unless}"
+              },
+            ]
             "ConfigMapEnvironmentVariables" = []
             "EnvironmentVariables"          = [
               {
                 "key"   = "PORT"
                 "value" = "#{Kubernetes.Application.Port}"
-              },
-              {
-                "key"   = "DISABLE_STATS"
-                "value" = "1"
-              },
-              {
-                "key"   = "DISABLE_TRACING"
-                "value" = "1"
-              },
+              }
             ]
             "FeedId"       = "${data.octopusdeploy_feeds.feed_docker_hub.feeds[0].id}"
             "IsNew"        = "true"
