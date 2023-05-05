@@ -348,7 +348,7 @@ popd
 # Add serialize and deploy runbooks to sample projects.
 # These runbooks are common across these kinds of projects, but benefit from being able to reference the project they
 # are associated with. So they are linked up to each project individually, even though they all come from the same source.
-for project in "Hello World"
+for project in "Hello World" "K8S Microservice Template"
 do
   docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE serialize_and_deploy"'
   pushd management_instance/runbooks/serialize_and_deploy/pgbackend

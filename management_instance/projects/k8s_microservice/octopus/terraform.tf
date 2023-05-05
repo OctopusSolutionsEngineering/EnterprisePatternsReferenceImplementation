@@ -46,6 +46,18 @@ data "octopusdeploy_worker_pools" "workerpool_default" {
   take = 1
 }
 
+data "octopusdeploy_library_variable_sets" "octopus_server" {
+  partial_name = "Octopus Server"
+  skip         = 0
+  take         = 1
+}
+
+data "octopusdeploy_library_variable_sets" "variable" {
+  partial_name = "This Instance"
+  skip         = 0
+  take         = 1
+}
+
 variable "ad_service_octopusprintvariables_1" {
   type        = string
   nullable    = false
@@ -424,7 +436,10 @@ resource "octopusdeploy_project" "project_ad_service" {
   is_version_controlled                = false
   lifecycle_id                         = "${data.octopusdeploy_lifecycles.lifecycle_application.lifecycles[0].id}"
   project_group_id                     = "${data.octopusdeploy_project_groups.project_group_google_microservice_demo.project_groups[0].id}"
-  included_library_variable_sets       = []
+  included_library_variable_sets       = [
+    data.octopusdeploy_library_variable_sets.variable.library_variable_sets[0].id,
+    data.octopusdeploy_library_variable_sets.octopus_server.library_variable_sets[0].id
+  ]
   tenanted_deployment_participation    = "Untenanted"
 
   connectivity_policy {
