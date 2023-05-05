@@ -4,42 +4,6 @@ terraform {
   }
 }
 
-terraform {
-  backend "pg" {
-    conn_str = "postgres://terraform:terraform@terraformdb:5432/project_k8s_space_initialization?sslmode=disable"
-  }
-}
-
-variable "octopus_space_id" {
-  type        = string
-  nullable    = false
-  sensitive   = false
-  description = "The ID of the Octopus space to populate."
-  default     = "Spaces-1"
-}
-
-variable "octopus_url" {
-  type        = string
-  nullable    = false
-  sensitive   = false
-  description = "The ID of the Octopus space to populate."
-  default     = "Spaces-1"
-}
-
-variable "octopus_apikey" {
-  type        = string
-  nullable    = false
-  sensitive   = false
-  description = "The ID of the Octopus space to populate."
-  default     = "Spaces-1"
-}
-
-provider "octopusdeploy" {
-  address  = var.octopus_url
-  api_key  = var.octopus_apikey
-  space_id = var.octopus_space_id
-}
-
 data "octopusdeploy_machine_policies" "default_machine_policy" {
   ids          = null
   partial_name = "Default Machine Policy"

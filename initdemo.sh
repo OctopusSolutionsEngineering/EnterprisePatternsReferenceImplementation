@@ -242,6 +242,19 @@ terraform workspace select "Spaces-1"
 terraform apply -auto-approve -var=octopus_space_id=Spaces-1
 popd
 
+# Setup targets
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE target_k8s"'
+pushd shared/targets/k8s/pgbackend
+terraform init -reconfigure -upgrade
+terraform workspace new "Spaces-1"
+terraform workspace select "Spaces-1"
+terraform apply \
+  -auto-approve \
+  -var=octopus_space_id=Spaces-1 \
+  "-var=k8s_cluster_url=https://${DOCKER_HOST_IP}:${CLUSTER_PORT}" \
+  "-var=k8s_client_cert=${COMBINED_CERT}"
+popd
+
 # Setup library variable sets
 docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE lib_var_octopus_server"'
 pushd shared/variables/octopus_server/pgbackend

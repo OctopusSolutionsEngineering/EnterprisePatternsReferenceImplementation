@@ -48,6 +48,15 @@ variable "ad_service_octopusprintvariables_1" {
   default     = "False"
 }
 
+resource "octopusdeploy_variable" "k8s_application_group" {
+  owner_id     = octopusdeploy_project.project_ad_service.id
+  value        = "test"
+  name         = "Kubernetes.Application.Group"
+  type         = "String"
+  description  = "The name of the application group, which is used to construct the namespace the microservices are placed into."
+  is_sensitive = false
+}
+
 resource "octopusdeploy_variable" "ad_service_octopusprintvariables_1" {
   owner_id     = "${octopusdeploy_project.project_ad_service.id}"
   value        = "${var.ad_service_octopusprintvariables_1}"
@@ -108,7 +117,7 @@ resource "octopusdeploy_deployment_process" "deployment_process_project_ad_servi
         "Octopus.Action.KubernetesContainers.PodSecurityRunAsGroup"         = "1000"
         "Octopus.Action.KubernetesContainers.DeploymentWait"                = "Wait"
         "Octopus.Action.KubernetesContainers.DeploymentStyle"               = "RollingUpdate"
-        "Octopus.Action.KubernetesContainers.Namespace"                     = "#{Octopus.Space.Name | Replace \"[^A-Za-z0-9]\" \"_\" | ToLower}-onlineboutique-#{Octopus.Environment.Name | Replace \" .*\" \"\" | ToLower}"
+        "Octopus.Action.KubernetesContainers.Namespace"                     = "#{Octopus.Space.Name | Replace \"[^A-Za-z0-9]\" \"_\" | ToLower}-#{Kubernetes.Application.Group}-#{Octopus.Environment.Name | Replace \" .*\" \"\" | ToLower}"
         "Octopus.Action.KubernetesContainers.PodAntiAffinity"               = jsonencode([])
         "OctopusUseBundledTooling"                                          = "False"
         "Octopus.Action.KubernetesContainers.CombinedVolumes"               = jsonencode([])
