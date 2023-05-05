@@ -66,6 +66,15 @@ resource "octopusdeploy_variable" "k8s_port" {
   is_sensitive = false
 }
 
+resource "octopusdeploy_variable" "k8s_image" {
+  owner_id     = octopusdeploy_project.project_ad_service.id
+  value        = "octopussamples/adservice"
+  name         = "Kubernetes.Application.Image"
+  type         = "String"
+  description  = "The Docker image deployed by this application."
+  is_sensitive = false
+}
+
 resource "octopusdeploy_variable" "ad_service_octopusprintvariables_1" {
   owner_id     = "${octopusdeploy_project.project_ad_service.id}"
   value        = "${var.ad_service_octopusprintvariables_1}"
@@ -272,7 +281,7 @@ resource "octopusdeploy_deployment_process" "deployment_process_project_ad_servi
             "FieldRefEnvironmentVariables" = []
             "InitContainer"                = "False"
             "Lifecycle"                    = {}
-            "PackageId"                    = "octopussamples/adservice"
+            "PackageId"                    = "#{Kubernetes.Application.Image}"
             "Ports"                        = [
               {
                 "value" = "#{Kubernetes.Application.Port}"
@@ -306,7 +315,7 @@ resource "octopusdeploy_deployment_process" "deployment_process_project_ad_servi
 
       package {
         name                      = "service"
-        package_id                = "octopussamples/adservice"
+        package_id                = "#{Kubernetes.Application.Image}"
         acquisition_location      = "NotAcquired"
         extract_during_deployment = false
         feed_id                   = "${data.octopusdeploy_feeds.feed_docker_hub.feeds[0].id}"
