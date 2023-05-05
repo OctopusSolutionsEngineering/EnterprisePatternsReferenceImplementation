@@ -81,6 +81,15 @@ resource "octopusdeploy_variable" "k8s_image" {
   is_sensitive = false
 }
 
+resource "octopusdeploy_variable" "k8s_env_vars" {
+  owner_id     = octopusdeploy_project.project_ad_service.id
+  value        = "KEY1: Value1\nKEY2: Value2"
+  name         = "Kubernetes.Application.EnvVars"
+  type         = "String"
+  description  = "Replace this variable with key value pairs that make up the microservice env vars."
+  is_sensitive = false
+}
+
 resource "octopusdeploy_variable" "ad_service_octopusprintvariables_1" {
   owner_id     = "${octopusdeploy_project.project_ad_service.id}"
   value        = "${var.ad_service_octopusprintvariables_1}"
@@ -131,28 +140,22 @@ resource "octopusdeploy_deployment_process" "deployment_process_project_ad_servi
       worker_pool_variable               = ""
       properties                         = {
         "Octopus.Action.KubernetesContainers.CustomResourceYaml" = <<EOT
-kind: Namespace
-apiVersion: v1
-metadata:
-  name: "#{Octopus.Space.Name | Replace \"[^A-Za-z0-9]\" \"-\" | ToLower}-#{Kubernetes.Application.Group}-#{Octopus.Environment.Name | Replace \" .*\" \"\" | ToLower}"
----
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: "${local.app_name}#{unless Octopus.Release.Channel.Name == \"Mainline\"}-#{Octopus.Release.Channel.Name}#{/unless}"
   namespace: "#{Octopus.Space.Name | Replace \"[^A-Za-z0-9]\" \"-\" | ToLower}-#{Kubernetes.Application.Group}-#{Octopus.Environment.Name | Replace \" .*\" \"\" | ToLower}"
 data:
-  # Replace the properties below with your own environment variables
-  KEY1: Value1
-  KEY2: Value2
+#{Kubernetes.Application.EnvVars | Indent 2}
 EOT
-        "Octopus.Action.Script.ScriptSource" = "Inline"
+        "Octopus.Action.Script.ScriptSource"                     = "Inline"
+        "Octopus.Action.KubernetesContainers.Namespace"          = "#{Octopus.Space.Name | Replace \"[^A-Za-z0-9]\" \"-\" | ToLower}-#{Kubernetes.Application.Group}-#{Octopus.Environment.Name | Replace \" .*\" \"\" | ToLower}"
       }
-      environments                       = []
-      excluded_environments              = []
-      channels                           = []
-      tenant_tags                        = []
-      features                           = []
+      environments          = []
+      excluded_environments = []
+      channels              = []
+      tenant_tags           = []
+      features              = []
     }
 
     properties   = {}
@@ -199,8 +202,8 @@ EOT
         "Octopus.Action.KubernetesContainers.IngressAnnotations"            = jsonencode([])
         "Octopus.Action.KubernetesContainers.Containers"                    = jsonencode([
           {
-            "AcquisitionLocation"           = "NotAcquired"
-            "Args"                          = []
+            "AcquisitionLocation"    = "NotAcquired"
+            "Args"                   = []
             "ConfigMapEnvFromSource" = [
               {
                 "key" = "${local.app_name}#{unless Octopus.Release.Channel.Name == \"Mainline\"}-#{Octopus.Release.Channel.Name}#{/unless}"
