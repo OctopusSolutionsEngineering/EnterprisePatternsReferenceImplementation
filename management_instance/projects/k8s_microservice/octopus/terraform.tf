@@ -4,6 +4,12 @@ terraform {
   }
 }
 
+locals {
+  # This value is used in a few places, like the deployment name. It is the name of the Docker image, minus the repo, lowercase, and with
+  # special chars removed.
+  app_name = "#{Octopus.Action.Package[service].PackageId | Replace \"^.*/\" \"\" | Replace \"[^A-Za-z0-9]\" \"-\" | ToLower}"
+}
+
 data "octopusdeploy_project_groups" "project_group_google_microservice_demo" {
   ids          = null
   partial_name = "${var.project_group_google_microservice_demo_name}"
@@ -142,7 +148,7 @@ resource "octopusdeploy_deployment_process" "deployment_process_project_ad_servi
         "Octopus.Action.KubernetesContainers.NodeAffinity"                  = jsonencode([])
         "Octopus.Action.KubernetesContainers.Tolerations"                   = jsonencode([])
         "Octopus.Action.KubernetesContainers.PodAnnotations"                = jsonencode([])
-        "Octopus.Action.KubernetesContainers.DeploymentName"                = "#{Octopus.Action.Package[service].PackageId | Replace \"[^A-Za-z0-9]\" \"-\" | ToLower}#{unless Octopus.Release.Channel.Name == \"Mainline\"}-#{Octopus.Release.Channel.Name}#{/unless}"
+        "Octopus.Action.KubernetesContainers.DeploymentName"                = "${local.app_name}#{unless Octopus.Release.Channel.Name == \"Mainline\"}-#{Octopus.Release.Channel.Name}#{/unless}"
         "Octopus.Action.KubernetesContainers.PodAffinity"                   = jsonencode([])
         "Octopus.Action.KubernetesContainers.IngressAnnotations"            = jsonencode([])
         "Octopus.Action.KubernetesContainers.Containers"                    = jsonencode([
@@ -299,12 +305,12 @@ resource "octopusdeploy_deployment_process" "deployment_process_project_ad_servi
           },
         ])
         "Octopus.Action.KubernetesContainers.DeploymentLabels" = jsonencode({
-          "app" = "#{Octopus.Action.Package[service].PackageId | Replace \"[^A-Za-z0-9]\" \"-\" | ToLower}"
+          "app" = "${local.app_name}"
         })
         "Octopus.Action.KubernetesContainers.PodSecurityRunAsUser"    = "1000"
         "Octopus.Action.KubernetesContainers.PodSecurityFsGroup"      = "1000"
         "Octopus.Action.KubernetesContainers.Replicas"                = "1"
-        "Octopus.Action.KubernetesContainers.ServiceName"             = "#{Octopus.Action.Package[service].PackageId | Replace \"[^A-Za-z0-9]\" \"-\" | ToLower}#{unless Octopus.Release.Channel.Name == \"Mainline\"}-#{Octopus.Release.Channel.Name}#{/unless}"
+        "Octopus.Action.KubernetesContainers.ServiceName"             = "${local.app_name}#{unless Octopus.Release.Channel.Name == \"Mainline\"}-#{Octopus.Release.Channel.Name}#{/unless}"
         "Octopus.Action.KubernetesContainers.LoadBalancerAnnotations" = jsonencode([])
       }
 
