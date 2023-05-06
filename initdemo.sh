@@ -48,6 +48,59 @@ then
   exit 1
 fi
 
+if [[ -z "${TF_VAR_docker_username}" ]]
+then
+  echo "You must set the TF_VAR_docker_username environment variable to the DockerHub username."
+  exit 1
+fi
+
+if [[ -z "${TF_VAR_docker_password}" ]]
+then
+  echo "You must set the TF_VAR_docker_password environment variable to the DockerHub password."
+  exit 1
+fi
+
+if [[ -z "${TF_VAR_azure_application_id}" ]]
+then
+  echo "You must set the TF_VAR_azure_application_id environment variable to the Azure application ID."
+  exit 1
+fi
+
+if [[ -z "${TF_VAR_azure_subscription_id}" ]]
+then
+  echo "You must set the TF_VAR_azure_subscription_id environment variable to the Azure subscription ID."
+  exit 1
+fi
+
+if [[ -z "${TF_VAR_azure_password}" ]]
+then
+  echo "You must set the TF_VAR_azure_password environment variable to the Azure password."
+  exit 1
+fi
+
+if [[ -z "${TF_VAR_azure_tenant_id}" ]]
+then
+  echo "You must set the TF_VAR_azure_tenant_id environment variable to the Azure tenant ID."
+  exit 1
+fi
+
+# It is possible to have unique values per tenant, but most demos will simply reuse the main credentials
+if [[ -z "${TF_VAR_america_azure_application_id}" ]]
+then
+  export TF_VAR_america_azure_application_id=$TF_VAR_america_azure_application_id
+  export TF_VAR_america_azure_subscription_id=TF_VAR_azure_subscription_id
+  export TF_VAR_america_azure_password=TF_VAR_azure_password
+  export TF_VAR_america_azure_tenant_id=TF_VAR_azure_tenant_id
+fi
+
+if [[ -z "${TF_VAR_europe_azure_application_id}" ]]
+then
+  export TF_VAR_europe_azure_application_id=$TF_VAR_europe_azure_application_id
+  export TF_VAR_europe_azure_subscription_id=TF_VAR_azure_subscription_id
+  export TF_VAR_europe_azure_password=TF_VAR_azure_password
+  export TF_VAR_europe_azure_tenant_id=TF_VAR_azure_tenant_id
+fi
+
 # Start the Docker Compose stack
 pushd docker
 docker-compose pull

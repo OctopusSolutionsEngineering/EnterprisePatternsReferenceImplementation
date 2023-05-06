@@ -1,14 +1,7 @@
 # Getting Started
 
-Set the `OCTOPUS_SERVER_BASE64_LICENSE` environment variable to a base 64 encoded copy of your Octopus license key. This
-is passed through to the Octopus instances launched by Docker.
-
-Ensure you have the [Octopus CLI](https://octopus.com/downloads/octopuscli) tool installed.
-
-You will also need DockerHub credentials. You will be prompted to add the DockerHub username and password when initializing
-the Octopus instances.
-
-Start the Octopus and Git stack with:
+Start the Octopus and Git stack with the following command. Any missing tools or undefined environment variables will
+be reported before the setup can start:
 
 ```bash
 ./initdemo.sh
