@@ -108,6 +108,11 @@ docker-compose up -d
 popd
 
 # Create a new cluster with a custom configuration that binds to all network addresses
+if [[ ! -f /tmp/octoconfig.yml ]]
+then
+  kind delete cluster --name octopus
+fi
+
 kind create cluster --config k8s/kind.yml --name octopus --kubeconfig /tmp/octoconfig.yml
 
 # Extract the cluster URL. This will be a 127.0.0.1 address though, which is not quite what we need.
