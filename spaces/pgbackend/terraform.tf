@@ -16,6 +16,14 @@ provider "octopusdeploy" {
   space_id = "Spaces-1"
 }
 
+variable "space_name" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "The name of the new space"
+}
+
 module "octopus" {
-  source = "../octopus"
+  source     = "../octopus"
+  space_name = var.space_name
 }

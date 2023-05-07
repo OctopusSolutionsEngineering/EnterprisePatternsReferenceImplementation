@@ -203,11 +203,16 @@ done
 echo ""
 
 # Start by creating the spaces.
-docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE spaces"'
-pushd spaces/pgbackend
-terraform init -reconfigure -upgrade
-terraform apply -auto-approve
-popd
+for space in "Europe" "America"
+do
+  docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE spaces"'
+  pushd spaces/pgbackend
+  terraform init -reconfigure -upgrade
+  terraform workspace new $space
+  terraform workspace select $space
+  terraform apply -auto-approve -var=space_name=$space
+  popd
+done
 
 # Populate the spaces with shared resources.
 # Note the use of Terraform workspaces to manage the state of each space independently.

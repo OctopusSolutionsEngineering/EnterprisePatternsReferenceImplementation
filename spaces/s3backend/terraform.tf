@@ -37,6 +37,14 @@ variable "octopus_space_id" {
   description = "The ID of the Octopus space to populate."
 }
 
+variable "space_name" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "The name of the new space"
+}
+
 module "octopus" {
-  source = "../octopus"
+  source     = "../octopus"
+  space_name = var.space_name
 }
