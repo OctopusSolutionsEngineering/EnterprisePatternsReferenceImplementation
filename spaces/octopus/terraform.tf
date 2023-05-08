@@ -11,8 +11,8 @@ variable "space_name" {
   description = "The name of the new space"
 }
 
-resource "octopusdeploy_space" "europe" {
-  description                 = "A space for team Europe."
+resource "octopusdeploy_space" "space" {
+  description                 = "A space for team ${var.space_name}."
   name                        = var.space_name
   is_default                  = false
   is_task_queue_stopped       = false

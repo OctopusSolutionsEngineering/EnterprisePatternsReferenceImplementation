@@ -293,6 +293,14 @@ do
 
 done
 
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE project_group_client_space"'
+pushd management_instance/project_group/client_space/pgbackend
+terraform init -reconfigure -upgrade
+terraform workspace new Spaces-1
+terraform workspace select Spaces-1
+terraform apply -auto-approve -var=octopus_space_id=Spaces-1
+popd
+
 # Add the tenant tags
 docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE management_tenant_tags"'
 pushd management_instance/tenant_tags/regional/pgbackend
