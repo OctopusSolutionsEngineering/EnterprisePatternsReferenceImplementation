@@ -87,7 +87,7 @@ data "octopusdeploy_projects" "project_init_space" {
   cloned_from_project_id = null
   ids                    = []
   is_clone               = false
-  name                   = "__ Initialize Space for Azure"
+  name                   = "__ Compose Azure Resources"
   partial_name           = null
   skip                   = 0
   take                   = 1
@@ -97,7 +97,7 @@ data "octopusdeploy_projects" "project_init_space_k8s" {
   cloned_from_project_id = null
   ids                    = []
   is_clone               = false
-  name                   = "__ Initialize Space for Kubernetes"
+  name                   = "__ Compose K8S Resources"
   partial_name           = null
   skip                   = 0
   take                   = 1

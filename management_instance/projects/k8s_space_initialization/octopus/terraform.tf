@@ -62,7 +62,7 @@ data "octopusdeploy_environments" "sync" {
 
 resource "octopusdeploy_project" "project_hello_world" {
   # We want this project to be sorted higher than the template projects, so start with an underscore
-  name                                 = "__ Initialize Space for Kubernetes"
+  name                                 = "__ Compose K8S Resources"
   description                          = "This project is used to populate a space with any common kubernetes resources."
   auto_create_release                  = false
   default_guided_failure_mode          = "EnvironmentDefault"
@@ -202,7 +202,7 @@ EOF
         "Octopus.Action.Terraform.GoogleCloudAccount"    = "False"
         "Octopus.Action.GoogleCloud.UseVMServiceAccount" = "True"
         "Octopus.Action.Terraform.TemplateParameters"    = jsonencode({
-          "space_id" = "#{Octopus.Action[Create Client Space].Output.TerraformValueOutputs[space_id]}"
+          "space_id" = "#{ManagedTenant.Octopus.SpaceId}"
         })
         "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name}"
         "Octopus.Action.Terraform.PlanJsonOutput"               = "False"
