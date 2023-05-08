@@ -99,6 +99,13 @@ resource "octopusdeploy_tenant" "europe" {
     ]
     project_id   = data.octopusdeploy_projects.project_create_client_space.projects[0].id
   }
+
+  project_environment {
+    environments = [
+      data.octopusdeploy_environments.sync.environments[0].id
+    ]
+    project_id   = data.octopusdeploy_projects.project_k8s_microservice_template.projects[0].id
+  }
 }
 
 resource "octopusdeploy_tenant_common_variable" "europe_octopus_apikey" {

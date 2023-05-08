@@ -122,3 +122,13 @@ data "octopusdeploy_projects" "project_web_app_cac" {
   skip                   = 0
   take                   = 1
 }
+
+data "octopusdeploy_projects" "project_k8s_microservice_template" {
+  cloned_from_project_id = null
+  ids                    = []
+  is_clone               = false
+  name                   = "K8S Microservice Template"
+  partial_name           = null
+  skip                   = 0
+  take                   = 1
+}
