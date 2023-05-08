@@ -10,7 +10,7 @@ docker run \
   "--add-host=octopus:$${OCTOPUS}" \
   -v "$${PWD}/export:/export" \
   octopussamples/octoterra \
-  -url "#{ThisInstance.Server.DockerUrl}"                                   `# the url of the instance` \
+  -url "#{ThisInstance.Server.Url}"                                   `# the url of the instance` \
   -apiKey "#{ThisInstance.Api.Key}"                                         `# the api key used to access the instance` \
   -terraformBackend pg                                                      `# add a postgres backend to the generated modules` \
   -console                                                                  `# dump the generated HCL to the console` \

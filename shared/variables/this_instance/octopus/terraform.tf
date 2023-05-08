@@ -30,7 +30,7 @@ resource "octopusdeploy_variable" "octopus_internal_url" {
 }
 
 resource "octopusdeploy_variable" "octopus_external_url" {
-  name = "ThisInstance.Server.DockerUrl"
+  name = "ThisInstance.Server.Url"
   type = "String"
   description = "The URL of this Octopus instance as seen from a Docker container on the same network"
   is_sensitive = false

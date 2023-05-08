@@ -201,7 +201,7 @@ EOF
         "Octopus.Action.GoogleCloud.UseVMServiceAccount" = "True"
         "Octopus.Action.Terraform.TemplateParameters"    = jsonencode({
           "space_name" = "#{Octopus.Deployment.Tenant.Name}"
-          "octopus_server" = "#{ManagedTenant.Octopus.Server}"
+          "octopus_server" = "#{ManagedTenant.Octopus.Url}"
           "octopus_apikey" = "#{ManagedTenant.Octopus.ApiKey}"
         })
         "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name}"
@@ -299,7 +299,7 @@ EOF
         "Octopus.Action.Terraform.TemplateParameters"    = jsonencode({
           "tenant" = "#{Octopus.Deployment.Tenant.Name}"
           "space_id" = "#{Octopus.Action[Create Client Space].Output.TerraformValueOutputs[space_id]}"
-          "octopus_server" = "#{ThisInstance.Server.DockerUrl}"
+          "octopus_server" = "#{ThisInstance.Server.Url}"
           "octopus_apikey" = "#{ThisInstance.Api.Key}"
         })
         "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name}"
@@ -370,7 +370,7 @@ EOF
         "Octopus.Action.GoogleCloud.UseVMServiceAccount" = "True"
         "Octopus.Action.Terraform.TemplateParameters"    = jsonencode({
           "space_id" = "#{Octopus.Action[Create Client Space].Output.TerraformValueOutputs[space_id]}"
-          "octopus_server" = "#{ManagedTenant.Octopus.Server}"
+          "octopus_server" = "#{ManagedTenant.Octopus.Url}"
           "octopus_apikey" = "#{ManagedTenant.Octopus.ApiKey}"
         })
         "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name}"
@@ -442,7 +442,7 @@ EOF
         "Octopus.Action.GoogleCloud.UseVMServiceAccount" = "True"
         "Octopus.Action.Terraform.TemplateParameters"    = jsonencode({
           "space_id" = "#{Octopus.Action[Create Client Space].Output.TerraformValueOutputs[space_id]}"
-          "octopus_server" = "#{ManagedTenant.Octopus.Server}"
+          "octopus_server" = "#{ManagedTenant.Octopus.Url}"
           "octopus_apikey" = "#{ManagedTenant.Octopus.ApiKey}"
         })
         "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name}"
@@ -513,7 +513,7 @@ EOF
         "Octopus.Action.GoogleCloud.UseVMServiceAccount" = "True"
         "Octopus.Action.Terraform.TemplateParameters"    = jsonencode({
           "space_id" = "#{Octopus.Action[Create Client Space].Output.TerraformValueOutputs[space_id]}"
-          "octopus_server" = "#{ManagedTenant.Octopus.Server}"
+          "octopus_server" = "#{ManagedTenant.Octopus.Url}"
           "octopus_apikey" = "#{ManagedTenant.Octopus.ApiKey}"
           "cac_password" = "Password01!"
           "cac_username" = "octopus"
@@ -586,7 +586,7 @@ EOF
         "Octopus.Action.GoogleCloud.UseVMServiceAccount" = "True"
         "Octopus.Action.Terraform.TemplateParameters"    = jsonencode({
           "space_id" = "#{Octopus.Action[Create Client Space].Output.TerraformValueOutputs[space_id]}"
-          "octopus_server" = "#{ManagedTenant.Octopus.Server}"
+          "octopus_server" = "#{ManagedTenant.Octopus.Url}"
           "octopus_apikey" = "#{ManagedTenant.Octopus.ApiKey}"
         })
         "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name}"
@@ -657,7 +657,7 @@ EOF
         "Octopus.Action.GoogleCloud.UseVMServiceAccount" = "True"
         "Octopus.Action.Terraform.TemplateParameters"    = jsonencode({
           "space_id" = "#{Octopus.Action[Create Client Space].Output.TerraformValueOutputs[space_id]}"
-          "octopus_server" = "#{ManagedTenant.Octopus.Server}"
+          "octopus_server" = "#{ManagedTenant.Octopus.Url}"
           "octopus_apikey" = "#{ManagedTenant.Octopus.ApiKey}"
           "docker_password" = "#{Tenant.Docker.Password}"
           "docker_username" = "#{Tenant.Docker.Username}"
@@ -730,7 +730,7 @@ EOF
         "Octopus.Action.GoogleCloud.UseVMServiceAccount" = "True"
         "Octopus.Action.Terraform.TemplateParameters"    = jsonencode({
           "space_id" = "#{Octopus.Action[Create Client Space].Output.TerraformValueOutputs[space_id]}"
-          "octopus_server" = "#{ManagedTenant.Octopus.Server}"
+          "octopus_server" = "#{ManagedTenant.Octopus.Url}"
           "octopus_apikey" = "#{ManagedTenant.Octopus.ApiKey}"
         })
         "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name}"

@@ -127,7 +127,7 @@ resource "octopusdeploy_tenant_common_variable" "america_octopus_spaceid" {
   library_variable_set_id = data.octopusdeploy_library_variable_sets.octopus_server.library_variable_sets[0].id
   template_id             = tolist([
     for tmp in data.octopusdeploy_library_variable_sets.octopus_server.library_variable_sets[0].template :
-    tmp.id if tmp.name == "ManagedTenant.Octopus.Server"
+    tmp.id if tmp.name == "ManagedTenant.Octopus.Url"
   ])[0]
   tenant_id               = octopusdeploy_tenant.america.id
   value                   = "http://octopus:8080"

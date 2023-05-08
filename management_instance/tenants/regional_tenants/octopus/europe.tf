@@ -111,7 +111,7 @@ resource "octopusdeploy_tenant_common_variable" "europe_octopus_apikey" {
 
 resource "octopusdeploy_tenant_common_variable" "europe_octopus_spaceid" {
   library_variable_set_id = data.octopusdeploy_library_variable_sets.octopus_server.library_variable_sets[0].id
-  template_id = tolist([for tmp in data.octopusdeploy_library_variable_sets.octopus_server.library_variable_sets[0].template : tmp.id if tmp.name == "ManagedTenant.Octopus.Server"])[0]
+  template_id = tolist([for tmp in data.octopusdeploy_library_variable_sets.octopus_server.library_variable_sets[0].template : tmp.id if tmp.name == "ManagedTenant.Octopus.Url"])[0]
   tenant_id = octopusdeploy_tenant.europe.id
   value = "http://octopus:8080"
   depends_on = [octopusdeploy_tenant.europe]

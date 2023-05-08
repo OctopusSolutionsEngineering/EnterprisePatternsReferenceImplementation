@@ -9,7 +9,7 @@ resource "octopusdeploy_library_variable_set" "octopus_library_variable_set" {
   description = "Exposes templates that tenants must populate to indicate how to reach the server and space they are hosted on."
 
   template {
-    name             = "ManagedTenant.Octopus.Server"
+    name             = "ManagedTenant.Octopus.Url"
     label            = "The Octopus Server URL"
     display_settings = {
       "Octopus.ControlType" : "SingleLineText"

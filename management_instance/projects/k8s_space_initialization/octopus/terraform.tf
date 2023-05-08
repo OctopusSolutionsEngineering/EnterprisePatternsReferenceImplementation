@@ -131,7 +131,7 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_serial
           "k8s_cluster_url"  = "#{Tenant.K8S.Url}"
           "k8s_client_cert"  = "#{Tenant.K8S.CertificateData}"
           "octopus_apikey"   = "#{ManagedTenant.Octopus.ApiKey}"
-          "octopus_url"      = "#{ManagedTenant.Octopus.Server}"
+          "octopus_url"      = "#{ManagedTenant.Octopus.Url}"
           "octopus_space_id" = "#{ManagedTenant.Octopus.SpaceId}"
         })
         "Octopus.Action.Aws.AssumeRole"                         = "False"
