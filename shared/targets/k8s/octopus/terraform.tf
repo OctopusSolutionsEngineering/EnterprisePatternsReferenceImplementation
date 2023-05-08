@@ -57,7 +57,7 @@ resource "octopusdeploy_certificate" "certificate_k8s_cert" {
   tenants                           = []
 }
 
-resource "octopusdeploy_kubernetes_cluster_deployment_target" "cluster"s {
+resource "octopusdeploy_kubernetes_cluster_deployment_target" "cluster" {
   cluster_url                       = var.k8s_cluster_url
   environments                      = [
     data.octopusdeploy_environments.development.environments[0].id,
