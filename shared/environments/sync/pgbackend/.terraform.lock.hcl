@@ -5,6 +5,7 @@ provider "registry.terraform.io/octopusdeploylabs/octopusdeploy" {
   version     = "0.12.1"
   constraints = "0.12.1"
   hashes = [
+    "h1:Ai+4JsYcRxUSt/XbSIcuQMUvokGe3CNtOD+ev2EwyCk=",
     "h1:ON4g3rACY6eq8M9P7UetGdQQfBgORPL/f9cxKmJ8zbA=",
     "zh:455054e5bbe81dc7d171abff68fec88c28e09be41f3fad814fce4946c93be5eb",
     "zh:6eff389eee2204968fb674bf841af62e74450215c94d1223ff7c90c06a3d66d2",

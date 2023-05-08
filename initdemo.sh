@@ -150,6 +150,10 @@ openssl pkcs12 -export -name "test.com" -password "pass:Password01!" -out /tmp/k
 
 # Base64 encode the PFX file
 COMBINED_CERT=$(cat /tmp/kind.pfx | base64 -w0)
+if [[ $? -ne 0 ]]; then
+  # Assume we are on a mac, which doesn't have -w
+  COMBINED_CERT=$(cat /tmp/kind.pfx | base64)
+fi
 
 # Set the initial Gitea user
 EXISTING=$(docker exec -it gitea su git bash -c "gitea admin user list")
