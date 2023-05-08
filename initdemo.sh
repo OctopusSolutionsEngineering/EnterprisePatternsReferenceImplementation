@@ -358,6 +358,14 @@ terraform apply -auto-approve -var=octopus_space_id=Spaces-1
 popd
 
 # Add the sample projects to the management instance
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE project_create_client_space"'
+pushd management_instance/projects/create_client_space/pgbackend
+terraform init -reconfigure -upgrade
+terraform workspace new Spaces-1
+terraform workspace select Spaces-1
+terraform apply -auto-approve -var=octopus_space_id=Spaces-1
+popd
+
 docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE project_hello_world"'
 pushd management_instance/projects/hello_world/pgbackend
 terraform init -reconfigure -upgrade
