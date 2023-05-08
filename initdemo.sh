@@ -127,7 +127,12 @@ then
 fi
 
 export KUBECONFIG=/tmp/octoconfig.yml
-minikube start --listen-address='0.0.0.0'
+
+if [[ "$OSTYPE" != "linux-gnu"* ]]; then
+  minikube start --listen-address='0.0.0.0' --container-runtime=containerd
+else
+  minikube start --listen-address='0.0.0.0'
+fi
 
 # Extract the cluster URL. This will be a 127.0.0.1 address though, which is not quite what we need.
 CLUSTER_URL=$(docker run --rm -v /tmp:/workdir mikefarah/yq '.clusters[0].cluster.server' octoconfig.yml)
