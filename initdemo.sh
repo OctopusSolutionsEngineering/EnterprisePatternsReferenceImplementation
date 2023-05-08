@@ -2,7 +2,7 @@
 
 if ! which docker
 then
-  echo "You must install Docker"
+  echo "You must install Docker: https://docs.docker.com/get-docker/"
   exit 1
 fi
 
@@ -20,7 +20,7 @@ fi
 
 if ! which terraform
 then
-  echo "You must install terraform"
+  echo "You must install terraform: https://developer.hashicorp.com/terraform/downloads"
   exit 1
 fi
 
