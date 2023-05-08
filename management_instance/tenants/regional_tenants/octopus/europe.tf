@@ -40,6 +40,20 @@ variable "europe_k8s_url" {
   description = "The K8s URL."
 }
 
+variable "europe_docker_username" {
+  type        = string
+  nullable    = false
+  sensitive   = true
+  description = "The Docker username."
+}
+
+variable "europe_docker_password" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "The Docker password"
+}
+
 resource "octopusdeploy_tenant" "europe" {
   name        = "Europe"
   description = "Tenant representing the European region Octopus space"
@@ -166,5 +180,27 @@ resource "octopusdeploy_tenant_common_variable" "europe_k8s_url" {
   ])[0]
   tenant_id               = octopusdeploy_tenant.europe.id
   value                   = var.europe_k8s_url
+  depends_on              = [octopusdeploy_tenant.europe]
+}
+
+resource "octopusdeploy_tenant_common_variable" "europe_docker_username" {
+  library_variable_set_id = data.octopusdeploy_library_variable_sets.docker.library_variable_sets[0].id
+  template_id             = tolist([
+    for tmp in data.octopusdeploy_library_variable_sets.docker.library_variable_sets[0].template :
+    tmp.id if tmp.name == "Tenant.Docker.Username"
+  ])[0]
+  tenant_id               = octopusdeploy_tenant.europe.id
+  value                   = var.europe_docker_username
+  depends_on              = [octopusdeploy_tenant.europe]
+}
+
+resource "octopusdeploy_tenant_common_variable" "europe_docker_password" {
+  library_variable_set_id = data.octopusdeploy_library_variable_sets.docker.library_variable_sets[0].id
+  template_id             = tolist([
+    for tmp in data.octopusdeploy_library_variable_sets.docker.library_variable_sets[0].template :
+    tmp.id if tmp.name == "Tenant.Docker.Password"
+  ])[0]
+  tenant_id               = octopusdeploy_tenant.europe.id
+  value                   = var.europe_docker_password
   depends_on              = [octopusdeploy_tenant.europe]
 }

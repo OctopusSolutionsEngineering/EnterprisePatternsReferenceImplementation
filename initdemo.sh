@@ -60,6 +60,19 @@ then
   exit 1
 fi
 
+# Use the default values for the individual tenants if there are no specific values defined
+if [[ -z "${TF_VAR_america_docker_username}" ]]
+then
+  export TF_VAR_america_docker_username=$TF_VAR_docker_username
+  export TF_VAR_america_docker_password=$TF_VAR_docker_password
+fi
+
+if [[ -z "${TF_VAR_europe_docker_username}" ]]
+then
+  export TF_VAR_europe_docker_username=$TF_VAR_docker_username
+  export TF_VAR_europe_docker_password=$TF_VAR_docker_password
+fi
+
 if [[ -z "${TF_VAR_azure_application_id}" ]]
 then
   echo "You must set the TF_VAR_azure_application_id environment variable to the Azure application ID."
@@ -324,6 +337,14 @@ popd
 
 docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE lib_var_azure"'
 pushd shared/variables/azure/pgbackend
+terraform init -reconfigure -upgrade
+terraform workspace new "Spaces-1"
+terraform workspace select "Spaces-1"
+terraform apply -auto-approve -var=octopus_space_id=Spaces-1
+popd
+
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE lib_var_docker"'
+pushd shared/variables/docker/pgbackend
 terraform init -reconfigure -upgrade
 terraform workspace new "Spaces-1"
 terraform workspace select "Spaces-1"

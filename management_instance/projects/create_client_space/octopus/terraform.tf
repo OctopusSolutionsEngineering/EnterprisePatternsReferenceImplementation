@@ -11,6 +11,12 @@ data "octopusdeploy_library_variable_sets" "library_variable_set_octopus_server"
   take         = 1
 }
 
+data "octopusdeploy_library_variable_sets" "docker" {
+  partial_name = "Docker"
+  skip = 0
+  take = 1
+}
+
 data "octopusdeploy_environments" "environment_sync" {
   ids          = null
   partial_name = "Sync"
@@ -79,7 +85,8 @@ resource "octopusdeploy_project" "project____create_client_space" {
   lifecycle_id                         = "${data.octopusdeploy_lifecycles.lifecycle_simple.lifecycles[0].id}"
   project_group_id                     = "${data.octopusdeploy_project_groups.project_group_client_space.project_groups[0].id}"
   included_library_variable_sets       = [
-    "${data.octopusdeploy_library_variable_sets.library_variable_set_octopus_server.library_variable_sets[0].id}"
+    data.octopusdeploy_library_variable_sets.library_variable_set_octopus_server.library_variable_sets[0].id,
+    data.octopusdeploy_library_variable_sets.docker.library_variable_sets[0].id
   ]
   tenanted_deployment_participation    = "Untenanted"
 
@@ -450,6 +457,8 @@ EOF
         "Octopus.Action.GoogleCloud.UseVMServiceAccount" = "True"
         "Octopus.Action.Terraform.TemplateParameters"    = jsonencode({
           "space_id" = "#{Octopus.Action[Create Client Space].Output.TerraformValueOutputs[space_id]}"
+          "cac_password" = "Password01!"
+          "cac_username" = "octopus"
         })
         "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name}"
         "Octopus.Action.Terraform.PlanJsonOutput"               = "False"
@@ -572,6 +581,8 @@ EOF
         "Octopus.Action.GoogleCloud.UseVMServiceAccount" = "True"
         "Octopus.Action.Terraform.TemplateParameters"    = jsonencode({
           "space_id" = "#{Octopus.Action[Create Client Space].Output.TerraformValueOutputs[space_id]}"
+          "docker_password" = "#{Tenant.Docker.Password}"
+          "docker_username" = "#{Tenant.Docker.Username}"
         })
         "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name}"
         "Octopus.Action.Terraform.PlanJsonOutput"               = "False"
