@@ -278,6 +278,11 @@ variable "tenant" {
 
 variable "space_id" {
   type = string
+
+  validation {
+    condition     = length(var.space_id) > 7 && substr(var.space_id, 0, 4) == "Spaces-"
+    error_message = "The space_id value must be a valid Space id, starting with \"Spaces-\"."
+  }
 }
 
 data "octopusdeploy_tenants" "tenant" {
@@ -347,6 +352,11 @@ terraform {
 
 variable "space_id" {
   type = string
+
+  validation {
+    condition     = length(var.space_id) > 7 && substr(var.space_id, 0, 4) == "Spaces-"
+    error_message = "The space_id value must be a valid Space id, starting with \"Spaces-\"."
+  }
 }
 
 variable "octopus_server" {
@@ -418,6 +428,11 @@ terraform {
 
 variable "space_id" {
   type = string
+
+  validation {
+    condition     = length(var.space_id) > 7 && substr(var.space_id, 0, 4) == "Spaces-"
+    error_message = "The space_id value must be a valid Space id, starting with \"Spaces-\"."
+  }
 }
 
 variable "octopus_server" {
@@ -490,6 +505,11 @@ terraform {
 
 variable "space_id" {
   type = string
+
+  validation {
+    condition     = length(var.space_id) > 7 && substr(var.space_id, 0, 4) == "Spaces-"
+    error_message = "The space_id value must be a valid Space id, starting with \"Spaces-\"."
+  }
 }
 
 variable "octopus_server" {
@@ -563,6 +583,11 @@ terraform {
 
 variable "space_id" {
   type = string
+
+  validation {
+    condition     = length(var.space_id) > 7 && substr(var.space_id, 0, 4) == "Spaces-"
+    error_message = "The space_id value must be a valid Space id, starting with \"Spaces-\"."
+  }
 }
 
 variable "octopus_server" {
@@ -634,6 +659,11 @@ terraform {
 
 variable "space_id" {
   type = string
+
+  validation {
+    condition     = length(var.space_id) > 7 && substr(var.space_id, 0, 4) == "Spaces-"
+    error_message = "The space_id value must be a valid Space id, starting with \"Spaces-\"."
+  }
 }
 
 variable "octopus_server" {
@@ -707,6 +737,11 @@ terraform {
 
 variable "space_id" {
   type = string
+
+  validation {
+    condition     = length(var.space_id) > 7 && substr(var.space_id, 0, 4) == "Spaces-"
+    error_message = "The space_id value must be a valid Space id, starting with \"Spaces-\"."
+  }
 }
 
 variable "octopus_server" {
