@@ -17,7 +17,7 @@ variable "octopus_space_id" {
   default     = "Spaces-1"
 
   validation {
-    condition     = length(var.octopus_space_id) > 7 && substr(var.octopus_space_id, 0, 4) == "Spaces-"
+    condition     = length(var.octopus_space_id) > 7 && substr(var.octopus_space_id, 0, 7) == "Spaces-"
     error_message = "The space_id value must be a valid Space id, starting with \"Spaces-\"."
   }
 }
