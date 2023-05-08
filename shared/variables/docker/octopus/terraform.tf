@@ -20,7 +20,7 @@ resource "octopusdeploy_library_variable_set" "octopus_library_variable_set" {
     name = "Tenant.Docker.Password"
     label = "The Docker Password"
     display_settings = {
-      "Octopus.ControlType": "SingleLineText"
+      "Octopus.ControlType": "Sensitive"
     }
   }
 }
