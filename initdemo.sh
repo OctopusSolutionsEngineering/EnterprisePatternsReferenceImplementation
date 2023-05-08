@@ -146,7 +146,7 @@ if [[ "$OSTYPE" != "linux-gnu"* ]]; then
 fi
 
 # We assume the kind cluster has bound itself to a port range in the tens of thousands
-CLUSTER_PORT=${CLUSTER_URL: -5}
+CLUSTER_PORT=$(cut -d ":" -f3 <<< ${CLUSTER_URL})
 
 # Extract the client certificate data
 CLIENT_CERTIFICATE=$(docker run --rm -v /tmp:/workdir mikefarah/yq '.users[0].user.client-certificate' octoconfig.yml)
@@ -295,7 +295,7 @@ pushd shared/variables/this_instance/pgbackend
 terraform init -reconfigure -upgrade
 terraform workspace new Spaces-1
 terraform workspace select Spaces-1
-terraform apply -auto-approve -var=octopus_space_id=$space
+terraform apply -auto-approve -var=octopus_space_id=Spaces-1
 popd
 
 docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE project_group_client_space"'
