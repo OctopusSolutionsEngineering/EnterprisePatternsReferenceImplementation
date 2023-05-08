@@ -41,7 +41,7 @@ variable "space_name" {
   type        = string
   nullable    = false
   sensitive   = false
-  description = "The name of the new space"
+  description = "The name of the new space, which is the same as the tenant name."
 }
 
 module "octopus" {
