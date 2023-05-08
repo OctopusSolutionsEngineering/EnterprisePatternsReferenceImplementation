@@ -87,21 +87,6 @@ resource "octopusdeploy_tenant" "europe" {
   }
 }
 
-data "octopusdeploy_spaces" "europe_space" {
-  ids          = []
-  partial_name = "Europe"
-  skip         = 0
-  take         = 1
-}
-
-resource "octopusdeploy_tenant_common_variable" "europe_octopus_server" {
-  library_variable_set_id = data.octopusdeploy_library_variable_sets.octopus_server.library_variable_sets[0].id
-  template_id = tolist([for tmp in data.octopusdeploy_library_variable_sets.octopus_server.library_variable_sets[0].template : tmp.id if tmp.name == "ManagedTenant.Octopus.SpaceId"])[0]
-  tenant_id = octopusdeploy_tenant.europe.id
-  value = data.octopusdeploy_spaces.europe_space.spaces[0].id
-  depends_on = [octopusdeploy_tenant.europe]
-}
-
 resource "octopusdeploy_tenant_common_variable" "europe_octopus_apikey" {
   library_variable_set_id = data.octopusdeploy_library_variable_sets.octopus_server.library_variable_sets[0].id
   template_id = tolist([for tmp in data.octopusdeploy_library_variable_sets.octopus_server.library_variable_sets[0].template : tmp.id if tmp.name == "ManagedTenant.Octopus.ApiKey"])[0]
