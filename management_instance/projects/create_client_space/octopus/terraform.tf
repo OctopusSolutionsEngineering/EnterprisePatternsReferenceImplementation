@@ -178,7 +178,7 @@ output "space_id" {
   value = octopusdeploy_space.space.id
 }
 
-${file("../../../../spaces/octopus/terraform.tf")}
+${file("../../../../shared/spaces/octopus/terraform.tf")}
 EOF
         "Octopus.Action.Terraform.AllowPluginDownloads"  = "True"
         "Octopus.Action.Terraform.GoogleCloudAccount"    = "False"
