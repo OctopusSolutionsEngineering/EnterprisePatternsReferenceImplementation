@@ -10,4 +10,4 @@ do
 done
 popd || exit
 
-kind delete cluster --name octopus
+minikube stop

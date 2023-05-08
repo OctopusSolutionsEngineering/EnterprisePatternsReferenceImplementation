@@ -24,9 +24,9 @@ then
   exit 1
 fi
 
-if ! which kind
+if ! which minikube
 then
-  echo "You must install kind: https://kind.sigs.k8s.io/docs/user/quick-start/"
+  echo "You must install minikube"
   exit 1
 fi
 
@@ -123,10 +123,11 @@ popd
 # Create a new cluster with a custom configuration that binds to all network addresses
 if [[ ! -f /tmp/octoconfig.yml ]]
 then
-  kind delete cluster --name octopus
+  minikube stop
 fi
 
-kind create cluster --config k8s/kind.yml --name octopus --kubeconfig /tmp/octoconfig.yml
+export KUBECONFIG=/tmp/octoconfig.yml
+minikube start --listen-address='0.0.0.0'
 
 # Extract the cluster URL. This will be a 127.0.0.1 address though, which is not quite what we need.
 CLUSTER_URL=$(docker run --rm -v /tmp:/workdir mikefarah/yq '.clusters[0].cluster.server' octoconfig.yml)
@@ -134,19 +135,20 @@ CLUSTER_URL=$(docker run --rm -v /tmp:/workdir mikefarah/yq '.clusters[0].cluste
 # This returns the IP address of the host system, which is how the Octopus server reaches out to the Kind cluster.
 DOCKER_HOST_IP=$(docker network inspect docker_octopus | jq -r '.[0].IPAM.Config[0].Gateway')
 
+# If not using linux, use the standard Docker host DNS entry
+if [[ "$OSTYPE" != "linux-gnu"* ]]; then
+  DOCKER_HOST_IP="host.docker.internal"
+fi
+
 # We assume the kind cluster has bound itself to a port range in the tens of thousands
 CLUSTER_PORT=${CLUSTER_URL: -5}
 
 # Extract the client certificate data
-CLIENT_CERTIFICATE_DATA=$(docker run --rm -v /tmp:/workdir mikefarah/yq '.users[0].user.client-certificate-data' octoconfig.yml)
-CLIENT_KEY_DATA=$(docker run --rm -v /tmp:/workdir mikefarah/yq '.users[0].user.client-key-data' octoconfig.yml)
-
-# Write the decoded certificates to temp files
-echo "${CLIENT_CERTIFICATE_DATA}" | base64 -d > /tmp/kind.crt
-echo "${CLIENT_KEY_DATA}" | base64 -d > /tmp/kind.key
+CLIENT_CERTIFICATE=$(docker run --rm -v /tmp:/workdir mikefarah/yq '.users[0].user.client-certificate' octoconfig.yml)
+CLIENT_KEY=$(docker run --rm -v /tmp:/workdir mikefarah/yq '.users[0].user.client-key' octoconfig.yml)
 
 # Create a self contained PFX certificate
-openssl pkcs12 -export -name "test.com" -password "pass:Password01!" -out /tmp/kind.pfx -inkey /tmp/kind.key -in /tmp/kind.crt
+openssl pkcs12 -export -name 'test.com' -password 'pass:Password01!' -out /tmp/kind.pfx -inkey "${CLIENT_KEY}" -in "${CLIENT_CERTIFICATE}"
 
 # Base64 encode the PFX file
 COMBINED_CERT=$(cat /tmp/kind.pfx | base64 -w0)

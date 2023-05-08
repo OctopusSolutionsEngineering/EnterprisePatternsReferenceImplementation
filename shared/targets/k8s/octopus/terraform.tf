@@ -46,24 +46,24 @@ variable "k8s_client_cert" {
   description = "The K8s client cert"
 }
 
-resource "octopusdeploy_certificate" "certificate_kind_ca" {
-  name                              = "Kind Client"
+resource "octopusdeploy_certificate" "certificate_k8s_cert" {
+  name                              = "K8s Client"
   certificate_data                  = var.k8s_client_cert
   password                          = "Password01!"
   environments                      = []
-  notes                             = "The certificate used to authenticate with the kind cluster"
+  notes                             = "The certificate used to authenticate with the k8s cluster"
   tenant_tags                       = []
   tenanted_deployment_participation = "Untenanted"
   tenants                           = []
 }
 
-resource octopusdeploy_kubernetes_cluster_deployment_target test_eks{
+resource "octopusdeploy_kubernetes_cluster_deployment_target" "cluster"s {
   cluster_url                       = var.k8s_cluster_url
   environments                      = [
     data.octopusdeploy_environments.development.environments[0].id,
     data.octopusdeploy_environments.test.environments[0].id,
     data.octopusdeploy_environments.production.environments[0].id]
-  name                              = "Kind"
+  name                              = "K8s"
   roles                             = ["k8s"]
   cluster_certificate               = ""
   machine_policy_id                 = data.octopusdeploy_machine_policies.default_machine_policy.machine_policies[0].id
@@ -85,6 +85,6 @@ resource octopusdeploy_kubernetes_cluster_deployment_target test_eks{
   }
 
   certificate_authentication {
-    client_certificate = octopusdeploy_certificate.certificate_kind_ca.id
+    client_certificate = octopusdeploy_certificate.certificate_k8s_cert.id
   }
 }
