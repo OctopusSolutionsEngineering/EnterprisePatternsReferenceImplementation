@@ -127,6 +127,10 @@ provider "octopusdeploy" {
   space_id = "Spaces-1"
 }
 
+output "space_id" {
+  value = octopusdeploy_space.space.id
+}
+
 ${file("../../../../spaces/octopus/terraform.tf")}
 EOF
         "Octopus.Action.Terraform.AllowPluginDownloads"  = "True"
@@ -140,7 +144,463 @@ EOF
         "Octopus.Action.Terraform.AzureAccount"                 = "False"
         "Octopus.Action.Terraform.ManagedAccount"               = "None"
         "Octopus.Action.GoogleCloud.ImpersonateServiceAccount"  = "False"
-        "Octopus.Action.Terraform.AdditionalActionParams"       = "-var=space_name=#{Octopus.Deployment.Tenant.Name}"
+        "Octopus.Action.Terraform.AdditionalActionParams"       = ""
+        "Octopus.Action.Terraform.RunAutomaticFileSubstitution" = "True"
+      }
+      environments          = []
+      excluded_environments = []
+      channels              = []
+      tenant_tags           = []
+      features              = []
+    }
+
+    properties   = {}
+    target_roles = []
+  }
+
+  step {
+    condition           = "Success"
+    name                = "Deploy Environments"
+    package_requirement = "LetOctopusDecide"
+    start_trigger       = "StartAfterPrevious"
+
+    action {
+      action_type                        = "Octopus.TerraformApply"
+      name                               = "Deploy Environments"
+      condition                          = "Success"
+      run_on_server                      = true
+      is_disabled                        = false
+      can_be_used_for_project_versioning = false
+      is_required                        = false
+      worker_pool_id                     = ""
+      properties                         = {
+        "Octopus.Action.Script.ScriptSource"             = "Inline"
+        "Octopus.Action.Terraform.Template"              = <<EOF
+terraform {
+  backend "pg" {
+    conn_str = "postgres://terraform:terraform@terraformdb:5432/environments?sslmode=disable"
+  }
+}
+
+provider "octopusdeploy" {
+  address  = "http://octopus:8080"
+  api_key  = "API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+  space_id = "Spaces-1"
+}
+
+${file("../../../../shared/environments/dev_test_prod/octopus/terraform.tf")}
+EOF
+        "Octopus.Action.Terraform.AllowPluginDownloads"  = "True"
+        "Octopus.Action.Terraform.GoogleCloudAccount"    = "False"
+        "Octopus.Action.GoogleCloud.UseVMServiceAccount" = "True"
+        "Octopus.Action.Terraform.TemplateParameters"    = jsonencode({
+          "space_id" = "#{Octopus.Action[Create Client Space].Output.TerraformValueOutputs[\"space_id\"]}"
+        })
+        "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name}"
+        "Octopus.Action.Terraform.PlanJsonOutput"               = "False"
+        "Octopus.Action.Terraform.AzureAccount"                 = "False"
+        "Octopus.Action.Terraform.ManagedAccount"               = "None"
+        "Octopus.Action.GoogleCloud.ImpersonateServiceAccount"  = "False"
+        "Octopus.Action.Terraform.AdditionalActionParams"       = ""
+        "Octopus.Action.Terraform.RunAutomaticFileSubstitution" = "True"
+      }
+      environments          = []
+      excluded_environments = []
+      channels              = []
+      tenant_tags           = []
+      features              = []
+    }
+
+    properties   = {}
+    target_roles = []
+  }
+
+  step {
+    condition           = "Success"
+    name                = "Deploy Sync Environment"
+    package_requirement = "LetOctopusDecide"
+    start_trigger       = "StartAfterPrevious"
+
+    action {
+      action_type                        = "Octopus.TerraformApply"
+      name                               = "Deploy Sync Environment"
+      condition                          = "Success"
+      run_on_server                      = true
+      is_disabled                        = false
+      can_be_used_for_project_versioning = false
+      is_required                        = false
+      worker_pool_id                     = ""
+      properties                         = {
+        "Octopus.Action.Script.ScriptSource"             = "Inline"
+        "Octopus.Action.Terraform.Template"              = <<EOF
+terraform {
+  backend "pg" {
+    conn_str = "postgres://terraform:terraform@terraformdb:5432/sync_environment?sslmode=disable"
+  }
+}
+
+provider "octopusdeploy" {
+  address  = "http://octopus:8080"
+  api_key  = "API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+  space_id = "Spaces-1"
+}
+
+${file("../../../../shared/environments/sync/octopus/terraform.tf")}
+EOF
+        "Octopus.Action.Terraform.AllowPluginDownloads"  = "True"
+        "Octopus.Action.Terraform.GoogleCloudAccount"    = "False"
+        "Octopus.Action.GoogleCloud.UseVMServiceAccount" = "True"
+        "Octopus.Action.Terraform.TemplateParameters"    = jsonencode({
+          "space_id" = "#{Octopus.Action[Create Client Space].Output.TerraformValueOutputs[\"space_id\"]}"
+        })
+        "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name}"
+        "Octopus.Action.Terraform.PlanJsonOutput"               = "False"
+        "Octopus.Action.Terraform.AzureAccount"                 = "False"
+        "Octopus.Action.Terraform.ManagedAccount"               = "None"
+        "Octopus.Action.GoogleCloud.ImpersonateServiceAccount"  = "False"
+        "Octopus.Action.Terraform.AdditionalActionParams"       = ""
+        "Octopus.Action.Terraform.RunAutomaticFileSubstitution" = "True"
+      }
+      environments          = []
+      excluded_environments = []
+      channels              = []
+      tenant_tags           = []
+      features              = []
+    }
+
+    properties   = {}
+    target_roles = []
+  }
+
+  step {
+    condition           = "Success"
+    name                = "Deploy Git Creds"
+    package_requirement = "LetOctopusDecide"
+    start_trigger       = "StartAfterPrevious"
+
+    action {
+      action_type                        = "Octopus.TerraformApply"
+      name                               = "Deploy Git Creds"
+      condition                          = "Success"
+      run_on_server                      = true
+      is_disabled                        = false
+      can_be_used_for_project_versioning = false
+      is_required                        = false
+      worker_pool_id                     = ""
+      properties                         = {
+        "Octopus.Action.Script.ScriptSource"             = "Inline"
+        "Octopus.Action.Terraform.Template"              = <<EOF
+terraform {
+  backend "pg" {
+    conn_str = "postgres://terraform:terraform@terraformdb:5432/gitcreds?sslmode=disable"
+  }
+}
+
+provider "octopusdeploy" {
+  address  = "http://octopus:8080"
+  api_key  = "API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+  space_id = "Spaces-1"
+}
+
+${file("../../../../shared/gitcreds/gitea/octopus/terraform.tf")}
+EOF
+        "Octopus.Action.Terraform.AllowPluginDownloads"  = "True"
+        "Octopus.Action.Terraform.GoogleCloudAccount"    = "False"
+        "Octopus.Action.GoogleCloud.UseVMServiceAccount" = "True"
+        "Octopus.Action.Terraform.TemplateParameters"    = jsonencode({
+          "space_id" = "#{Octopus.Action[Create Client Space].Output.TerraformValueOutputs[\"space_id\"]}"
+        })
+        "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name}"
+        "Octopus.Action.Terraform.PlanJsonOutput"               = "False"
+        "Octopus.Action.Terraform.AzureAccount"                 = "False"
+        "Octopus.Action.Terraform.ManagedAccount"               = "None"
+        "Octopus.Action.GoogleCloud.ImpersonateServiceAccount"  = "False"
+        "Octopus.Action.Terraform.AdditionalActionParams"       = ""
+        "Octopus.Action.Terraform.RunAutomaticFileSubstitution" = "True"
+      }
+      environments          = []
+      excluded_environments = []
+      channels              = []
+      tenant_tags           = []
+      features              = []
+    }
+
+    properties   = {}
+    target_roles = []
+  }
+
+  step {
+    condition           = "Success"
+    name                = "Deploy Maven Feed"
+    package_requirement = "LetOctopusDecide"
+    start_trigger       = "StartAfterPrevious"
+
+    action {
+      action_type                        = "Octopus.TerraformApply"
+      name                               = "Deploy Maven Feed"
+      condition                          = "Success"
+      run_on_server                      = true
+      is_disabled                        = false
+      can_be_used_for_project_versioning = false
+      is_required                        = false
+      worker_pool_id                     = ""
+      properties                         = {
+        "Octopus.Action.Script.ScriptSource"             = "Inline"
+        "Octopus.Action.Terraform.Template"              = <<EOF
+terraform {
+  backend "pg" {
+    conn_str = "postgres://terraform:terraform@terraformdb:5432/mavenfeed?sslmode=disable"
+  }
+}
+
+provider "octopusdeploy" {
+  address  = "http://octopus:8080"
+  api_key  = "API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+  space_id = "Spaces-1"
+}
+
+${file("../../../../shared/feeds/maven/octopus/terraform.tf")}
+EOF
+        "Octopus.Action.Terraform.AllowPluginDownloads"  = "True"
+        "Octopus.Action.Terraform.GoogleCloudAccount"    = "False"
+        "Octopus.Action.GoogleCloud.UseVMServiceAccount" = "True"
+        "Octopus.Action.Terraform.TemplateParameters"    = jsonencode({
+          "space_id" = "#{Octopus.Action[Create Client Space].Output.TerraformValueOutputs[\"space_id\"]}"
+        })
+        "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name}"
+        "Octopus.Action.Terraform.PlanJsonOutput"               = "False"
+        "Octopus.Action.Terraform.AzureAccount"                 = "False"
+        "Octopus.Action.Terraform.ManagedAccount"               = "None"
+        "Octopus.Action.GoogleCloud.ImpersonateServiceAccount"  = "False"
+        "Octopus.Action.Terraform.AdditionalActionParams"       = ""
+        "Octopus.Action.Terraform.RunAutomaticFileSubstitution" = "True"
+      }
+      environments          = []
+      excluded_environments = []
+      channels              = []
+      tenant_tags           = []
+      features              = []
+    }
+
+    properties   = {}
+    target_roles = []
+  }
+
+  step {
+    condition           = "Success"
+    name                = "Deploy DockerHub Feed"
+    package_requirement = "LetOctopusDecide"
+    start_trigger       = "StartAfterPrevious"
+
+    action {
+      action_type                        = "Octopus.TerraformApply"
+      name                               = "Deploy DockerHub Feed"
+      condition                          = "Success"
+      run_on_server                      = true
+      is_disabled                        = false
+      can_be_used_for_project_versioning = false
+      is_required                        = false
+      worker_pool_id                     = ""
+      properties                         = {
+        "Octopus.Action.Script.ScriptSource"             = "Inline"
+        "Octopus.Action.Terraform.Template"              = <<EOF
+terraform {
+  backend "pg" {
+    conn_str = "postgres://terraform:terraform@terraformdb:5432/dockerhubfeed?sslmode=disable"
+  }
+}
+
+provider "octopusdeploy" {
+  address  = "http://octopus:8080"
+  api_key  = "API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+  space_id = "Spaces-1"
+}
+
+${file("../../../../shared/feeds/dockerhub/octopus/terraform.tf")}
+EOF
+        "Octopus.Action.Terraform.AllowPluginDownloads"  = "True"
+        "Octopus.Action.Terraform.GoogleCloudAccount"    = "False"
+        "Octopus.Action.GoogleCloud.UseVMServiceAccount" = "True"
+        "Octopus.Action.Terraform.TemplateParameters"    = jsonencode({
+          "space_id" = "#{Octopus.Action[Create Client Space].Output.TerraformValueOutputs[\"space_id\"]}"
+        })
+        "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name}"
+        "Octopus.Action.Terraform.PlanJsonOutput"               = "False"
+        "Octopus.Action.Terraform.AzureAccount"                 = "False"
+        "Octopus.Action.Terraform.ManagedAccount"               = "None"
+        "Octopus.Action.GoogleCloud.ImpersonateServiceAccount"  = "False"
+        "Octopus.Action.Terraform.AdditionalActionParams"       = ""
+        "Octopus.Action.Terraform.RunAutomaticFileSubstitution" = "True"
+      }
+      environments          = []
+      excluded_environments = []
+      channels              = []
+      tenant_tags           = []
+      features              = []
+    }
+
+    properties   = {}
+    target_roles = []
+  }
+
+  step {
+    condition           = "Success"
+    name                = "Deploy Hello World Project Group"
+    package_requirement = "LetOctopusDecide"
+    start_trigger       = "StartAfterPrevious"
+
+    action {
+      action_type                        = "Octopus.TerraformApply"
+      name                               = "Deploy Hello World Project Group"
+      condition                          = "Success"
+      run_on_server                      = true
+      is_disabled                        = false
+      can_be_used_for_project_versioning = false
+      is_required                        = false
+      worker_pool_id                     = ""
+      properties                         = {
+        "Octopus.Action.Script.ScriptSource"             = "Inline"
+        "Octopus.Action.Terraform.Template"              = <<EOF
+terraform {
+  backend "pg" {
+    conn_str = "postgres://terraform:terraform@terraformdb:5432/project_group_hello_world?sslmode=disable"
+  }
+}
+
+provider "octopusdeploy" {
+  address  = "http://octopus:8080"
+  api_key  = "API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+  space_id = "Spaces-1"
+}
+
+${file("../../../../shared/project_group/hello_world/octopus/terraform.tf")}
+EOF
+        "Octopus.Action.Terraform.AllowPluginDownloads"  = "True"
+        "Octopus.Action.Terraform.GoogleCloudAccount"    = "False"
+        "Octopus.Action.GoogleCloud.UseVMServiceAccount" = "True"
+        "Octopus.Action.Terraform.TemplateParameters"    = jsonencode({
+          "space_id" = "#{Octopus.Action[Create Client Space].Output.TerraformValueOutputs[\"space_id\"]}"
+        })
+        "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name}"
+        "Octopus.Action.Terraform.PlanJsonOutput"               = "False"
+        "Octopus.Action.Terraform.AzureAccount"                 = "False"
+        "Octopus.Action.Terraform.ManagedAccount"               = "None"
+        "Octopus.Action.GoogleCloud.ImpersonateServiceAccount"  = "False"
+        "Octopus.Action.Terraform.AdditionalActionParams"       = ""
+        "Octopus.Action.Terraform.RunAutomaticFileSubstitution" = "True"
+      }
+      environments          = []
+      excluded_environments = []
+      channels              = []
+      tenant_tags           = []
+      features              = []
+    }
+
+    properties   = {}
+    target_roles = []
+  }
+
+  step {
+    condition           = "Success"
+    name                = "Deploy Azure Project Group"
+    package_requirement = "LetOctopusDecide"
+    start_trigger       = "StartAfterPrevious"
+
+    action {
+      action_type                        = "Octopus.TerraformApply"
+      name                               = "Deploy Azure Project Group"
+      condition                          = "Success"
+      run_on_server                      = true
+      is_disabled                        = false
+      can_be_used_for_project_versioning = false
+      is_required                        = false
+      worker_pool_id                     = ""
+      properties                         = {
+        "Octopus.Action.Script.ScriptSource"             = "Inline"
+        "Octopus.Action.Terraform.Template"              = <<EOF
+terraform {
+  backend "pg" {
+    conn_str = "postgres://terraform:terraform@terraformdb:5432/project_group_azure?sslmode=disable"
+  }
+}
+
+provider "octopusdeploy" {
+  address  = "http://octopus:8080"
+  api_key  = "API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+  space_id = "Spaces-1"
+}
+
+${file("../../../../shared/project_group/azure/octopus/terraform.tf")}
+EOF
+        "Octopus.Action.Terraform.AllowPluginDownloads"  = "True"
+        "Octopus.Action.Terraform.GoogleCloudAccount"    = "False"
+        "Octopus.Action.GoogleCloud.UseVMServiceAccount" = "True"
+        "Octopus.Action.Terraform.TemplateParameters"    = jsonencode({
+          "space_id" = "#{Octopus.Action[Create Client Space].Output.TerraformValueOutputs[\"space_id\"]}"
+        })
+        "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name}"
+        "Octopus.Action.Terraform.PlanJsonOutput"               = "False"
+        "Octopus.Action.Terraform.AzureAccount"                 = "False"
+        "Octopus.Action.Terraform.ManagedAccount"               = "None"
+        "Octopus.Action.GoogleCloud.ImpersonateServiceAccount"  = "False"
+        "Octopus.Action.Terraform.AdditionalActionParams"       = ""
+        "Octopus.Action.Terraform.RunAutomaticFileSubstitution" = "True"
+      }
+      environments          = []
+      excluded_environments = []
+      channels              = []
+      tenant_tags           = []
+      features              = []
+    }
+
+    properties   = {}
+    target_roles = []
+  }
+
+  step {
+    condition           = "Success"
+    name                = "Deploy K8s Project Group"
+    package_requirement = "LetOctopusDecide"
+    start_trigger       = "StartAfterPrevious"
+
+    action {
+      action_type                        = "Octopus.TerraformApply"
+      name                               = "Deploy K8s Project Group"
+      condition                          = "Success"
+      run_on_server                      = true
+      is_disabled                        = false
+      can_be_used_for_project_versioning = false
+      is_required                        = false
+      worker_pool_id                     = ""
+      properties                         = {
+        "Octopus.Action.Script.ScriptSource"             = "Inline"
+        "Octopus.Action.Terraform.Template"              = <<EOF
+terraform {
+  backend "pg" {
+    conn_str = "postgres://terraform:terraform@terraformdb:5432/project_group_k8s?sslmode=disable"
+  }
+}
+
+provider "octopusdeploy" {
+  address  = "http://octopus:8080"
+  api_key  = "API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+  space_id = "Spaces-1"
+}
+
+${file("../../../../shared/project_group/k8s/octopus/terraform.tf")}
+EOF
+        "Octopus.Action.Terraform.AllowPluginDownloads"  = "True"
+        "Octopus.Action.Terraform.GoogleCloudAccount"    = "False"
+        "Octopus.Action.GoogleCloud.UseVMServiceAccount" = "True"
+        "Octopus.Action.Terraform.TemplateParameters"    = jsonencode({
+          "space_id" = "#{Octopus.Action[Create Client Space].Output.TerraformValueOutputs[\"space_id\"]}"
+        })
+        "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name}"
+        "Octopus.Action.Terraform.PlanJsonOutput"               = "False"
+        "Octopus.Action.Terraform.AzureAccount"                 = "False"
+        "Octopus.Action.Terraform.ManagedAccount"               = "None"
+        "Octopus.Action.GoogleCloud.ImpersonateServiceAccount"  = "False"
+        "Octopus.Action.Terraform.AdditionalActionParams"       = ""
         "Octopus.Action.Terraform.RunAutomaticFileSubstitution" = "True"
       }
       environments          = []

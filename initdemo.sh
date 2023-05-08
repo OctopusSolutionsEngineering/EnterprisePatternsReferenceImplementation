@@ -202,96 +202,77 @@ done
 
 echo ""
 
-# Start by creating the spaces.
-for space in "Europe" "America"
-do
-  docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE spaces"'
-  pushd spaces/pgbackend
-  terraform init -reconfigure -upgrade
-  terraform workspace new $space
-  terraform workspace select $space
-  terraform apply -auto-approve -var=space_name=$space
-  popd
-done
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE gitcreds"'
+pushd shared/gitcreds/gitea/pgbackend
+terraform init -reconfigure -upgrade
+terraform workspace new Spaces-1
+terraform workspace select Spaces-1
+terraform apply -auto-approve -var=octopus_space_id=Spaces-1
+popd
 
-# Populate the spaces with shared resources.
-# Note the use of Terraform workspaces to manage the state of each space independently.
-for space in Spaces-1 Spaces-2 Spaces-3
-do
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE environments"'
+pushd shared/environments/dev_test_prod/pgbackend
+terraform init -reconfigure -upgrade
+terraform workspace new Spaces-1
+terraform workspace select Spaces-1
+terraform apply -auto-approve -var=octopus_space_id=Spaces-1
+popd
 
-  docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE gitcreds"'
-  pushd shared/gitcreds/gitea/pgbackend
-  terraform init -reconfigure -upgrade
-  terraform workspace new $space
-  terraform workspace select $space
-  terraform apply -auto-approve -var=octopus_space_id=$space
-  popd
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE sync_environment"'
+pushd shared/environments/sync/pgbackend
+terraform init -reconfigure -upgrade
+terraform workspace new Spaces-1
+terraform workspace select Spaces-1
+terraform apply -auto-approve -var=octopus_space_id=Spaces-1
+popd
 
-  docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE environments"'
-  pushd shared/environments/dev_test_prod/pgbackend
-  terraform init -reconfigure -upgrade
-  terraform workspace new $space
-  terraform workspace select $space
-  terraform apply -auto-approve -var=octopus_space_id=$space
-  popd
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE mavenfeed"'
+pushd shared/feeds/maven/pgbackend
+terraform init -reconfigure -upgrade
+terraform workspace new Spaces-1
+terraform workspace select Spaces-1
+terraform apply -auto-approve -var=octopus_space_id=Spaces-1
+popd
 
-  docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE sync_environment"'
-  pushd shared/environments/sync/pgbackend
-  terraform init -reconfigure -upgrade
-  terraform workspace new $space
-  terraform workspace select $space
-  terraform apply -auto-approve -var=octopus_space_id=$space
-  popd
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE dockerhubfeed"'
+pushd shared/feeds/dockerhub/pgbackend
+terraform init -reconfigure -upgrade
+terraform workspace new Spaces-1
+terraform workspace select Spaces-1
+terraform apply -auto-approve -var=octopus_space_id=Spaces-1
+popd
 
-  docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE mavenfeed"'
-  pushd shared/feeds/maven/pgbackend
-  terraform init -reconfigure -upgrade
-  terraform workspace new $space
-  terraform workspace select $space
-  terraform apply -auto-approve -var=octopus_space_id=$space
-  popd
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE project_group_hello_world"'
+pushd shared/project_group/hello_world/pgbackend
+terraform init -reconfigure -upgrade
+terraform workspace new Spaces-1
+terraform workspace select Spaces-1
+terraform apply -auto-approve -var=octopus_space_id=Spaces-1
+popd
 
-  docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE dockerhubfeed"'
-  pushd shared/feeds/dockerhub/pgbackend
-  terraform init -reconfigure -upgrade
-  terraform workspace new $space
-  terraform workspace select $space
-  terraform apply -auto-approve -var=octopus_space_id=$space
-  popd
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE project_group_azure"'
+pushd shared/project_group/azure/pgbackend
+terraform init -reconfigure -upgrade
+terraform workspace new Spaces-1
+terraform workspace select Spaces-1
+terraform apply -auto-approve -var=octopus_space_id=Spaces-1
+popd
 
-  docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE project_group_hello_world"'
-  pushd shared/project_group/hello_world/pgbackend
-  terraform init -reconfigure -upgrade
-  terraform workspace new $space
-  terraform workspace select $space
-  terraform apply -auto-approve -var=octopus_space_id=$space
-  popd
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE project_group_k8s"'
+pushd shared/project_group/k8s/pgbackend
+terraform init -reconfigure -upgrade
+terraform workspace new Spaces-1
+terraform workspace select Spaces-1
+terraform apply -auto-approve -var=octopus_space_id=Spaces-1
+popd
 
-  docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE project_group_azure"'
-  pushd shared/project_group/azure/pgbackend
-  terraform init -reconfigure -upgrade
-  terraform workspace new $space
-  terraform workspace select $space
-  terraform apply -auto-approve -var=octopus_space_id=$space
-  popd
-
-  docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE project_group_k8s"'
-  pushd shared/project_group/k8s/pgbackend
-  terraform init -reconfigure -upgrade
-  terraform workspace new $space
-  terraform workspace select $space
-  terraform apply -auto-approve -var=octopus_space_id=$space
-  popd
-
-  docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE lib_var_this_instance"'
-  pushd shared/variables/this_instance/pgbackend
-  terraform init -reconfigure -upgrade
-  terraform workspace new $space
-  terraform workspace select $space
-  terraform apply -auto-approve -var=octopus_space_id=$space
-  popd
-
-done
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE lib_var_this_instance"'
+pushd shared/variables/this_instance/pgbackend
+terraform init -reconfigure -upgrade
+terraform workspace new Spaces-1
+terraform workspace select Spaces-1
+terraform apply -auto-approve -var=octopus_space_id=$space
+popd
 
 docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE project_group_client_space"'
 pushd management_instance/project_group/client_space/pgbackend
