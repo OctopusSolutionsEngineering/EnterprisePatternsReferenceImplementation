@@ -114,7 +114,21 @@ resource "octopusdeploy_runbook_process" "runbook_process____create_client_space
       worker_pool_id                     = ""
       properties                         = {
         "Octopus.Action.Script.ScriptSource"             = "Inline"
-        "Octopus.Action.Terraform.Template"              = "terraform {\n  backend \"pg\" {\n    conn_str = \"postgres://terraform:terraform@terraformdb:5432/spaces?sslmode=disable\"\n  }\n}\n\nterraform {\n  required_providers {\n    octopusdeploy = { source = \"OctopusDeployLabs/octopusdeploy\", version = \"0.12.0\" }\n  }\n}\n\nprovider \"octopusdeploy\" {\n  address  = \"http://octopus:8080\"\n  api_key  = \"API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\"\n  space_id = \"Spaces-1\"\n}\n\nvariable \"space_name\" {\n  type        = string\n  nullable    = false\n  sensitive   = false\n  description = \"The name of the new space\"\n}\n\nresource \"octopusdeploy_space\" \"space\" {\n  description                 = \"A space for team $${var.space_name}.\"\n  name                        = var.space_name\n  is_default                  = false\n  is_task_queue_stopped       = false\n  space_managers_team_members = []\n  space_managers_teams        = [\"teams-everyone\"]\n}"
+        "Octopus.Action.Terraform.Template"              = <<EOF
+terraform {
+  backend "pg" {
+    conn_str = "postgres://terraform:terraform@terraformdb:5432/spaces?sslmode=disable"
+  }
+}
+
+provider "octopusdeploy" {
+  address  = "http://octopus:8080"
+  api_key  = "API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+  space_id = "Spaces-1"
+}
+
+${file("../../../../spaces/octopus/terraform.tf")}
+EOF
         "Octopus.Action.Terraform.AllowPluginDownloads"  = "True"
         "Octopus.Action.Terraform.GoogleCloudAccount"    = "False"
         "Octopus.Action.GoogleCloud.UseVMServiceAccount" = "True"
