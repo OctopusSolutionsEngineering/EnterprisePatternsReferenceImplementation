@@ -1,6 +1,6 @@
 terraform {
   required_providers {
-    octopusdeploy = { source = "OctopusDeployLabs/octopusdeploy", version = "0.12.0" }
+    octopusdeploy = { source = "OctopusDeployLabs/octopusdeploy", version = "0.12.1" }
   }
 }
 
@@ -89,6 +89,13 @@ data "octopusdeploy_git_credentials" "gitcredential" {
   name = "Git"
   skip = 0
   take = 1
+}
+
+resource "octopusdeploy_variable" "package" {
+  owner_id = octopusdeploy_project.project.id
+  type     = "String"
+  name     = "Azure.WebApp.PackageId"
+  value    = "octopussamples/octopub"
 }
 
 resource "octopusdeploy_project_group" "project_group" {
@@ -212,14 +219,15 @@ resource "octopusdeploy_variable" "cloud_discovery" {
        tenant_tags           = []
 
        primary_package {
-         package_id           = "octopussamples/octopub"
+         package_id           = "#{Azure.WebApp.PackageId}"
          acquisition_location = "NotAcquired"
          feed_id              = data.octopusdeploy_feeds.docker.feeds[0].id
          properties           = { SelectionMode = "immediate" }
        }
 
        features = [
-         "Octopus.Features.JsonConfigurationVariables", "Octopus.Features.ConfigurationTransforms",
+         "Octopus.Features.JsonConfigurationVariables",
+         "Octopus.Features.ConfigurationTransforms",
          "Octopus.Features.SubstituteInFiles"
        ]
      }

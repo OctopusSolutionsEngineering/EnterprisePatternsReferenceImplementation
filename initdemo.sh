@@ -24,10 +24,81 @@ then
   exit 1
 fi
 
+if ! which kind
+then
+  echo "You must install kind: https://kind.sigs.k8s.io/docs/user/quick-start/"
+  exit 1
+fi
+
+if ! which openssl
+then
+  echo "You must install openssl"
+  exit 1
+fi
+
+if ! which jq
+then
+  echo "You must install jq"
+  exit 1
+fi
+
 if [[ -z "${OCTOPUS_SERVER_BASE64_LICENSE}" ]]
 then
   echo "You must set the OCTOPUS_SERVER_BASE64_LICENSE environment variable to the base 64 encoded representation of an Octopus license."
   exit 1
+fi
+
+if [[ -z "${TF_VAR_docker_username}" ]]
+then
+  echo "You must set the TF_VAR_docker_username environment variable to the DockerHub username."
+  exit 1
+fi
+
+if [[ -z "${TF_VAR_docker_password}" ]]
+then
+  echo "You must set the TF_VAR_docker_password environment variable to the DockerHub password."
+  exit 1
+fi
+
+if [[ -z "${TF_VAR_azure_application_id}" ]]
+then
+  echo "You must set the TF_VAR_azure_application_id environment variable to the Azure application ID."
+  exit 1
+fi
+
+if [[ -z "${TF_VAR_azure_subscription_id}" ]]
+then
+  echo "You must set the TF_VAR_azure_subscription_id environment variable to the Azure subscription ID."
+  exit 1
+fi
+
+if [[ -z "${TF_VAR_azure_password}" ]]
+then
+  echo "You must set the TF_VAR_azure_password environment variable to the Azure password."
+  exit 1
+fi
+
+if [[ -z "${TF_VAR_azure_tenant_id}" ]]
+then
+  echo "You must set the TF_VAR_azure_tenant_id environment variable to the Azure tenant ID."
+  exit 1
+fi
+
+# It is possible to have unique values per tenant, but most demos will simply reuse the main credentials
+if [[ -z "${TF_VAR_america_azure_application_id}" ]]
+then
+  export TF_VAR_america_azure_application_id=$TF_VAR_america_azure_application_id
+  export TF_VAR_america_azure_subscription_id=TF_VAR_azure_subscription_id
+  export TF_VAR_america_azure_password=TF_VAR_azure_password
+  export TF_VAR_america_azure_tenant_id=TF_VAR_azure_tenant_id
+fi
+
+if [[ -z "${TF_VAR_europe_azure_application_id}" ]]
+then
+  export TF_VAR_europe_azure_application_id=$TF_VAR_europe_azure_application_id
+  export TF_VAR_europe_azure_subscription_id=TF_VAR_azure_subscription_id
+  export TF_VAR_europe_azure_password=TF_VAR_azure_password
+  export TF_VAR_europe_azure_tenant_id=TF_VAR_azure_tenant_id
 fi
 
 # Start the Docker Compose stack
@@ -35,6 +106,37 @@ pushd docker
 docker-compose pull
 docker-compose up -d
 popd
+
+# Create a new cluster with a custom configuration that binds to all network addresses
+if [[ ! -f /tmp/octoconfig.yml ]]
+then
+  kind delete cluster --name octopus
+fi
+
+kind create cluster --config k8s/kind.yml --name octopus --kubeconfig /tmp/octoconfig.yml
+
+# Extract the cluster URL. This will be a 127.0.0.1 address though, which is not quite what we need.
+CLUSTER_URL=$(docker run --rm -v /tmp:/workdir mikefarah/yq '.clusters[0].cluster.server' octoconfig.yml)
+
+# This returns the IP address of the host system, which is how the Octopus server reaches out to the Kind cluster.
+DOCKER_HOST_IP=$(docker network inspect docker_octopus | jq -r '.[0].IPAM.Config[0].Gateway')
+
+# We assume the kind cluster has bound itself to a port range in the tens of thousands
+CLUSTER_PORT=${CLUSTER_URL: -5}
+
+# Extract the client certificate data
+CLIENT_CERTIFICATE_DATA=$(docker run --rm -v /tmp:/workdir mikefarah/yq '.users[0].user.client-certificate-data' octoconfig.yml)
+CLIENT_KEY_DATA=$(docker run --rm -v /tmp:/workdir mikefarah/yq '.users[0].user.client-key-data' octoconfig.yml)
+
+# Write the decoded certificates to temp files
+echo "${CLIENT_CERTIFICATE_DATA}" | base64 -d > /tmp/kind.crt
+echo "${CLIENT_KEY_DATA}" | base64 -d > /tmp/kind.key
+
+# Create a self contained PFX certificate
+openssl pkcs12 -export -name "test.com" -password "pass:Password01!" -out /tmp/kind.pfx -inkey /tmp/kind.key -in /tmp/kind.crt
+
+# Base64 encode the PFX file
+COMBINED_CERT=$(cat /tmp/kind.pfx | base64 -w0)
 
 # Set the initial Gitea user
 EXISTING=$(docker exec -it gitea su git bash -c "gitea admin user list")
@@ -66,7 +168,7 @@ curl \
   --data '{"username": "octopuscac"}'
 
 # Create the repos and populate with an initial commit.
-for repo in europe_product_service europe_frontend america_product_service america_frontend hello_world_cac azure_web_app_cac
+for repo in europe_product_service europe_frontend america_product_service america_frontend hello_world_cac azure_web_app_cac k8s_microservice_template
 do
   # Create the repo
   curl \
@@ -101,11 +203,16 @@ done
 echo ""
 
 # Start by creating the spaces.
-docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE spaces"'
-pushd spaces/pgbackend
-terraform init -reconfigure -upgrade
-terraform apply -auto-approve
-popd
+for space in "Europe" "America"
+do
+  docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE spaces"'
+  pushd spaces/pgbackend
+  terraform init -reconfigure -upgrade
+  terraform workspace new $space
+  terraform workspace select $space
+  terraform apply -auto-approve -var=space_name=$space
+  popd
+done
 
 # Populate the spaces with shared resources.
 # Note the use of Terraform workspaces to manage the state of each space independently.
@@ -168,6 +275,14 @@ do
   terraform apply -auto-approve -var=octopus_space_id=$space
   popd
 
+  docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE project_group_k8s"'
+  pushd shared/project_group/k8s/pgbackend
+  terraform init -reconfigure -upgrade
+  terraform workspace new $space
+  terraform workspace select $space
+  terraform apply -auto-approve -var=octopus_space_id=$space
+  popd
+
   docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE lib_var_this_instance"'
   pushd shared/variables/this_instance/pgbackend
   terraform init -reconfigure -upgrade
@@ -177,6 +292,14 @@ do
   popd
 
 done
+
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE project_group_client_space"'
+pushd management_instance/project_group/client_space/pgbackend
+terraform init -reconfigure -upgrade
+terraform workspace new Spaces-1
+terraform workspace select Spaces-1
+terraform apply -auto-approve -var=octopus_space_id=Spaces-1
+popd
 
 # Add the tenant tags
 docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE management_tenant_tags"'
@@ -196,6 +319,19 @@ terraform workspace select "Spaces-1"
 terraform apply -auto-approve -var=octopus_space_id=Spaces-1
 popd
 
+# Setup targets
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE target_k8s"'
+pushd shared/targets/k8s/pgbackend
+terraform init -reconfigure -upgrade
+terraform workspace new "Spaces-1"
+terraform workspace select "Spaces-1"
+terraform apply \
+  -auto-approve \
+  -var=octopus_space_id=Spaces-1 \
+  "-var=k8s_cluster_url=https://${DOCKER_HOST_IP}:${CLUSTER_PORT}" \
+  "-var=k8s_client_cert=${COMBINED_CERT}"
+popd
+
 # Setup library variable sets
 docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE lib_var_octopus_server"'
 pushd shared/variables/octopus_server/pgbackend
@@ -213,7 +349,23 @@ terraform workspace select "Spaces-1"
 terraform apply -auto-approve -var=octopus_space_id=Spaces-1
 popd
 
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE lib_var_k8s"'
+pushd shared/variables/k8s/pgbackend
+terraform init -reconfigure -upgrade
+terraform workspace new "Spaces-1"
+terraform workspace select "Spaces-1"
+terraform apply -auto-approve -var=octopus_space_id=Spaces-1
+popd
+
 # Add the sample projects to the management instance
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE project_create_client_space"'
+pushd management_instance/projects/create_client_space/pgbackend
+terraform init -reconfigure -upgrade
+terraform workspace new Spaces-1
+terraform workspace select Spaces-1
+terraform apply -auto-approve -var=octopus_space_id=Spaces-1
+popd
+
 docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE project_hello_world"'
 pushd management_instance/projects/hello_world/pgbackend
 terraform init -reconfigure -upgrade
@@ -238,9 +390,26 @@ terraform workspace select Spaces-1
 terraform apply -auto-approve -var=octopus_space_id=Spaces-1
 popd
 
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE project_k8s_microservice"'
+pushd management_instance/projects/k8s_microservice/pgbackend
+terraform init -reconfigure -upgrade
+terraform workspace new Spaces-1
+terraform workspace select Spaces-1
+terraform apply -auto-approve -var=octopus_space_id=Spaces-1
+popd
+
 docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE project_azure_space_initialization"'
 docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE project_initialize_azure_space"'
 pushd management_instance/projects/azure_space_initialization/pgbackend
+terraform init -reconfigure -upgrade
+terraform workspace new Spaces-1
+terraform workspace select Spaces-1
+terraform apply -auto-approve -var=octopus_space_id=Spaces-1
+popd
+
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE project_k8s_space_initialization"'
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE project_initialize_k8s_space"'
+pushd management_instance/projects/k8s_space_initialization/pgbackend
 terraform init -reconfigure -upgrade
 terraform workspace new Spaces-1
 terraform workspace select Spaces-1
@@ -253,13 +422,18 @@ pushd management_instance/tenants/regional_tenants/pgbackend
 terraform init -reconfigure -upgrade
 terraform workspace new Spaces-1
 terraform workspace select Spaces-1
-terraform apply -auto-approve -var=octopus_space_id=Spaces-1
+terraform apply -auto-approve \
+  "-var=octopus_space_id=Spaces-1" \
+  "-var=america_k8s_cert=${COMBINED_CERT}" \
+  "-var=america_k8s_url=https://${DOCKER_HOST_IP}:${CLUSTER_PORT}" \
+  "-var=europe_k8s_cert=${COMBINED_CERT}" \
+  "-var=europe_k8s_url=https://${DOCKER_HOST_IP}:${CLUSTER_PORT}"
 popd
 
 # Add serialize and deploy runbooks to sample projects.
 # These runbooks are common across these kinds of projects, but benefit from being able to reference the project they
 # are associated with. So they are linked up to each project individually, even though they all come from the same source.
-for project in "Hello World"
+for project in "Hello World" "K8S Microservice Template"
 do
   docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE serialize_and_deploy"'
   pushd management_instance/runbooks/serialize_and_deploy/pgbackend
@@ -301,6 +475,14 @@ docker-compose -f docker/compose.yml exec octopus sh -c 'wget -O- https://apt.re
 docker-compose -f docker/compose.yml exec octopus sh -c 'echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list'
 docker-compose -f docker/compose.yml exec octopus sh -c 'apt update'
 docker-compose -f docker/compose.yml exec octopus sh -c 'apt-get install -y terraform'
-docker-compose -f docker/compose.yml exec octopus sh -c 'curl --silent -L -o /usr/bin/octoterra https://github.com/OctopusSolutionsEngineering/OctopusTerraformExport/releases/latest/download/octoterra_linux_amd64'
-docker-compose -f docker/compose.yml exec octopus sh -c 'chmod +x /usr/bin/octoterra'
 docker-compose -f docker/compose.yml exec octopus sh -c 'curl -sL https://aka.ms/InstallAzureCLIDeb | bash'
+docker-compose -f docker/compose.yml exec octopus sh -c 'curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"; install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl'
+
+# This gets a custom terraform provider build installed
+#docker-compose -f docker/compose.yml exec octopus sh -c 'mkdir -p /terraform'
+#docker cp /home/matthew/Code/terraform-provider-octopusdeploy/terraform-provider-octopusdeploy docker_octopus_1:/terraform/terraform-provider-octopusdeploy
+#docker cp config/.terraformrc docker_octopus_1:/root
+
+# This installs octoterra locally
+#docker-compose -f docker/compose.yml exec octopus sh -c 'curl --silent -L -o /usr/bin/octoterra https://github.com/OctopusSolutionsEngineering/OctopusTerraformExport/releases/latest/download/octoterra_linux_amd64'
+#docker-compose -f docker/compose.yml exec octopus sh -c 'chmod +x /usr/bin/octoterra'

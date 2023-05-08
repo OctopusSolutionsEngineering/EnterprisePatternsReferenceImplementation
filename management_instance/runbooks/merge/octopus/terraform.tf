@@ -1,12 +1,12 @@
 terraform {
   required_providers {
-    octopusdeploy = { source = "OctopusDeployLabs/octopusdeploy", version = "0.12.0" }
+    octopusdeploy = { source = "OctopusDeployLabs/octopusdeploy", version = "0.12.1" }
   }
 }
 
 locals {
-  workspace     = "#{Octopus.Deployment.Tenant.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
-  new_repo      = "#{Octopus.Deployment.Tenant.Name | ToLower}_#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
+  workspace     = "#{Octopus.Deployment.Tenant.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_#{Exported.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
+  new_repo      = "#{Octopus.Deployment.Tenant.Name | ToLower}_#{OExported.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
   cac_org       = "octopuscac"
   cac_password  = "Password01!"
   cac_username  = "octopus"
@@ -68,7 +68,7 @@ variable "runbook_backend_service_deploy_project_name" {
   nullable    = false
   sensitive   = false
   description = "The name of the project exported from Deploy Project"
-  default     = "3. Merge Changes"
+  default     = "__ 3. Merge with Downstream Project"
 }
 
 resource "octopusdeploy_runbook" "runbook_merge_git" {

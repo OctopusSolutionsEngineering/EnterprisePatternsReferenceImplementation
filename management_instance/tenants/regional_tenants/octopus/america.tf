@@ -26,6 +26,20 @@ variable "america_azure_tenant_id" {
   description = "The Azure tenant ID."
 }
 
+variable "america_k8s_cert" {
+  type        = string
+  nullable    = false
+  sensitive   = true
+  description = "The K8s user cert."
+}
+
+variable "america_k8s_url" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "The K8s URL."
+}
+
 resource "octopusdeploy_tenant" "america" {
   name        = "America"
   description = "Tenant representing the American region Octopus space"
@@ -66,6 +80,20 @@ resource "octopusdeploy_tenant" "america" {
       data.octopusdeploy_environments.sync.environments[0].id
     ]
     project_id   = data.octopusdeploy_projects.project_init_space.projects[0].id
+  }
+
+  project_environment {
+    environments = [
+      data.octopusdeploy_environments.sync.environments[0].id
+    ]
+    project_id   = data.octopusdeploy_projects.project_init_space_k8s.projects[0].id
+  }
+
+  project_environment {
+    environments = [
+      data.octopusdeploy_environments.sync.environments[0].id
+    ]
+    project_id   = data.octopusdeploy_projects.project_create_client_space.projects[0].id
   }
 }
 
@@ -150,5 +178,27 @@ resource "octopusdeploy_tenant_common_variable" "america_azure_password" {
   ])[0]
   tenant_id               = octopusdeploy_tenant.america.id
   value                   = var.america_azure_password
+  depends_on              = [octopusdeploy_tenant.america]
+}
+
+resource "octopusdeploy_tenant_common_variable" "america_k8s_cert" {
+  library_variable_set_id = data.octopusdeploy_library_variable_sets.k8s.library_variable_sets[0].id
+  template_id             = tolist([
+    for tmp in data.octopusdeploy_library_variable_sets.k8s.library_variable_sets[0].template :
+    tmp.id if tmp.name == "Tenant.K8S.CertificateData"
+  ])[0]
+  tenant_id               = octopusdeploy_tenant.america.id
+  value                   = var.america_k8s_cert
+  depends_on              = [octopusdeploy_tenant.america]
+}
+
+resource "octopusdeploy_tenant_common_variable" "america_k8s_url" {
+  library_variable_set_id = data.octopusdeploy_library_variable_sets.k8s.library_variable_sets[0].id
+  template_id             = tolist([
+    for tmp in data.octopusdeploy_library_variable_sets.k8s.library_variable_sets[0].template :
+    tmp.id if tmp.name == "Tenant.K8S.Url"
+  ])[0]
+  tenant_id               = octopusdeploy_tenant.america.id
+  value                   = var.america_k8s_url
   depends_on              = [octopusdeploy_tenant.america]
 }

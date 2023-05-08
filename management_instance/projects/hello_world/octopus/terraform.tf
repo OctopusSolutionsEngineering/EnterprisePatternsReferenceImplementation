@@ -1,6 +1,6 @@
 terraform {
   required_providers {
-    octopusdeploy = { source = "OctopusDeployLabs/octopusdeploy", version = "0.12.0" }
+    octopusdeploy = { source = "OctopusDeployLabs/octopusdeploy", version = "0.12.1" }
   }
 }
 
@@ -46,8 +46,15 @@ data "octopusdeploy_worker_pools" "workerpool_default" {
   take = 1
 }
 
+resource "octopusdeploy_variable" "world" {
+  owner_id = octopusdeploy_project.project_hello_world.id
+  type     = "String"
+  name     = "Hello.Target"
+  value    = "World"
+}
+
 resource "octopusdeploy_deployment_process" "deployment_process_project_hello_world" {
-  project_id = "${octopusdeploy_project.project_hello_world.id}"
+  project_id = octopusdeploy_project.project_hello_world.id
 
   lifecycle {
     ignore_changes = [
@@ -72,7 +79,7 @@ resource "octopusdeploy_deployment_process" "deployment_process_project_hello_wo
       worker_pool_id                     = "${data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id}"
       properties                         = {
         "Octopus.Action.Script.ScriptSource" = "Inline"
-        "Octopus.Action.Script.ScriptBody"   = "echo 'Hello world, using Bash'\n\n#TODO: Experiment with steps of your own :)\n\necho '[Learn more about the types of steps available in Octopus](https://oc.to/OnboardingAddStepsLearnMore)'"
+        "Octopus.Action.Script.ScriptBody"   = "echo 'Hello #{Hello.Target}, using Bash'\n\n#TODO: Experiment with steps of your own :)\n\necho '[Learn more about the types of steps available in Octopus](https://oc.to/OnboardingAddStepsLearnMore)'"
         "Octopus.Action.Script.Syntax"       = "Bash"
       }
       environments          = []

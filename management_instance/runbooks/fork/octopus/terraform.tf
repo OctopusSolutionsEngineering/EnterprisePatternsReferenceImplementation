@@ -1,21 +1,21 @@
 terraform {
   required_providers {
-    octopusdeploy = { source = "OctopusDeployLabs/octopusdeploy", version = "0.12.0" }
+    octopusdeploy = { source = "OctopusDeployLabs/octopusdeploy", version = "0.12.1" }
   }
 }
 
 locals {
-  workspace        = "#{Octopus.Deployment.Tenant.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
-  new_repo         = "#{Octopus.Deployment.Tenant.Name | ToLower}_#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
-  cac_org          = "octopuscac"
-  cac_password     = "Password01!"
-  cac_username     = "octopus"
-  cac_host         = "gitea:3000"
-  cac_proto        = "http"
-  package          = "#{Octopus.Project.Name | Replace \"[^a-zA-Z0-9]\" \"_\"}"
-  # We know this value by convention
-  git_url_var_name = "project_#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_git_url"
-  template_repo    = "#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
+  workspace             = "#{Octopus.Deployment.Tenant.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_#{Exported.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
+  new_repo              = "#{Octopus.Deployment.Tenant.Name | ToLower}_#{Exported.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
+  project_name_variable = "project_#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_name"
+  cac_org               = "octopuscac"
+  cac_password          = "Password01!"
+  cac_username          = "octopus"
+  cac_host              = "gitea:3000"
+  cac_proto             = "http"
+  package               = "#{Octopus.Project.Name | Replace \"[^a-zA-Z0-9]\" \"_\"}"
+  git_url_var_name      = "project_#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_git_url"
+  template_repo         = "#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
 }
 
 variable "project_name" {
@@ -65,12 +65,66 @@ data "octopusdeploy_environments" "sync" {
   take         = 1
 }
 
+resource "octopusdeploy_variable" "octopus_api_key" {
+  name         = "Exported.Project.Name"
+  type         = "String"
+  description  = "The name of the new project"
+  is_sensitive = false
+  is_editable  = true
+  owner_id     = data.octopusdeploy_projects.project.projects[0].id
+  value        = "#{Octopus.Project.Name}"
+
+  prompt {
+    description = "The name of the new project"
+    label       = "Project Name"
+    is_required = true
+  }
+}
+
+resource "octopusdeploy_variable" "ignore_project_changes" {
+  name         = "Exported.Project.IgnoreChanges"
+  type         = "String"
+  description  = "Select this option to ignore changes to the project once it is deployed."
+  is_sensitive = false
+  is_editable  = true
+  owner_id     = data.octopusdeploy_projects.project.projects[0].id
+  value        = "False"
+
+  prompt {
+    description = "Check this box to ignore changes to the deployed project"
+    label       = "Ignore Project Changes"
+    is_required = true
+    display_settings {
+      control_type = "Checkbox"
+    }
+  }
+}
+
+resource "octopusdeploy_variable" "ignore_project_variable_changes" {
+  name         = "Exported.Project.IgnoreVariableChanges"
+  type         = "String"
+  description  = "Select this option to ignore changes to the project's secret variables once it is deployed (note non-secret variables are managed by CaC). This is implied by selecting the \"Ignore Project Changes\" option. "
+  is_sensitive = false
+  is_editable  = true
+  owner_id     = data.octopusdeploy_projects.project.projects[0].id
+  value        = "True"
+
+  prompt {
+    description = "Check this box to ignore changes to the deployed project's variables. This is also enabled by selecting the \"Ignore Project Changes\" option. "
+    label       = "Ignore Project Variable Changes"
+    is_required = true
+    display_settings {
+      control_type = "Checkbox"
+    }
+  }
+}
+
 variable "runbook_backend_service_deploy_project_name" {
   type        = string
   nullable    = false
   sensitive   = false
   description = "The name of the project exported from Deploy Project"
-  default     = "2. Fork and Deploy Project"
+  default     = "__ 2. Fork and Deploy Project"
 }
 
 resource "octopusdeploy_runbook" "runbook_backend_service_deploy_project" {
@@ -80,7 +134,7 @@ resource "octopusdeploy_runbook" "runbook_backend_service_deploy_project" {
   environments                = [data.octopusdeploy_environments.sync.environments[0].id]
   force_package_download      = false
   default_guided_failure_mode = "EnvironmentDefault"
-  description                 = "This project forks the repoholding this project and deploys the package created by the Serialize Project runbook to a new space setting the CaC URL to the forked repo."
+  description                 = "This project forks the repo holding this project and deploys the package created by the Serialize Project runbook to a new space setting the CaC URL to the forked repo."
   multi_tenancy_mode          = "Tenanted"
 
   retention_policy {
@@ -115,7 +169,7 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_serial
       worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
       properties                         = {
         "Octopus.Action.Script.Syntax"       = "Bash"
-        "Octopus.Action.Script.ScriptBody"   = file("../../shared_scripts/serialize_project.sh")
+        "Octopus.Action.Script.ScriptBody" = templatefile("../../shared_scripts/serialize_project.sh", {})
         "Octopus.Action.Script.ScriptSource" = "Inline"
       }
       environments          = []
@@ -135,7 +189,7 @@ variable "runbook_backend_service_serialize_project_name" {
   nullable    = false
   sensitive   = false
   description = "The name of the project exported from Serialize Project"
-  default     = "1. Serialize Project"
+  default     = "__ 1. Serialize Project"
 }
 
 resource "octopusdeploy_runbook" "runbook_backend_service_serialize_project" {
@@ -182,6 +236,7 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_deploy
         "Octopus.Action.Script.ScriptSource" = "Inline"
         "Octopus.Action.Script.Syntax"       = "Bash"
         "Octopus.Action.Script.ScriptBody"   = <<EOT
+echo "Pulling postgres image"
 echo "##octopus[stdout-verbose]"
 docker pull postgres
 echo "##octopus[stdout-default]"
@@ -258,7 +313,7 @@ EOT
       properties                         = {
         "Octopus.Action.Terraform.GoogleCloudAccount"           = "False"
         "Octopus.Action.Terraform.TemplateDirectory"            = "space_population"
-        "Octopus.Action.Terraform.AdditionalActionParams"       = "-var=\"octopus_server=#{ManagedTenant.Octopus.Server}\" -var=\"octopus_space_id=#{ManagedTenant.Octopus.SpaceId}\" -var=\"octopus_apikey=#{ManagedTenant.Octopus.ApiKey}\" -var=\"${local.git_url_var_name}=${local.cac_proto}://${local.cac_host}/${local.cac_org}/${local.new_repo}.git\""
+        "Octopus.Action.Terraform.AdditionalActionParams"       = "-var=\"octopus_server=#{ManagedTenant.Octopus.Server}\" -var=\"octopus_space_id=#{ManagedTenant.Octopus.SpaceId}\" -var=\"octopus_apikey=#{ManagedTenant.Octopus.ApiKey}\" -var=\"${local.git_url_var_name}=${local.cac_proto}://${local.cac_host}/${local.cac_org}/${local.new_repo}.git\" -var=\"${local.project_name_variable}=#{Exported.Project.Name}\""
         "Octopus.Action.Aws.AssumeRole"                         = "False"
         "Octopus.Action.Aws.Region"                             = ""
         "Octopus.Action.Terraform.AllowPluginDownloads"         = "True"

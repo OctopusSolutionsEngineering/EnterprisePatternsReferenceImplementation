@@ -1,6 +1,6 @@
 terraform {
   required_providers {
-    octopusdeploy = { source = "OctopusDeployLabs/octopusdeploy", version = "0.12.0" }
+    octopusdeploy = { source = "OctopusDeployLabs/octopusdeploy", version = "0.12.1" }
   }
 }
 
@@ -139,10 +139,10 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_serial
         "Octopus.Action.Aws.AssumeRole"                         = "False"
         "Octopus.Action.Terraform.PlanJsonOutput"               = "False"
         "Octopus.Action.AwsAccount.UseInstanceRole"             = "False"
-        "Octopus.Action.AwsAccount.Variable"                    = "AWS"
+        "Octopus.Action.AwsAccount.Variable"                    = ""
         "Octopus.Action.Terraform.RunAutomaticFileSubstitution" = "True"
         "Octopus.Action.GoogleCloud.ImpersonateServiceAccount"  = "False"
-        "Octopus.Action.Aws.Region"                             = "ap-southeast-2"
+        "Octopus.Action.Aws.Region"                             = ""
         "Octopus.Action.GoogleCloud.UseVMServiceAccount"        = "True"
         "OctopusUseBundledTooling"                              = "False"
         "Octopus.Action.Terraform.ManagedAccount"               = "None"

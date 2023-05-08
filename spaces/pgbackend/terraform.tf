@@ -6,7 +6,7 @@ terraform {
 
 terraform {
   required_providers {
-    octopusdeploy = { source = "OctopusDeployLabs/octopusdeploy", version = "0.12.0" }
+    octopusdeploy = { source = "OctopusDeployLabs/octopusdeploy", version = "0.12.1" }
   }
 }
 
@@ -16,6 +16,14 @@ provider "octopusdeploy" {
   space_id = "Spaces-1"
 }
 
+variable "space_name" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "The name of the new space"
+}
+
 module "octopus" {
-  source = "../octopus"
+  source     = "../octopus"
+  space_name = var.space_name
 }

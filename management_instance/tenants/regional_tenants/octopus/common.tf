@@ -1,6 +1,6 @@
 terraform {
   required_providers {
-    octopusdeploy = { source = "OctopusDeployLabs/octopusdeploy", version = "0.12.0" }
+    octopusdeploy = { source = "OctopusDeployLabs/octopusdeploy", version = "0.12.1" }
   }
 }
 
@@ -18,6 +18,12 @@ data "octopusdeploy_library_variable_sets" "octopus_server" {
 
 data "octopusdeploy_library_variable_sets" "azure" {
   partial_name = "Azure"
+  skip = 0
+  take = 1
+}
+
+data "octopusdeploy_library_variable_sets" "k8s" {
+  partial_name = "Kubernetes"
   skip = 0
   take = 1
 }
@@ -76,6 +82,26 @@ data "octopusdeploy_projects" "project_init_space" {
   ids                    = []
   is_clone               = false
   name                   = "__ Initialize Space for Azure"
+  partial_name           = null
+  skip                   = 0
+  take                   = 1
+}
+
+data "octopusdeploy_projects" "project_init_space_k8s" {
+  cloned_from_project_id = null
+  ids                    = []
+  is_clone               = false
+  name                   = "__ Initialize Space for Kubernetes"
+  partial_name           = null
+  skip                   = 0
+  take                   = 1
+}
+
+data "octopusdeploy_projects" "project_create_client_space" {
+  cloned_from_project_id = null
+  ids                    = []
+  is_clone               = false
+  name                   = "__ Create Client Space"
   partial_name           = null
   skip                   = 0
   take                   = 1
