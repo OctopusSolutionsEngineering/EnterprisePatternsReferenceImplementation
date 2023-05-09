@@ -5,6 +5,6 @@ terraform {
 }
 
 resource "octopusdeploy_project_group" "project_group_client_space" {
-  name        = "Client Space"
+  name        = "__ Client Space"
   description = "Holds the projects that create and manage client spaces"
 }
