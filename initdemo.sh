@@ -289,6 +289,8 @@ execute_terraform 'lib_var_docker' 'shared/variables/docker/pgbackend' 'Spaces-1
 
 execute_terraform 'lib_var_k8s' 'shared/variables/k8s/pgbackend' 'Spaces-1'
 
+execute_terraform 'lib_var_client_slack' 'shared/variables/client_slack/pgbackend' 'Spaces-1'
+
 execute_terraform 'project_create_client_space' 'management_instance/projects/create_client_space/pgbackend' 'Spaces-1'
 
 execute_terraform 'project_hello_world' 'management_instance/projects/hello_world/pgbackend' 'Spaces-1'

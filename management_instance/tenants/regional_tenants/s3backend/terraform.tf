@@ -76,6 +76,20 @@ variable "america_k8s_url" {
   default     = "http://example.org"
 }
 
+variable "america_docker_username" {
+  type        = string
+  nullable    = false
+  sensitive   = true
+  description = "The DOcker username."
+}
+
+variable "america_docker_password" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "The Docker password"
+}
+
 
 variable "europe_azure_application_id" {
   type        = string
@@ -125,6 +139,28 @@ variable "europe_k8s_url" {
   default     = "http://example.org"
 }
 
+variable "europe_docker_username" {
+  type        = string
+  nullable    = false
+  sensitive   = true
+  description = "The Docker username."
+}
+
+variable "europe_docker_password" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "The Docker password"
+}
+
+variable "slack_bot_token" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "The Slack Bot Token"
+  default     = "dummy"
+}
+
 module "octopus" {
   source                        = "../octopus"
   america_azure_application_id  = var.america_azure_application_id
@@ -139,4 +175,9 @@ module "octopus" {
   europe_azure_tenant_id        = var.europe_azure_tenant_id
   europe_k8s_cert               = var.europe_k8s_cert
   europe_k8s_url                = var.europe_k8s_url
+  america_docker_username       = var.america_docker_username
+  america_docker_password       = var.america_docker_password
+  europe_docker_username        = var.europe_docker_username
+  europe_docker_password        = var.europe_docker_password
+  slack_bot_token               = var.slack_bot_token
 }

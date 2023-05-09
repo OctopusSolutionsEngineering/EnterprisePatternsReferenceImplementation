@@ -113,7 +113,6 @@ resource "octopusdeploy_tenant_common_variable" "europe_octopus_apikey" {
   template_id = tolist([for tmp in data.octopusdeploy_library_variable_sets.octopus_server.library_variable_sets[0].template : tmp.id if tmp.name == "ManagedTenant.Octopus.ApiKey"])[0]
   tenant_id = octopusdeploy_tenant.europe.id
   value = "API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-  depends_on = [octopusdeploy_tenant.europe]
 }
 
 resource "octopusdeploy_tenant_common_variable" "europe_octopus_spaceid" {
@@ -121,7 +120,6 @@ resource "octopusdeploy_tenant_common_variable" "europe_octopus_spaceid" {
   template_id = tolist([for tmp in data.octopusdeploy_library_variable_sets.octopus_server.library_variable_sets[0].template : tmp.id if tmp.name == "ManagedTenant.Octopus.Url"])[0]
   tenant_id = octopusdeploy_tenant.europe.id
   value = "http://octopus:8080"
-  depends_on = [octopusdeploy_tenant.europe]
 }
 
 resource "octopusdeploy_tenant_common_variable" "europe_azure_application_id" {
@@ -132,7 +130,6 @@ resource "octopusdeploy_tenant_common_variable" "europe_azure_application_id" {
   ])[0]
   tenant_id               = octopusdeploy_tenant.europe.id
   value                   = var.europe_azure_application_id
-  depends_on              = [octopusdeploy_tenant.europe]
 }
 
 resource "octopusdeploy_tenant_common_variable" "europe_azure_subscription_id" {
@@ -143,7 +140,6 @@ resource "octopusdeploy_tenant_common_variable" "europe_azure_subscription_id" {
   ])[0]
   tenant_id               = octopusdeploy_tenant.europe.id
   value                   = var.europe_azure_subscription_id
-  depends_on              = [octopusdeploy_tenant.europe]
 }
 
 resource "octopusdeploy_tenant_common_variable" "europe_azure_tenant_id" {
@@ -154,7 +150,6 @@ resource "octopusdeploy_tenant_common_variable" "europe_azure_tenant_id" {
   ])[0]
   tenant_id               = octopusdeploy_tenant.europe.id
   value                   = var.europe_azure_tenant_id
-  depends_on              = [octopusdeploy_tenant.europe]
 }
 
 resource "octopusdeploy_tenant_common_variable" "europe_azure_password" {
@@ -165,7 +160,6 @@ resource "octopusdeploy_tenant_common_variable" "europe_azure_password" {
   ])[0]
   tenant_id               = octopusdeploy_tenant.europe.id
   value                   = var.europe_azure_password
-  depends_on              = [octopusdeploy_tenant.europe]
 }
 
 resource "octopusdeploy_tenant_common_variable" "europe_k8s_cert" {
@@ -176,7 +170,6 @@ resource "octopusdeploy_tenant_common_variable" "europe_k8s_cert" {
   ])[0]
   tenant_id               = octopusdeploy_tenant.europe.id
   value                   = var.europe_k8s_cert
-  depends_on              = [octopusdeploy_tenant.europe]
 }
 
 resource "octopusdeploy_tenant_common_variable" "europe_k8s_url" {
@@ -187,7 +180,6 @@ resource "octopusdeploy_tenant_common_variable" "europe_k8s_url" {
   ])[0]
   tenant_id               = octopusdeploy_tenant.europe.id
   value                   = var.europe_k8s_url
-  depends_on              = [octopusdeploy_tenant.europe]
 }
 
 resource "octopusdeploy_tenant_common_variable" "europe_docker_username" {
@@ -198,7 +190,6 @@ resource "octopusdeploy_tenant_common_variable" "europe_docker_username" {
   ])[0]
   tenant_id               = octopusdeploy_tenant.europe.id
   value                   = var.europe_docker_username
-  depends_on              = [octopusdeploy_tenant.europe]
 }
 
 resource "octopusdeploy_tenant_common_variable" "europe_docker_password" {
@@ -209,5 +200,14 @@ resource "octopusdeploy_tenant_common_variable" "europe_docker_password" {
   ])[0]
   tenant_id               = octopusdeploy_tenant.europe.id
   value                   = var.europe_docker_password
-  depends_on              = [octopusdeploy_tenant.europe]
+}
+
+resource "octopusdeploy_tenant_common_variable" "europe_slack_bot_token" {
+  library_variable_set_id = data.octopusdeploy_library_variable_sets.slack.library_variable_sets[0].id
+  template_id             = tolist([
+    for tmp in data.octopusdeploy_library_variable_sets.slack.library_variable_sets[0].template :
+    tmp.id if tmp.name == "Slack.Bot.Token"
+  ])[0]
+  tenant_id               = octopusdeploy_tenant.europe.id
+  value                   = var.slack_bot_token
 }

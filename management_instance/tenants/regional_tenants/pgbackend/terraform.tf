@@ -154,6 +154,14 @@ variable "europe_docker_password" {
   description = "The Docker password"
 }
 
+variable "slack_bot_token" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "The Slack Bot Token"
+  default     = "dummy"
+}
+
 module "octopus" {
   source                        = "../octopus"
   america_azure_application_id  = var.america_azure_application_id
@@ -172,4 +180,5 @@ module "octopus" {
   america_docker_password       = var.america_docker_password
   europe_docker_username        = var.europe_docker_username
   europe_docker_password        = var.europe_docker_password
+  slack_bot_token               = var.slack_bot_token
 }

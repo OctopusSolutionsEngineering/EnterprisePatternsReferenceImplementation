@@ -12,26 +12,32 @@ data "octopusdeploy_library_variable_sets" "variable" {
 
 data "octopusdeploy_library_variable_sets" "octopus_server" {
   partial_name = "Octopus Server"
-  skip = 0
-  take = 1
+  skip         = 0
+  take         = 1
 }
 
 data "octopusdeploy_library_variable_sets" "azure" {
   partial_name = "Azure"
-  skip = 0
-  take = 1
+  skip         = 0
+  take         = 1
 }
 
 data "octopusdeploy_library_variable_sets" "docker" {
   partial_name = "Docker"
-  skip = 0
-  take = 1
+  skip         = 0
+  take         = 1
 }
 
 data "octopusdeploy_library_variable_sets" "k8s" {
   partial_name = "Kubernetes"
-  skip = 0
-  take = 1
+  skip         = 0
+  take         = 1
+}
+
+data "octopusdeploy_library_variable_sets" "slack" {
+  partial_name = "Client Slack"
+  skip         = 0
+  take         = 1
 }
 
 data "octopusdeploy_environments" "development" {
@@ -131,4 +137,12 @@ data "octopusdeploy_projects" "project_k8s_microservice_template" {
   partial_name           = null
   skip                   = 0
   take                   = 1
+}
+
+variable "slack_bot_token" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "The Slack Bot Token"
+  default     = "dummy"
 }

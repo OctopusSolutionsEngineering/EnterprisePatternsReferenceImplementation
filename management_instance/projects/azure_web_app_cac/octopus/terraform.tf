@@ -72,6 +72,12 @@ data "octopusdeploy_library_variable_sets" "variable" {
   take         = 1
 }
 
+data "octopusdeploy_library_variable_sets" "slack" {
+  partial_name = "Slack"
+  skip         = 0
+  take         = 1
+}
+
 data "octopusdeploy_worker_pools" "workerpool_default" {
   name = "Default Worker Pool"
   ids  = null

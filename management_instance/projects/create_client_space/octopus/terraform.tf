@@ -138,6 +138,7 @@ echo "##octopus[stdout-default]"
 DATABASE=$(dig +short terraformdb)
 docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/psql' postgres -h $${DATABASE} -v ON_ERROR_STOP=1 --username "terraform" -c "CREATE DATABASE spaces" 2>&1
 docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/psql' postgres -h $${DATABASE} -v ON_ERROR_STOP=1 --username "terraform" -c "CREATE DATABASE tenant_variables" 2>&1
+docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/psql' postgres -h $${DATABASE} -v ON_ERROR_STOP=1 --username "terraform" -c "CREATE DATABASE var_lib_slack" 2>&1
 exit 0
 EOT
       }
@@ -787,9 +788,82 @@ EOF
     target_roles = []
   }
 
+  step {
+    condition           = "Success"
+    name                = "Deploy Slack Variable Library"
+    package_requirement = "LetOctopusDecide"
+    start_trigger       = "StartAfterPrevious"
 
+    action {
+      action_type                        = "Octopus.TerraformApply"
+      name                               = "Deploy Hello World Project Group"
+      condition                          = "Success"
+      run_on_server                      = true
+      is_disabled                        = false
+      can_be_used_for_project_versioning = false
+      is_required                        = false
+      worker_pool_id                     = ""
+      properties                         = {
+        "Octopus.Action.Script.ScriptSource"             = "Inline"
+        "Octopus.Action.Terraform.Template"              = <<EOF
+terraform {
+  backend "pg" {
+    conn_str = "postgres://terraform:terraform@terraformdb:5432/var_lib_slack?sslmode=disable"
+  }
+}
 
+variable "space_id" {
+  type = string
 
+  validation {
+    condition     = length(var.space_id) > 7 && substr(var.space_id, 0, 7) == "Spaces-"
+    error_message = "The space_id value must be a valid Space id, starting with \"Spaces-\"."
+  }
+}
+
+variable "octopus_server" {
+  type = string
+}
+
+variable "octopus_apikey" {
+  type = string
+}
+
+provider "octopusdeploy" {
+  address  = var.octopus_server
+  api_key  = var.octopus_apikey
+  space_id = var.space_id
+}
+
+${file("../../../../shared/variables/slack/octopus/terraform.tf")}
+EOF
+        "Octopus.Action.Terraform.AllowPluginDownloads"  = "True"
+        "Octopus.Action.Terraform.GoogleCloudAccount"    = "False"
+        "Octopus.Action.GoogleCloud.UseVMServiceAccount" = "True"
+        "Octopus.Action.Terraform.TemplateParameters"    = jsonencode({
+          "space_id" = "#{Octopus.Action[Create Client Space].Output.TerraformValueOutputs[space_id]}"
+          "octopus_server" = "#{ManagedTenant.Octopus.Url}"
+          "octopus_apikey" = "#{ManagedTenant.Octopus.ApiKey}"
+          "bot_token" = "#{Slack.Bot.Token}"
+        })
+        "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name}"
+        "Octopus.Action.Terraform.PlanJsonOutput"               = "False"
+        "Octopus.Action.Terraform.AzureAccount"                 = "False"
+        "Octopus.Action.Terraform.ManagedAccount"               = "None"
+        "Octopus.Action.GoogleCloud.ImpersonateServiceAccount"  = "False"
+        "Octopus.Action.Terraform.AdditionalActionParams"       = ""
+        "Octopus.Action.Terraform.RunAutomaticFileSubstitution" = "True"
+      }
+      environments          = []
+      excluded_environments = []
+      channels              = []
+      tenant_tags           = []
+      features              = []
+    }
+
+    properties   = {}
+    target_roles = []
+  }
 }
 
 data "octopusdeploy_channels" "channel__default" {
