@@ -6,7 +6,7 @@ terraform {
 
 terraform {
   backend "pg" {
-    conn_str = "postgres://terraform:terraform@terraformdb:5432/project_k8s_space_initialization?sslmode=disable"
+    conn_str = "postgres://terraform:terraform@terraformdb:5432/project_initialize_k8s_space?sslmode=disable"
   }
 }
 

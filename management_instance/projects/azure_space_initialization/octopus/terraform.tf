@@ -112,6 +112,45 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_serial
 
   step {
     condition           = "Success"
+    name                = "Create the State Table"
+    package_requirement = "LetOctopusDecide"
+    start_trigger       = "StartAfterPrevious"
+
+    action {
+      action_type                        = "Octopus.Script"
+      name                               = "Create the State Table"
+      condition                          = "Success"
+      run_on_server                      = true
+      is_disabled                        = false
+      can_be_used_for_project_versioning = false
+      is_required                        = false
+      worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
+      properties                         = {
+        "Octopus.Action.Script.ScriptSource" = "Inline"
+        "Octopus.Action.Script.Syntax"       = "Bash"
+        "Octopus.Action.Script.ScriptBody"   = <<EOT
+echo "Pulling postgres image"
+echo "##octopus[stdout-verbose]"
+docker pull postgres
+echo "##octopus[stdout-default]"
+DATABASE=$(dig +short terraformdb)
+docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/psql' postgres -h $${DATABASE} -v ON_ERROR_STOP=1 --username "terraform" -c "CREATE DATABASE project_initialize_azure_space" 2>&1
+exit 0
+EOT
+      }
+      environments          = []
+      excluded_environments = []
+      channels              = []
+      tenant_tags           = []
+      features              = []
+    }
+
+    properties   = {}
+    target_roles = []
+  }
+
+  step {
+    condition           = "Success"
     name                = "Configure the Azure Account"
     package_requirement = "LetOctopusDecide"
     start_trigger       = "StartAfterPrevious"
