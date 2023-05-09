@@ -209,6 +209,17 @@ do
     -d "{ \"author\": { \"email\": \"user@example.com\", \"name\": \"Octopus\" }, \"branch\": \"main\", \"committer\": { \"email\": \"user@example.com\", \"name\": \"string\" }, \"content\": \"UkVBRE1FCg==\", \"dates\": { \"author\": \"2020-04-06T01:37:35.137Z\", \"committer\": \"2020-04-06T01:37:35.137Z\" }, \"message\": \"Initializing repo\"}"
 done
 
+# Install all the tools we'll need to perform deployments
+docker-compose -f docker/compose.yml exec octopus sh -c 'apt-get install -y jq git dnsutils zip'
+docker-compose -f docker/compose.yml exec octopus sh -c 'apt update && apt install -y --no-install-recommends gnupg curl ca-certificates apt-transport-https && curl -sSfL https://apt.octopus.com/public.key | apt-key add - && sh -c "echo deb https://apt.octopus.com/ stable main > /etc/apt/sources.list.d/octopus.com.list" && apt update && apt install -y octopuscli'
+docker-compose -f docker/compose.yml exec octopus sh -c 'apt-get update && apt-get install -y gnupg software-properties-common'
+docker-compose -f docker/compose.yml exec octopus sh -c 'wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | tee /usr/share/keyrings/hashicorp-archive-keyring.gpg'
+docker-compose -f docker/compose.yml exec octopus sh -c 'echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list'
+docker-compose -f docker/compose.yml exec octopus sh -c 'apt update'
+docker-compose -f docker/compose.yml exec octopus sh -c 'apt-get install -y terraform'
+docker-compose -f docker/compose.yml exec octopus sh -c 'curl -sL https://aka.ms/InstallAzureCLIDeb | bash'
+docker-compose -f docker/compose.yml exec octopus sh -c 'if [ ! -f /usr/local/bin/kubectl ]; then curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"; install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl; fi'
+
 # Wait for the Octopus server.
 echo "Waiting for the Octopus server"
 until $(curl --output /dev/null --silent --fail http://localhost:18080/api)
@@ -497,23 +508,3 @@ do
   terraform apply -auto-approve -var=octopus_space_id=Spaces-1 "-var=project_name=${project}"
   popd
 done
-
-# Install all the tools we'll need to perform deployments
-docker-compose -f docker/compose.yml exec octopus sh -c 'apt-get install -y jq git dnsutils zip'
-docker-compose -f docker/compose.yml exec octopus sh -c 'apt update && apt install -y --no-install-recommends gnupg curl ca-certificates apt-transport-https && curl -sSfL https://apt.octopus.com/public.key | apt-key add - && sh -c "echo deb https://apt.octopus.com/ stable main > /etc/apt/sources.list.d/octopus.com.list" && apt update && apt install -y octopuscli'
-docker-compose -f docker/compose.yml exec octopus sh -c 'apt-get update && apt-get install -y gnupg software-properties-common'
-docker-compose -f docker/compose.yml exec octopus sh -c 'wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | tee /usr/share/keyrings/hashicorp-archive-keyring.gpg'
-docker-compose -f docker/compose.yml exec octopus sh -c 'echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list'
-docker-compose -f docker/compose.yml exec octopus sh -c 'apt update'
-docker-compose -f docker/compose.yml exec octopus sh -c 'apt-get install -y terraform'
-docker-compose -f docker/compose.yml exec octopus sh -c 'curl -sL https://aka.ms/InstallAzureCLIDeb | bash'
-docker-compose -f docker/compose.yml exec octopus sh -c 'if [ ! -f /usr/local/bin/kubectl ]; then curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"; install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl; fi'
-
-# This gets a custom terraform provider build installed
-#docker-compose -f docker/compose.yml exec octopus sh -c 'mkdir -p /terraform'
-#docker cp /home/matthew/Code/terraform-provider-octopusdeploy/terraform-provider-octopusdeploy docker_octopus_1:/terraform/terraform-provider-octopusdeploy
-#docker cp config/.terraformrc docker_octopus_1:/root
-
-# This installs octoterra locally
-#docker-compose -f docker/compose.yml exec octopus sh -c 'curl --silent -L -o /usr/bin/octoterra https://github.com/OctopusSolutionsEngineering/OctopusTerraformExport/releases/latest/download/octoterra_linux_amd64'
-#docker-compose -f docker/compose.yml exec octopus sh -c 'chmod +x /usr/bin/octoterra'

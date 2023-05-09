@@ -47,6 +47,7 @@ Shut the Octopus and Git stack down with:
 * Add merge all runbook
 * Add list downstream projects runbook [DONE]
 * Add merge conflict check runbook [DONE]
+* Run create space and compose resources before fork or clone
 * Add runbook variable scoping
 * Add get k8s logs runbook
 * Add delete k8s pods runbook
