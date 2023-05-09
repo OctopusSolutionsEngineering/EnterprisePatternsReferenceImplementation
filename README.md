@@ -13,18 +13,6 @@ Shut the Octopus and Git stack down with:
 ./cleanup.sh
 ```
 
-# Goals
-
-* Deploy unmanaged project
-* Deploy managed project
-* Deploy shared project
-* Self-service projects
-* Deploy one-to-many
-
-# Enterprise patterns MVP
-
-* Tenant for space
-
 # Todo
 
 * Create environment for synchronizing. [DONE]
