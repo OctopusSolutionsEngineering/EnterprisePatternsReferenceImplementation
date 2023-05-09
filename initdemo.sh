@@ -138,8 +138,8 @@ CLUSTER_URL=$(docker run --rm -v /tmp:/workdir mikefarah/yq '.clusters[0].cluste
 # This returns the IP address of the minikube network
 DOCKER_HOST_IP=$(minikube ip)
 
-# We assume the kind cluster has bound itself to a port range in the tens of thousands
-CLUSTER_PORT=$(cut -d ":" -f3 <<< "${CLUSTER_URL}")
+# This is the internal port exposed by minikube
+CLUSTER_PORT="8443"
 
 # Extract the client certificate data
 CLIENT_CERTIFICATE=$(docker run --rm -v /tmp:/workdir mikefarah/yq '.users[0].user.client-certificate' octoconfig.yml)
