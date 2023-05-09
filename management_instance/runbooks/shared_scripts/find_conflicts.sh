@@ -1,0 +1,74 @@
+echo "##octopus[stdout-verbose]"
+
+TEMPLATE_REPO=http://gitea/octopus/#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}.git
+
+printf 'terraform {\n
+  backend "pg" {\n
+  }\n
+  required_providers {\n
+    octopusdeploy = { source = "OctopusDeployLabs/octopusdeploy", version = "0.12.1" }\n
+  }\n
+}' > backend.tf
+
+cat backend.tf
+
+terraform init \
+  -no-color \
+  -backend-config="conn_str=postgres://terraform:terraform@terraformdb:5432/${backend}?sslmode=disable"
+
+git config --global user.email "octopus@octopus.com" 2>&1
+git config --global user.name "Octopus Server" 2>&1
+
+echo "##octopus[stdout-default]"
+echo "✓ - Up to date"
+echo "▶ - Can automatically merge"
+echo "× - Merge conflict"
+echo "##octopus[stdout-verbose]"
+
+for i in $(terraform workspace list|sed 's/*//g'); do
+    if [[ $${i} == "default" ]]; then
+        continue
+    fi
+
+    terraform workspace select $${i}
+
+    # Find the cac url
+    URL=$(terraform show -json | jq -r '.values.root_module.resources[] | select(.type == "octopusdeploy_project") | .git_library_persistence_settings.url')
+
+    if [[ "$URL" != "null" ]]
+    then
+
+      mkdir $${i}
+      pushd $${i}
+
+      git clone $${URL} ./ 2>&1
+      git remote add upstream $${TEMPLATE_REPO} 2>&1
+      git fetch --all 2>&1
+      git checkout -b upstream-$${BRANCH} upstream/$${BRANCH} 2>&1
+      git checkout -b $${BRANCH} origin/$${BRANCH} 2>&1
+
+      # Test if the template branch needs to be merged into the project branch
+      MERGE_BASE=$(git merge-base $${BRANCH} upstream-$${BRANCH})
+      MERGE_SOURCE_CURRENT_COMMIT=$(git rev-parse upstream-$${BRANCH})
+
+
+      # Test the results of a merge with the upstream branch
+      git merge --no-commit upstream-$${BRANCH} 2>&1
+      MERGE_RESULT=$?
+
+      popd
+
+      echo "##octopus[stdout-default]"
+
+      if [[ $${MERGE_BASE} == $${MERGE_SOURCE_CURRENT_COMMIT} ]]
+      then
+        terraform show -json | jq -r '.values.root_module.resources[] | select(.type == "octopusdeploy_project") | "\(.values.space_id): \(.values.name) \(.git_library_persistence_settings.url // "") ✓"'
+      elif [[ $${MERGE_RESULT} != "0" ]]; then
+        terraform show -json | jq -r '.values.root_module.resources[] | select(.type == "octopusdeploy_project") | "\(.values.space_id): \(.values.name) \(.git_library_persistence_settings.url // "") ×"'
+      else
+        terraform show -json | jq -r '.values.root_module.resources[] | select(.type == "octopusdeploy_project") | "\(.values.space_id): \(.values.name) \(.git_library_persistence_settings.url // "") ▶"'
+      fi
+
+      echo "##octopus[stdout-verbose]"
+    fi
+done
