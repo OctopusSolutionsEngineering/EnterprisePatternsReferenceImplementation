@@ -22,6 +22,6 @@ for i in $(terraform workspace list|sed 's/*//g'); do
     terraform workspace select $${i}
 
     echo "##octopus[stdout-default]"
-    terraform show -json | jq -r '.values.root_module.resources[] | select(.type == "octopusdeploy_project") | .values.name'
+    terraform show -json | jq -r '.values.root_module.resources[] | select(.type == "octopusdeploy_project") | "\(.values.space_id): \(.values.name) \(.git_library_persistence_settings.url // "")"'
     echo "##octopus[stdout-verbose]"
 done
