@@ -28,6 +28,7 @@ services:
     ports:
       - "127.0.0.1:18080:8080"
     privileged: true
+    container_name: octopus
     environment:
       - ADMIN_API_KEY=API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
       - ADMIN_USERNAME=admin

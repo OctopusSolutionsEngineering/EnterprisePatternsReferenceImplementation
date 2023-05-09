@@ -10,4 +10,4 @@ do
 done
 popd || exit
 
-minikube stop
+minikube delete

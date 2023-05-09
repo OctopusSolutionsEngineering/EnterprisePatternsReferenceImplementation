@@ -137,23 +137,20 @@ popd
 # Create a new cluster with a custom configuration that binds to all network addresses
 if [[ ! -f /tmp/octoconfig.yml ]]
 then
-  minikube stop
+  minikube delete
 fi
 
 export KUBECONFIG=/tmp/octoconfig.yml
 
-minikube start --listen-address='0.0.0.0'
+minikube start --container-runtime=containerd
+
+docker network connect minikube octopus
 
 # Extract the cluster URL. This will be a 127.0.0.1 address though, which is not quite what we need.
 CLUSTER_URL=$(docker run --rm -v /tmp:/workdir mikefarah/yq '.clusters[0].cluster.server' octoconfig.yml)
 
-# This returns the IP address of the host system, which is how the Octopus server reaches out to the Kind cluster.
-DOCKER_HOST_IP=$(docker network inspect docker_octopus | jq -r '.[0].IPAM.Config[0].Gateway')
-
-# If not using linux, use the standard Docker host DNS entry
-if [[ "$OSTYPE" != "linux-gnu"* ]]; then
-  DOCKER_HOST_IP="host.docker.internal"
-fi
+# This returns the IP address of the minikube network
+DOCKER_HOST_IP=$(minikube ip)
 
 # We assume the kind cluster has bound itself to a port range in the tens of thousands
 CLUSTER_PORT=$(cut -d ":" -f3 <<< ${CLUSTER_URL})
