@@ -45,34 +45,37 @@ for i in $(terraform workspace list|sed 's/*//g'); do
     if [[ "$URL" != "null" ]]
     then
 
-      mkdir $${i}
-      pushd $${i}
+      mkdir "$${i}"
+      pushd "$${i}"
 
-      git clone $${URL} ./ 2>&1
-      git remote add upstream $${TEMPLATE_REPO} 2>&1
+      git clone "$${URL}" ./ 2>&1
+      git remote add upstream "$${TEMPLATE_REPO}" 2>&1
       git fetch --all 2>&1
-      echo "1"
-      git checkout -b upstream-$${BRANCH} upstream/$${BRANCH} 2>&1
-      echo "2"
-      git checkout -b $${BRANCH} origin/$${BRANCH} 2>&1
+      git checkout -b "upstream-$${BRANCH}" "upstream/$${BRANCH}" 2>&1
+
+      if [[ "$${BRANCH}" != "main" && "$${BRANCH}" != "master" ]]
+      then
+        git checkout -b "$${BRANCH}" "origin/$${BRANCH}" 2>&1
+      else
+        git checkout "$${BRANCH}" 2>&1
+      fi
 
       # Test if the template branch needs to be merged into the project branch
-      MERGE_BASE=$(git merge-base $${BRANCH} upstream-$${BRANCH})
-      MERGE_SOURCE_CURRENT_COMMIT=$(git rev-parse upstream-$${BRANCH})
-
+      MERGE_BASE=$(git merge-base "$${BRANCH}" "upstream-$${BRANCH}")
+      MERGE_SOURCE_CURRENT_COMMIT=$(git rev-parse "upstream-$${BRANCH}")
 
       # Test the results of a merge with the upstream branch
-      git merge --no-commit upstream-$${BRANCH} 2>&1
+      git merge --no-commit --no-ff "upstream-$${BRANCH}" 2>&1
       MERGE_RESULT=$?
 
       popd
 
       echo "##octopus[stdout-default]"
 
-      if [[ $${MERGE_BASE} == $${MERGE_SOURCE_CURRENT_COMMIT} ]]
+      if [[ "$${MERGE_BASE}" == "$${MERGE_SOURCE_CURRENT_COMMIT}" ]]
       then
         terraform show -json | jq -r '.values.root_module.resources[] | select(.type == "octopusdeploy_project") | "\(.values.space_id): \"\(.values.name)\" \(.values.git_library_persistence_settings[0].url // "") ✓"'
-      elif [[ $${MERGE_RESULT} != "0" ]]; then
+      elif [[ "$${MERGE_RESULT}" != "0" ]]; then
         terraform show -json | jq -r '.values.root_module.resources[] | select(.type == "octopusdeploy_project") | "\(.values.space_id): \"\(.values.name)\" \(.values.git_library_persistence_settings[0].url // "") ×"'
       else
         terraform show -json | jq -r '.values.root_module.resources[] | select(.type == "octopusdeploy_project") | "\(.values.space_id): \"\(.values.name)\" \(.values.git_library_persistence_settings[0].url // "") ▶"'
