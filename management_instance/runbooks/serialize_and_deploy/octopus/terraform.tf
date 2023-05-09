@@ -5,6 +5,7 @@ terraform {
 }
 
 locals {
+  backend               = "#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
   workspace             = "#{Octopus.Deployment.Tenant.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_#{Exported.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
   project_name_variable = "project_#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_name"
 }
@@ -232,7 +233,7 @@ echo "##octopus[stdout-verbose]"
 docker pull postgres
 echo "##octopus[stdout-default]"
 DATABASE=$(dig +short terraformdb)
-docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/psql' postgres -h $${DATABASE} -v ON_ERROR_STOP=1 --username "terraform" -c "CREATE DATABASE project_sync" 2>&1
+docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/psql' postgres -h $${DATABASE} -v ON_ERROR_STOP=1 --username "terraform" -c "CREATE DATABASE ${local.backend}" 2>&1
 exit 0
 EOT
       }
@@ -274,7 +275,7 @@ EOT
         "Octopus.Action.GoogleCloud.UseVMServiceAccount"        = "True"
         "Octopus.Action.Script.ScriptSource"                    = "Package"
         "Octopus.Action.Terraform.RunAutomaticFileSubstitution" = "False"
-        "Octopus.Action.Terraform.AdditionalInitParams"         = "-backend-config=\"conn_str=postgres://terraform:terraform@terraformdb:5432/project_sync?sslmode=disable\""
+        "Octopus.Action.Terraform.AdditionalInitParams"         = "-backend-config=\"conn_str=postgres://terraform:terraform@terraformdb:5432/${local.backend}?sslmode=disable\""
         "Octopus.Action.GoogleCloud.ImpersonateServiceAccount"  = "False"
         "Octopus.Action.Terraform.PlanJsonOutput"               = "False"
         "Octopus.Action.Terraform.ManagedAccount"               = ""

@@ -30,20 +30,6 @@ then
   exit 1
 fi
 
-#if [[ "$OSTYPE" != "linux-gnu"* ]]; then
-#  if ! which cri-dockerd
-#  then
-#    echo "You must install cri-dockerd (see https://github.com/kubernetes/minikube/issues/14410#issuecomment-1193323463): https://github.com/Mirantis/cri-dockerd"
-#    exit 1
-#  fi
-#
-#  if ! which crictl
-#  then
-#    echo "You must install crictl: https://github.com/kubernetes-sigs/cri-tools"
-#    exit 1
-#  fi
-#fi
-
 if ! which openssl
 then
   echo "You must install openssl"
@@ -153,7 +139,7 @@ CLUSTER_URL=$(docker run --rm -v /tmp:/workdir mikefarah/yq '.clusters[0].cluste
 DOCKER_HOST_IP=$(minikube ip)
 
 # We assume the kind cluster has bound itself to a port range in the tens of thousands
-CLUSTER_PORT=$(cut -d ":" -f3 <<< ${CLUSTER_URL})
+CLUSTER_PORT=$(cut -d ":" -f3 <<< "${CLUSTER_URL}")
 
 # Extract the client certificate data
 CLIENT_CERTIFICATE=$(docker run --rm -v /tmp:/workdir mikefarah/yq '.users[0].user.client-certificate' octoconfig.yml)

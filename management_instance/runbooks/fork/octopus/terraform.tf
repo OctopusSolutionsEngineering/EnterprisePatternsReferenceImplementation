@@ -5,6 +5,7 @@ terraform {
 }
 
 locals {
+  backend               = "#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
   workspace             = "#{Octopus.Deployment.Tenant.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_#{Exported.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
   new_repo              = "#{Octopus.Deployment.Tenant.Name | ToLower}_#{Exported.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
   project_name_variable = "project_#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_name"
@@ -169,7 +170,7 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_serial
       worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
       properties                         = {
         "Octopus.Action.Script.Syntax"       = "Bash"
-        "Octopus.Action.Script.ScriptBody" = templatefile("../../shared_scripts/serialize_project.sh", {})
+        "Octopus.Action.Script.ScriptBody"   = templatefile("../../shared_scripts/serialize_project.sh", {})
         "Octopus.Action.Script.ScriptSource" = "Inline"
       }
       environments          = []
@@ -241,7 +242,7 @@ echo "##octopus[stdout-verbose]"
 docker pull postgres
 echo "##octopus[stdout-default]"
 DATABASE=$(dig +short terraformdb)
-docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/psql' postgres -h $${DATABASE} -v ON_ERROR_STOP=1 --username "terraform" -c "CREATE DATABASE project_sync" 2>&1
+docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/psql' postgres -h $${DATABASE} -v ON_ERROR_STOP=1 --username "terraform" -c "CREATE DATABASE ${local.backend}" 2>&1
 exit 0
 EOT
       }
@@ -322,7 +323,7 @@ EOT
         "Octopus.Action.GoogleCloud.UseVMServiceAccount"        = "True"
         "Octopus.Action.Script.ScriptSource"                    = "Package"
         "Octopus.Action.Terraform.RunAutomaticFileSubstitution" = "False"
-        "Octopus.Action.Terraform.AdditionalInitParams"         = "-backend-config=\"conn_str=postgres://terraform:terraform@terraformdb:5432/project_sync?sslmode=disable\""
+        "Octopus.Action.Terraform.AdditionalInitParams"         = "-backend-config=\"conn_str=postgres://terraform:terraform@terraformdb:5432/${local.backend}?sslmode=disable\""
         "Octopus.Action.GoogleCloud.ImpersonateServiceAccount"  = "False"
         "Octopus.Action.Terraform.PlanJsonOutput"               = "False"
         "Octopus.Action.Terraform.ManagedAccount"               = ""
