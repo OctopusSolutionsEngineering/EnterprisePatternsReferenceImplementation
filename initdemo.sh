@@ -128,7 +128,7 @@ fi
 
 export KUBECONFIG=/tmp/octoconfig.yml
 
-minikube start --container-runtime=containerd
+minikube start --container-runtime=containerd --driver=docker
 
 docker network connect minikube octopus
 
