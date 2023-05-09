@@ -45,7 +45,8 @@ Shut the Octopus and Git stack down with:
 * Add ocl check during merge.
 * Add one-to-many project deployments. [DONE]
 * Add merge all runbook
-* Add merge conflict check runbook
+* Add list downstream projects runbook [DONE]
+* Add merge conflict check runbook [DONE]
 * Add runbook variable scoping
 
 * Create development, test/production spaces.
