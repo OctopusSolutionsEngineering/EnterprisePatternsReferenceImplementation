@@ -26,6 +26,9 @@ docker run \
   -excludeRunbook "__ 2. Deploy Project"                                    `# This is a management runbook that we do not wish to export` \
   -excludeRunbook "__ 2. Fork and Deploy Project"                           `# This is a management runbook that we do not wish to export` \
   -excludeRunbook "__ 3. Merge with Downstream Project"                     `# This is a management runbook that we do not wish to export` \
+  -excludeRunbook "__ 4. List Downstream Projects"                          `# This is a management runbook that we do not wish to export` \
+  -excludeRunbook "__ 4. List Downstream Projects"                          `# This is a management runbook that we do not wish to export` \
+  -excludeRunbook "__ 5. Find Updates"                                      `# This is a management runbook that we do not wish to export` \
   -excludeLibraryVariableSet "Octopus Server"                               `# This is library variable set used by excluded runbooks, and so we don't want to link to it in the export` \
   -excludeLibraryVariableSet "This Instance"                                `# This is library variable set used by excluded runbooks, and so we don't want to link to it in the export` \
   -excludeLibraryVariableSet "Azure"                                        `# This is library variable set used by excluded runbooks, and so we don't want to link to it in the export` \
