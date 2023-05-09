@@ -15,10 +15,12 @@ printf 'terraform {\n
 
 cat backend.tf
 
+echo "Terraform init"
 terraform init \
   -no-color \
   -backend-config="conn_str=postgres://terraform:terraform@terraformdb:5432/${backend}?sslmode=disable"
 
+echo "Setting Git details"
 git config --global user.email "octopus@octopus.com" 2>&1
 git config --global user.name "Octopus Server" 2>&1
 
