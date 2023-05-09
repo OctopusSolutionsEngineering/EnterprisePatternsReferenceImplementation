@@ -146,7 +146,9 @@ EOT
         "Octopus.Action.Script.ScriptSource" = "Inline"
         "Octopus.Action.Script.Syntax"       = "Bash"
         "Octopus.Action.Script.ScriptBody"   = templatefile("../../shared_scripts/find_conflicts.sh", {
-          backend : local.backend,
+          "backend"      = local.backend
+          "cac_password" = "Password01!"
+          "cac_username" = "octopus"
         })
         "OctopusUseBundledTooling" = "False"
       }
