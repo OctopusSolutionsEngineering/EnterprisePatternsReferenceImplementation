@@ -518,6 +518,12 @@ LENGTH=$(echo $${EXISTING_RG} | jq '. | length')
 if [[ $LENGTH != "0" ]]
 then
   az webapp restart --name $${RESOURCE_NAME}-wa --resource-group $${RESOURCE_NAME}-rg 2>&1
+  if [[ $? == "0" ]]
+  then
+    echo "Success!"
+  else
+    echo "Failed to restart web app"
+  fi
 fi
 EOT
         "OctopusUseBundledTooling"           = "False"
