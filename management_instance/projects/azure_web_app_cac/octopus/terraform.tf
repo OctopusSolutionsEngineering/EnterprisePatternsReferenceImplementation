@@ -325,7 +325,7 @@ resource "octopusdeploy_runbook" "runbook_delete_web_app" {
   environments                = []
   force_package_download      = false
   default_guided_failure_mode = "EnvironmentDefault"
-  description                 = "Delete the resource group holding the web app."
+  description                 = "WARNING: This is a destructive operation!\nDelete the resource group holding the web app."
   multi_tenancy_mode          = "Untenanted"
 
   retention_policy {
@@ -394,7 +394,7 @@ resource "octopusdeploy_runbook" "runbook_get_web_app_logs" {
   environments                = []
   force_package_download      = false
   default_guided_failure_mode = "EnvironmentDefault"
-  description                 = "Get the the web app logs."
+  description                 = "Get the the web app logs. This runbook is non-destructive and can be run at any time."
   multi_tenancy_mode          = "Untenanted"
 
   retention_policy {
@@ -438,7 +438,17 @@ LENGTH=$(echo $${EXISTING_RG} | jq '. | length')
 
 if [[ $LENGTH != "0" ]]
 then
-  az webapp log show --name $${RESOURCE_NAME}-wa --resource-group $${RESOURCE_NAME}-rg
+  max_retry=6
+  counter=0
+  until timeout 30 az webapp log download --name $${RESOURCE_NAME}-wa --resource-group $${RESOURCE_NAME}-rg 2>&1
+  do
+     sleep 10
+     [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
+     echo "Trying again. Try #$counter"
+     ((counter++))
+  done
+
+  new_octopusartifact "$${PWD}/webapp_logs.zip" "webapp_logs.zip"
 fi
 EOT
         "OctopusUseBundledTooling"           = "False"
