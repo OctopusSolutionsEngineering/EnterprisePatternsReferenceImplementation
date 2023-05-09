@@ -267,6 +267,8 @@ execute_terraform 'mavenfeed' 'shared/feeds/maven/pgbackend' 'Spaces-1'
 
 execute_terraform 'dockerhubfeed' 'shared/feeds/dockerhub/pgbackend' 'Spaces-1'
 
+execute_terraform 'project_group_client_space' 'management_instance/project_group/client_space/pgbackend' 'Spaces-1'
+
 execute_terraform 'project_group_hello_world' 'shared/project_group/hello_world/pgbackend' 'Spaces-1'
 
 execute_terraform 'project_group_azure' 'shared/project_group/azure/pgbackend' 'Spaces-1'
@@ -274,8 +276,6 @@ execute_terraform 'project_group_azure' 'shared/project_group/azure/pgbackend' '
 execute_terraform 'project_group_k8s' 'shared/project_group/k8s/pgbackend' 'Spaces-1'
 
 execute_terraform 'lib_var_this_instance' 'shared/variables/this_instance/pgbackend' 'Spaces-1'
-
-execute_terraform 'project_group_client_space' 'management_instance/project_group/client_space/pgbackend' 'Spaces-1'
 
 execute_terraform 'management_tenant_tags' 'management_instance/tenant_tags/regional/pgbackend' 'Spaces-1'
 

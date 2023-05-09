@@ -465,3 +465,72 @@ EOT
     target_roles = []
   }
 }
+
+resource "octopusdeploy_runbook" "runbook_restart_web_app" {
+  name                        = "Restart Web App"
+  project_id                  = octopusdeploy_project.project.id
+  environment_scope           = "All"
+  environments                = []
+  force_package_download      = false
+  default_guided_failure_mode = "EnvironmentDefault"
+  description                 = "Restart the web app. This runbook is non-destructive, however it may introduce some down time."
+  multi_tenancy_mode          = "Untenanted"
+
+  retention_policy {
+    quantity_to_keep    = 100
+    should_keep_forever = false
+  }
+
+  connectivity_policy {
+    allow_deployments_to_no_targets = true
+    exclude_unhealthy_targets       = false
+    skip_machine_behavior           = "None"
+  }
+}
+
+resource "octopusdeploy_runbook_process" "restart_web_app_logs" {
+  runbook_id = octopusdeploy_runbook.runbook_restart_web_app.id
+
+  step {
+    condition           = "Success"
+    name                = "Restart Web App"
+    package_requirement = "LetOctopusDecide"
+    start_trigger       = "StartAfterPrevious"
+
+    action {
+      action_type                        = "Octopus.AzurePowerShell"
+      name                               = "Restart Web App"
+      condition                          = "Success"
+      run_on_server                      = true
+      is_disabled                        = false
+      can_be_used_for_project_versioning = true
+      is_required                        = false
+      worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
+      properties                         = {
+        "Octopus.Action.Script.ScriptSource" = "Inline"
+        "Octopus.Action.Script.Syntax"       = "Bash"
+        "Octopus.Action.Azure.AccountId"     = data.octopusdeploy_accounts.azure.accounts[0].id
+        "Octopus.Action.Script.ScriptBody"   = <<EOT
+RESOURCE_NAME=#{Octopus.Space.Name | Replace \"[^A-Za-z0-9]\" \"-\" | ToLower}-#{Octopus.Project.Name | Replace \"[^A-Za-z0-9]\" \"-\" | ToLower}-#{Octopus.Environment.Name | Replace \"[^A-Za-z0-9]\" \"-\" | ToLower}
+EXISTING_RG=$(az group list --query "[?name=='$${RESOURCE_NAME}-rg']")
+LENGTH=$(echo $${EXISTING_RG} | jq '. | length')
+
+if [[ $LENGTH != "0" ]]
+then
+  az webapp restart --name $${RESOURCE_NAME}-wa --resource-group $${RESOURCE_NAME}-rg 2>&1
+fi
+EOT
+        "OctopusUseBundledTooling"           = "False"
+      }
+
+      environments          = []
+      excluded_environments = []
+      channels              = []
+      tenant_tags           = []
+      features              = []
+    }
+
+    properties   = {}
+    target_roles = []
+  }
+}
