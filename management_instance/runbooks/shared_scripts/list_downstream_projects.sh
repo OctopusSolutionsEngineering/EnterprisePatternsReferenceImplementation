@@ -15,13 +15,13 @@ terraform init \
   -backend-config="conn_str=postgres://terraform:terraform@terraformdb:5432/${backend}?sslmode=disable"
 
 for i in $(terraform workspace list|sed 's/*//g'); do
-    echo "##octopus[stdout-verbose]"
-
     if [[ $${i} == "default" ]]; then
         continue
     fi
 
     terraform workspace select $${i}
 
-    terraform show -json
+    echo "##octopus[stdout-default]"
+    terraform show -json | jq -r '.values.root_module.resources[] | select(.type == "octopusdeploy_project") | .values.name'
+    echo "##octopus[stdout-verbose]"
 done
