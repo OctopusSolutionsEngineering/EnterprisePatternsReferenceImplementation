@@ -48,6 +48,10 @@ Shut the Octopus and Git stack down with:
 * Add list downstream projects runbook [DONE]
 * Add merge conflict check runbook [DONE]
 * Add runbook variable scoping
+* Add get k8s logs runbook
+* Add delete k8s pods runbook
+* Add curl smoke test runbook
+* Add slack incident channel creation runbook
 
 * Create development, test/production spaces.
 * Add sample project to development.
