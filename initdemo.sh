@@ -30,19 +30,19 @@ then
   exit 1
 fi
 
-if [[ "$OSTYPE" != "linux-gnu"* ]]; then
-  if ! which cri-dockerd
-  then
-    echo "You must install cri-dockerd (see https://github.com/kubernetes/minikube/issues/14410#issuecomment-1193323463): https://github.com/Mirantis/cri-dockerd"
-    exit 1
-  fi
-
-  if ! which crictl
-  then
-    echo "You must install crictl: https://github.com/kubernetes-sigs/cri-tools"
-    exit 1
-  fi
-fi
+#if [[ "$OSTYPE" != "linux-gnu"* ]]; then
+#  if ! which cri-dockerd
+#  then
+#    echo "You must install cri-dockerd (see https://github.com/kubernetes/minikube/issues/14410#issuecomment-1193323463): https://github.com/Mirantis/cri-dockerd"
+#    exit 1
+#  fi
+#
+#  if ! which crictl
+#  then
+#    echo "You must install crictl: https://github.com/kubernetes-sigs/cri-tools"
+#    exit 1
+#  fi
+#fi
 
 if ! which openssl
 then
