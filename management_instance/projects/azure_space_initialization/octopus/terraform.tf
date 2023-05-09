@@ -4,6 +4,12 @@ terraform {
   }
 }
 
+data "octopusdeploy_library_variable_sets" "this_instance" {
+  partial_name = "This Instance"
+  skip         = 0
+  take         = 1
+}
+
 data "octopusdeploy_lifecycles" "lifecycle_simple" {
   ids          = null
   partial_name = "Simple"
@@ -74,7 +80,8 @@ resource "octopusdeploy_project" "project_hello_world" {
   project_group_id                     = data.octopusdeploy_project_groups.project_group_azure.project_groups[0].id
   included_library_variable_sets       = [
     data.octopusdeploy_library_variable_sets.octopus_server.library_variable_sets[0].id,
-    data.octopusdeploy_library_variable_sets.azure.library_variable_sets[0].id
+    data.octopusdeploy_library_variable_sets.azure.library_variable_sets[0].id,
+    data.octopusdeploy_library_variable_sets.this_instance.library_variable_sets[0].id,
   ]
   tenanted_deployment_participation    = "Untenanted"
 
