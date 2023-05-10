@@ -147,6 +147,15 @@ variable "slack_bot_token" {
   default     = "dummy"
 }
 
+variable "slack_support_users" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "The Slack support users"
+  default     = ""
+}
+
+
 variable "azure_application_id" {
   type        = string
   nullable    = false

@@ -41,8 +41,20 @@ variable "octopus_space_id" {
   }
 }
 
+variable "slack_bot_token" {
+  type    = string
+  default = "dummy"
+}
+
+variable "slack_support_users" {
+  type    = string
+  default = ""
+}
+
 module "octopus" {
-  source = "../octopus"
+  source              = "../octopus"
+  slack_bot_token     = var.slack_bot_token
+  slack_support_users = var.slack_support_users
 }
 
 

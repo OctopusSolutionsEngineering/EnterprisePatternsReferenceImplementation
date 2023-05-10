@@ -211,3 +211,13 @@ resource "octopusdeploy_tenant_common_variable" "europe_slack_bot_token" {
   tenant_id               = octopusdeploy_tenant.europe.id
   value                   = var.slack_bot_token
 }
+
+resource "octopusdeploy_tenant_common_variable" "europe_slack_support_users" {
+  library_variable_set_id = data.octopusdeploy_library_variable_sets.slack.library_variable_sets[0].id
+  template_id             = tolist([
+    for tmp in data.octopusdeploy_library_variable_sets.slack.library_variable_sets[0].template :
+    tmp.id if tmp.name == "Slack.Support.Users"
+  ])[0]
+  tenant_id               = octopusdeploy_tenant.europe.id
+  value                   = var.slack_support_users
+}

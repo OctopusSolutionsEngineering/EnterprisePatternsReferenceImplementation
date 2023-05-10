@@ -848,10 +848,11 @@ EOF
         "Octopus.Action.Terraform.GoogleCloudAccount"    = "False"
         "Octopus.Action.GoogleCloud.UseVMServiceAccount" = "True"
         "Octopus.Action.Terraform.TemplateParameters"    = jsonencode({
-          "space_id"        = "#{Octopus.Action[Create Client Space].Output.TerraformValueOutputs[space_id]}"
-          "octopus_server"  = "#{ManagedTenant.Octopus.Url}"
-          "octopus_apikey"  = "#{ManagedTenant.Octopus.ApiKey}"
-          "slack_bot_token" = "#{Slack.Bot.Token}"
+          "space_id"            = "#{Octopus.Action[Create Client Space].Output.TerraformValueOutputs[space_id]}"
+          "octopus_server"      = "#{ManagedTenant.Octopus.Url}"
+          "octopus_apikey"      = "#{ManagedTenant.Octopus.ApiKey}"
+          "slack_bot_token"     = "#{Slack.Bot.Token}"
+          "slack_support_users" = "#{Slack.Support.Users}"
         })
         "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name}"
         "Octopus.Action.Terraform.PlanJsonOutput"               = "False"

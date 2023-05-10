@@ -180,6 +180,14 @@ variable "slack_bot_token" {
   default     = "dummy"
 }
 
+variable "slack_support_users" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "The Slack support users"
+  default     = ""
+}
+
 variable "azure_application_id" {
   type        = string
   nullable    = false
@@ -231,6 +239,7 @@ module "octopus" {
   europe_docker_username        = var.europe_docker_username
   europe_docker_password        = var.europe_docker_password
   slack_bot_token               = var.slack_bot_token
+  slack_support_users           = var.slack_support_users
   docker_username               = var.docker_username
   docker_password               = var.docker_password
   azure_application_id          = var.azure_application_id
