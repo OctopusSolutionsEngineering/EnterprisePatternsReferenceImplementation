@@ -11,7 +11,21 @@ from slack_sdk.errors import SlackApiError
 client = WebClient(token=get_octopusvariable("Slack.Bot.Token"))
 logger = logging.getLogger(__name__)
 
-name = "incident-" + re.sub('[^A-Za-z0-9]', '-',  get_octopusvariable("Octopus.Space.Name").lower() + "-" + get_octopusvariable("Octopus.Project.Name").lower())
+name = "incident-" + re.sub('[^A-Za-z0-9]', '-',
+                            get_octopusvariable("Octopus.Space.Name").lower() +
+                            "-" +
+                            get_octopusvariable("Octopus.Project.Name").lower())
+
+
+def get_channel_id(name):
+    result = client.conversations_list()
+    logger.info(result)
+
+    id = [x for x in result.data['channels'] if x['name'] == name][0]['id']
+    logger.info("Channel ID: " + id)
+
+    return id
+
 
 try:
     # Call the conversations.create method using the WebClient
@@ -24,18 +38,23 @@ try:
     # Log the result which includes information like the ID of the conversation
     logger.info(result)
 
+    id = get_channel_id(name)
+    client.chat_postMessage(
+        channel=id,
+        text="This incident channel has been created to support the " +
+             get_octopusvariable("Octopus.Project.Name") +
+             " project in the " +
+             get_octopusvariable("Octopus.Space.Name") +
+             " space."
+    )
+
 except SlackApiError as e:
     if e.response.data['error'] != 'name_taken':
         logger.error("Error creating conversation: {}".format(e))
         raise e
 
 try:
-    result = client.conversations_list()
-    logger.info(result)
-
-    id = [x for x in result.data['channels'] if x['name'] == name][0]['id']
-    logger.info("Channel ID: " + id)
-
+    id = get_channel_id(name)
     users = get_octopusvariable("Slack.Support.Users")
 
     if users != "":
