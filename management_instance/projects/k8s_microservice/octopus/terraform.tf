@@ -58,6 +58,12 @@ data "octopusdeploy_library_variable_sets" "variable" {
   take         = 1
 }
 
+data "octopusdeploy_environments" "production" {
+  partial_name = "Production"
+  skip         = 0
+  take         = 1
+}
+
 variable "ad_service_octopusprintvariables_1" {
   type        = string
   nullable    = false
@@ -577,5 +583,65 @@ resource "octopusdeploy_runbook" "runbook_k8s_pod_logs" {
     allow_deployments_to_no_targets = true
     exclude_unhealthy_targets       = false
     skip_machine_behavior           = "None"
+  }
+}
+
+resource "octopusdeploy_runbook" "create_incident_channel" {
+  name                        = "Create Incident Channel"
+  project_id                  = octopusdeploy_project.project_ad_service.id
+  environment_scope           = "Specified"
+  environments                = [data.octopusdeploy_environments.production.environments[0].id]
+  force_package_download      = false
+  default_guided_failure_mode = "EnvironmentDefault"
+  description                 = "Create an incident channel to support production issues with this app."
+  multi_tenancy_mode          = "Untenanted"
+
+  retention_policy {
+    quantity_to_keep    = 100
+    should_keep_forever = false
+  }
+
+  connectivity_policy {
+    allow_deployments_to_no_targets = true
+    exclude_unhealthy_targets       = false
+    skip_machine_behavior           = "None"
+  }
+}
+
+resource "octopusdeploy_runbook_process" "create_incident_channel" {
+  runbook_id = octopusdeploy_runbook.create_incident_channel.id
+
+  step {
+    condition           = "Success"
+    name                = "Create Incident Channel"
+    package_requirement = "LetOctopusDecide"
+    start_trigger       = "StartAfterPrevious"
+
+    action {
+
+      action_type                        = "Octopus.Script"
+      name                               = "Create Incident Channel"
+      condition                          = "Success"
+      run_on_server                      = true
+      is_disabled                        = false
+      can_be_used_for_project_versioning = false
+      is_required                        = true
+      worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
+      properties                         = {
+        "Octopus.Action.Script.ScriptSource" = "Inline"
+        "Octopus.Action.Script.ScriptBody"   = file("../../scripts/create_channel.py")
+        "Octopus.Action.Script.Syntax"       = "Python"
+      }
+
+
+      environments          = []
+      excluded_environments = []
+      channels              = []
+      tenant_tags           = []
+      features              = []
+    }
+
+    properties   = {}
+    target_roles = []
   }
 }

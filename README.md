@@ -40,7 +40,7 @@ Shut the Octopus and Git stack down with:
 * Add get k8s logs runbook
 * Add delete k8s pods runbook
 * Add curl smoke test runbook
-* Add slack incident channel creation runbook
+* Add slack incident channel creation runbook [DONE]
 
 * Create development, test/production spaces.
 * Add sample project to development.

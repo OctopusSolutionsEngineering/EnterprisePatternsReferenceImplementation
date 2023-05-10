@@ -596,7 +596,7 @@ resource "octopusdeploy_runbook_process" "create_incident_channel" {
       worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
       properties                         = {
         "Octopus.Action.Script.ScriptSource" = "Inline"
-        "Octopus.Action.Script.ScriptBody"   = file("../scripts/create_channel.py")
+        "Octopus.Action.Script.ScriptBody"   = file("../../scripts/create_channel.py")
         "Octopus.Action.Script.Syntax"       = "Python"
       }
 
