@@ -109,10 +109,27 @@ data "octopusdeploy_git_credentials" "gitcredential" {
 }
 
 resource "octopusdeploy_variable" "package" {
-  owner_id = octopusdeploy_project.project.id
-  type     = "String"
-  name     = "Azure.WebApp.PackageId"
-  value    = "octopussamples/octopub"
+  owner_id    = octopusdeploy_project.project.id
+  type        = "String"
+  name        = "Azure.WebApp.PackageId"
+  value       = "octopussamples/octopub"
+  description = "The Docker image to deploy to the web app"
+}
+
+resource "octopusdeploy_variable" "vuln_scan" {
+  owner_id    = octopusdeploy_project.project.id
+  type        = "String"
+  name        = "Project.VulnerabilityScan.Enabled"
+  value       = "True"
+  description = "Set this value to False to disable the vulnerability scan step"
+}
+
+resource "octopusdeploy_variable" "cypress_test" {
+  owner_id    = octopusdeploy_project.project.id
+  type        = "String"
+  name        = "Project.CypressTest.Enabled"
+  value       = "True"
+  description = "Set this value to False to disable the Cypress test step"
 }
 
 resource "octopusdeploy_project_group" "project_group" {
@@ -144,7 +161,7 @@ resource "octopusdeploy_project" "project" {
     data.octopusdeploy_library_variable_sets.slack.library_variable_sets[0].id,
     data.octopusdeploy_library_variable_sets.export_options.library_variable_sets[0].id,
   ]
-  tenanted_deployment_participation    = "Untenanted"
+  tenanted_deployment_participation = "Untenanted"
 
   connectivity_policy {
     allow_deployments_to_no_targets = true
@@ -168,174 +185,176 @@ resource "octopusdeploy_variable" "cloud_discovery" {
   value    = data.octopusdeploy_accounts.azure.accounts[0].id
 }
 
- resource "octopusdeploy_deployment_process" "deployment_process" {
-   project_id = octopusdeploy_project.project.id
+resource "octopusdeploy_deployment_process" "deployment_process" {
+  project_id = octopusdeploy_project.project.id
 
-   lifecycle {
-     ignore_changes = [
-       step,
-     ]
-   }
+  lifecycle {
+    ignore_changes = [
+      step,
+    ]
+  }
 
-   step {
-     condition           = "Success"
-     name                = "Create Web App"
-     package_requirement = "LetOctopusDecide"
-     start_trigger       = "StartAfterPrevious"
+  step {
+    condition           = "Success"
+    name                = "Create Web App"
+    package_requirement = "LetOctopusDecide"
+    start_trigger       = "StartAfterPrevious"
 
-     action {
-       action_type                        = "Octopus.AzurePowerShell"
-       name                               = "Create Web App"
-       condition                          = "Success"
-       run_on_server                      = true
-       is_disabled                        = false
-       can_be_used_for_project_versioning = true
-       is_required                        = false
-       worker_pool_id                     = "${data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id}"
-       properties                         = {
-         "Octopus.Action.Script.ScriptSource" = "Inline"
-         "Octopus.Action.Script.Syntax"       = "Bash"
-         "Octopus.Action.Azure.AccountId"     = data.octopusdeploy_accounts.azure.accounts[0].id
-         "Octopus.Action.Script.ScriptBody"   = file("../scripts/create_web_app.sh")
-         "OctopusUseBundledTooling"           = "False"
-       }
+    action {
+      action_type                        = "Octopus.AzurePowerShell"
+      name                               = "Create Web App"
+      condition                          = "Success"
+      run_on_server                      = true
+      is_disabled                        = false
+      can_be_used_for_project_versioning = true
+      is_required                        = false
+      worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
+      properties                         = {
+        "Octopus.Action.Script.ScriptSource" = "Inline"
+        "Octopus.Action.Script.Syntax"       = "Bash"
+        "Octopus.Action.Azure.AccountId"     = data.octopusdeploy_accounts.azure.accounts[0].id
+        "Octopus.Action.Script.ScriptBody"   = file("../scripts/create_web_app.sh")
+        "OctopusUseBundledTooling"           = "False"
+      }
 
-       environments          = []
-       excluded_environments = [data.octopusdeploy_environments.security.environments[0].id]
-       channels              = []
-       tenant_tags           = []
-       features              = []
-     }
+      environments          = []
+      excluded_environments = [data.octopusdeploy_environments.security.environments[0].id]
+      channels              = []
+      tenant_tags           = []
+      features              = []
+    }
 
-     properties   = {}
-     target_roles = []
-   }
+    properties   = {}
+    target_roles = []
+  }
 
-   step {
-     condition           = "Success"
-     name                = "Deploy Web App"
-     package_requirement = "LetOctopusDecide"
-     start_trigger       = "StartAfterPrevious"
+  step {
+    condition           = "Success"
+    name                = "Deploy Web App"
+    package_requirement = "LetOctopusDecide"
+    start_trigger       = "StartAfterPrevious"
 
-     action {
-       action_type                        = "Octopus.AzureAppService"
-       name                               = "Deploy Web App"
-       notes                              = "Deploys the Azure Web App from a Docker image."
-       condition                          = "Success"
-       run_on_server                      = true
-       is_disabled                        = false
-       can_be_used_for_project_versioning = true
-       is_required                        = false
-       worker_pool_id                     = "${data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id}"
-       properties                         = {
-         "OctopusUseBundledTooling"                  = "False"
-         "Octopus.Action.Azure.DeploymentType"       = "Container"
-         "Octopus.Action.Package.DownloadOnTentacle" = "False"
-       }
-       environments          = []
-       excluded_environments = [data.octopusdeploy_environments.security.environments[0].id]
-       channels              = []
-       tenant_tags           = []
+    action {
+      action_type                        = "Octopus.AzureAppService"
+      name                               = "Deploy Web App"
+      notes                              = "Deploys the Azure Web App from a Docker image."
+      condition                          = "Success"
+      run_on_server                      = true
+      is_disabled                        = false
+      can_be_used_for_project_versioning = true
+      is_required                        = false
+      worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
+      properties                         = {
+        "OctopusUseBundledTooling"                  = "False"
+        "Octopus.Action.Azure.DeploymentType"       = "Container"
+        "Octopus.Action.Package.DownloadOnTentacle" = "False"
+      }
+      environments          = []
+      excluded_environments = [data.octopusdeploy_environments.security.environments[0].id]
+      channels              = []
+      tenant_tags           = []
 
-       primary_package {
-         package_id           = "#{Azure.WebApp.PackageId}"
-         acquisition_location = "NotAcquired"
-         feed_id              = data.octopusdeploy_feeds.docker.feeds[0].id
-         properties           = { SelectionMode = "immediate" }
-       }
+      primary_package {
+        package_id           = "#{Azure.WebApp.PackageId}"
+        acquisition_location = "NotAcquired"
+        feed_id              = data.octopusdeploy_feeds.docker.feeds[0].id
+        properties           = { SelectionMode = "immediate" }
+      }
 
-       features = [
-         "Octopus.Features.JsonConfigurationVariables",
-         "Octopus.Features.ConfigurationTransforms",
-         "Octopus.Features.SubstituteInFiles"
-       ]
-     }
+      features = [
+        "Octopus.Features.JsonConfigurationVariables",
+        "Octopus.Features.ConfigurationTransforms",
+        "Octopus.Features.SubstituteInFiles"
+      ]
+    }
 
-     properties   = {}
-     target_roles = ["octopub-webapp-cac"]
-   }
-   step {
-     condition           = "Success"
-     name                = "End-to-end Test with Cypress"
-     package_requirement = "LetOctopusDecide"
-     start_trigger       = "StartAfterPrevious"
+    properties   = {}
+    target_roles = ["octopub-webapp-cac"]
+  }
+  step {
+    condition            = "Variable"
+    condition_expression = "#{Project.CypressTest.Enabled}"
+    name                 = "End-to-end Test with Cypress"
+    package_requirement  = "LetOctopusDecide"
+    start_trigger        = "StartAfterPrevious"
 
-     action {
-       action_type                        = "Octopus.Script"
-       name                               = "End-to-end Test with Cypress"
-       condition                          = "Success"
-       run_on_server                      = true
-       is_disabled                        = false
-       can_be_used_for_project_versioning = true
-       is_required                        = false
-       worker_pool_id                     = "${data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id}"
-       properties                         = {
-         "Octopus.Action.Script.ScriptBody"   = file("../scripts/cypress_test.sh")
-         "OctopusUseBundledTooling"           = "False"
-         "Octopus.Action.Script.ScriptSource" = "Inline"
-         "Octopus.Action.Script.Syntax"       = "Bash"
-       }
+    action {
+      action_type                        = "Octopus.Script"
+      name                               = "End-to-end Test with Cypress"
+      condition                          = "Success"
+      run_on_server                      = true
+      is_disabled                        = false
+      can_be_used_for_project_versioning = true
+      is_required                        = false
+      worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
+      properties                         = {
+        "Octopus.Action.Script.ScriptBody"   = file("../scripts/cypress_test.sh")
+        "OctopusUseBundledTooling"           = "False"
+        "Octopus.Action.Script.ScriptSource" = "Inline"
+        "Octopus.Action.Script.Syntax"       = "Bash"
+      }
 
-       environments          = []
-       excluded_environments = [data.octopusdeploy_environments.security.environments[0].id]
-       channels              = []
-       tenant_tags           = []
+      environments          = []
+      excluded_environments = [data.octopusdeploy_environments.security.environments[0].id]
+      channels              = []
+      tenant_tags           = []
 
-       package {
-         name                      = "octopub-cypress"
-         package_id                = "com.octopus:octopub-cypress"
-         acquisition_location      = "Server"
-         extract_during_deployment = false
-         feed_id                   = data.octopusdeploy_feeds.maven.feeds[0].id
-         properties                = { Extract = "True", Purpose = "", SelectionMode = "immediate" }
-       }
-       features = []
-     }
+      package {
+        name                      = "octopub-cypress"
+        package_id                = "com.octopus:octopub-cypress"
+        acquisition_location      = "Server"
+        extract_during_deployment = false
+        feed_id                   = data.octopusdeploy_feeds.maven.feeds[0].id
+        properties                = { Extract = "True", Purpose = "", SelectionMode = "immediate" }
+      }
+      features = []
+    }
 
-     properties   = {}
-     target_roles = []
-   }
-   step {
-     condition           = "Success"
-     name                = "Check for Vulnerabilities"
-     package_requirement = "LetOctopusDecide"
-     start_trigger       = "StartAfterPrevious"
+    properties   = {}
+    target_roles = []
+  }
+  step {
+    condition            = "Variable"
+    condition_expression = "#{Project.VulnerabilityScan.Enabled}"
+    name                 = "Check for Vulnerabilities"
+    package_requirement  = "LetOctopusDecide"
+    start_trigger        = "StartAfterPrevious"
 
-     action {
-       action_type                        = "Octopus.Script"
-       name                               = "Check for Vulnerabilities"
-       condition                          = "Success"
-       run_on_server                      = true
-       is_disabled                        = false
-       can_be_used_for_project_versioning = true
-       is_required                        = true
-       worker_pool_id                     = "${data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id}"
-       properties                         = {
-         "Octopus.Action.SubstituteInFiles.Enabled" = "True"
-         "Octopus.Action.Script.ScriptBody"         = file("../scripts/vulnerability_scan.sh")
-         "Octopus.Action.Script.ScriptSource"       = "Inline"
-         "Octopus.Action.Script.Syntax"             = "Bash"
-       }
-       environments          = []
-       excluded_environments = []
-       channels              = []
-       tenant_tags           = []
+    action {
+      action_type                        = "Octopus.Script"
+      name                               = "Check for Vulnerabilities"
+      condition                          = "Success"
+      run_on_server                      = true
+      is_disabled                        = false
+      can_be_used_for_project_versioning = true
+      is_required                        = true
+      worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
+      properties                         = {
+        "Octopus.Action.SubstituteInFiles.Enabled" = "True"
+        "Octopus.Action.Script.ScriptBody"         = file("../scripts/vulnerability_scan.sh")
+        "Octopus.Action.Script.ScriptSource"       = "Inline"
+        "Octopus.Action.Script.Syntax"             = "Bash"
+      }
+      environments          = []
+      excluded_environments = []
+      channels              = []
+      tenant_tags           = []
 
-       package {
-         name                      = "sbom"
-         package_id                = "com.octopus:octopub-sbom"
-         acquisition_location      = "Server"
-         extract_during_deployment = false
-         feed_id                   = data.octopusdeploy_feeds.maven.feeds[0].id
-         properties                = { Extract = "True" }
-       }
-       features = ["Octopus.Features.SubstituteInFiles"]
-     }
+      package {
+        name                      = "sbom"
+        package_id                = "com.octopus:octopub-sbom"
+        acquisition_location      = "Server"
+        extract_during_deployment = false
+        feed_id                   = data.octopusdeploy_feeds.maven.feeds[0].id
+        properties                = { Extract = "True" }
+      }
+      features = ["Octopus.Features.SubstituteInFiles"]
+    }
 
-     properties   = {}
-     target_roles = []
-   }
- }
+    properties   = {}
+    target_roles = []
+  }
+}
 
 resource "octopusdeploy_runbook" "runbook_delete_web_app" {
   name                        = "Delete Web App"
@@ -376,7 +395,7 @@ resource "octopusdeploy_runbook_process" "delete_web_app" {
       is_disabled                        = false
       can_be_used_for_project_versioning = true
       is_required                        = false
-      worker_pool_id                     = "${data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id}"
+      worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
       properties                         = {
         "Octopus.Action.Script.ScriptSource" = "Inline"
         "Octopus.Action.Script.Syntax"       = "Bash"
