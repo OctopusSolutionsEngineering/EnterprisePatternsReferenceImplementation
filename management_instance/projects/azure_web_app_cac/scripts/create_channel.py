@@ -11,7 +11,7 @@ from slack_sdk.errors import SlackApiError
 client = WebClient(token=get_octopusvariable("Slack.Bot.Token"))
 logger = logging.getLogger(__name__)
 
-name = "incident-" + re.sub('[^A-Za-z0-9]', '-',  get_octopusvariable("Octopus.Project.Name").lower())
+name = "incident-" + re.sub('[^A-Za-z0-9]', '-',  get_octopusvariable("Octopus.Space.Name").lower() + "-" + get_octopusvariable("Octopus.Project.Name").lower())
 
 try:
     # Call the conversations.create method using the WebClient
