@@ -53,6 +53,12 @@ data "octopusdeploy_environments" "security" {
   take         = 1
 }
 
+data "octopusdeploy_environments" "production" {
+  partial_name = "Production"
+  skip         = 0
+  take         = 1
+}
+
 data "octopusdeploy_library_variable_sets" "octopus_server" {
   partial_name = "Octopus Server"
   skip         = 0
@@ -550,8 +556,8 @@ EOT
 resource "octopusdeploy_runbook" "create_incident_channel" {
   name                        = "Create Incident Channel"
   project_id                  = octopusdeploy_project.project.id
-  environment_scope           = "All"
-  environments                = []
+  environment_scope           = "Specified"
+  environments                = [data.octopusdeploy_environments.production.id]
   force_package_download      = false
   default_guided_failure_mode = "EnvironmentDefault"
   description                 = "Create an incident channel to support production issues with this app."
