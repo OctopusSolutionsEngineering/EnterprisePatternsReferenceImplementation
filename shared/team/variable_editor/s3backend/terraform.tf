@@ -1,11 +1,11 @@
 terraform {
-  backend "s3" {
+  required_providers {
+    octopusdeploy = { source = "OctopusDeployLabs/octopusdeploy", version = "0.11.1" }
   }
 }
 
 terraform {
-  required_providers {
-    octopusdeploy = { source = "OctopusDeployLabs/octopusdeploy", version = "0.12.1" }
+  backend "s3" {
   }
 }
 
@@ -41,20 +41,22 @@ variable "octopus_space_id" {
   }
 }
 
-variable "slack_bot_token" {
-  type    = string
-  default = "dummy"
+variable "docker_username" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "DockerHub username."
 }
 
-variable "slack_support_users" {
-  type    = string
-  default = "dummy"
+variable "docker_password" {
+  type        = string
+  nullable    = false
+  sensitive   = true
+  description = "DockerHub password."
 }
 
 module "octopus" {
-  source              = "../octopus"
-  slack_bot_token     = var.slack_bot_token
-  slack_support_users = var.slack_support_users
+  source = "../octopus"
+  docker_username = var.docker_username
+  docker_password = var.docker_password
 }
-
-

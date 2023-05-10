@@ -70,7 +70,7 @@ data "octopusdeploy_library_variable_sets" "slack" {
   take         = 1
 }
 
-variable "ad_service_octopusprintvariables_1" {
+variable "octopusprintvariables_1" {
   type        = string
   nullable    = false
   sensitive   = false
@@ -89,7 +89,7 @@ resource "octopusdeploy_variable" "k8s_application_group" {
 
 resource "octopusdeploy_variable" "k8s_port" {
   owner_id     = octopusdeploy_project.project_ad_service.id
-  value        = "9555"
+  value        = "5000"
   name         = "Kubernetes.Application.Port"
   type         = "String"
   description  = "The port exposed by the application."
@@ -98,7 +98,7 @@ resource "octopusdeploy_variable" "k8s_port" {
 
 resource "octopusdeploy_variable" "k8s_image" {
   owner_id     = octopusdeploy_project.project_ad_service.id
-  value        = "octopussamples/adservice"
+  value        = "octopussamples/octopub"
   name         = "Kubernetes.Application.Image"
   type         = "String"
   description  = "The Docker image deployed by this application."
@@ -114,9 +114,9 @@ resource "octopusdeploy_variable" "k8s_env_vars" {
   is_sensitive = false
 }
 
-resource "octopusdeploy_variable" "ad_service_octopusprintvariables_1" {
-  owner_id     = "${octopusdeploy_project.project_ad_service.id}"
-  value        = "${var.ad_service_octopusprintvariables_1}"
+resource "octopusdeploy_variable" "octopusprintvariables_1" {
+  owner_id     = octopusdeploy_project.project_ad_service.id
+  value        = var.octopusprintvariables_1
   name         = "OctopusPrintVariables"
   type         = "String"
   description  = "A debug variable used to print all variables to the logs. See [here](https://octopus.com/docs/support/debug-problems-with-octopus-variables) for more information."
@@ -412,7 +412,7 @@ variable "project_group_google_microservice_demo_name" {
   default     = "Kubernetes"
 }
 
-variable "ad_service_octopusprintevaluatedvariables_1" {
+variable "octopusprintevaluatedvariables_1" {
   type        = string
   nullable    = false
   sensitive   = false
@@ -420,9 +420,9 @@ variable "ad_service_octopusprintevaluatedvariables_1" {
   default     = "False"
 }
 
-resource "octopusdeploy_variable" "ad_service_octopusprintevaluatedvariables_1" {
+resource "octopusdeploy_variable" "octopusprintevaluatedvariables_1" {
   owner_id     = "${octopusdeploy_project.project_ad_service.id}"
-  value        = "${var.ad_service_octopusprintevaluatedvariables_1}"
+  value        = "${var.octopusprintevaluatedvariables_1}"
   name         = "OctopusPrintEvaluatedVariables"
   type         = "String"
   description  = "A debug variable used to print all variables to the logs. See [here](https://octopus.com/docs/support/debug-problems-with-octopus-variables) for more information."

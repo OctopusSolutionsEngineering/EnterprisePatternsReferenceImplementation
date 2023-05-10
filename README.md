@@ -48,13 +48,13 @@ Shut the Octopus and Git stack down with:
 * Status runbook should show repos with upstream changes, behind downstream, equal, and merge conflict
 * Use sensible defines for ignoring changes and remove the prompts [DONE]
 * Run create space and compose resources before fork or clone
-* Add runbook variable scoping
-* Fix k8s template to work with octopub
 * Add get k8s logs runbook
 * Add delete k8s pods runbook
 * Add curl smoke test runbook
 * Add slack incident channel creation runbook [DONE]
-* Add team that allows variable editing, release creation, and deployment
+* Add team that allows variable editing, release creation, and deployment [DONE]
+* Add runbook variable scoping
+* Fix k8s template to work with octopub
 
 * Create development, test/production spaces.
 * Add sample project to development.

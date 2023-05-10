@@ -19,7 +19,7 @@ resource "octopusdeploy_variable" "octopus_api_key" {
   value        = "#{Octopus.Project.Name}"
 
   prompt {
-    description = "The name of the new project"
+    description = "The name of the new project. This is only used by the \"Deploy Project\" and \"Fork and Deploy Project\" runbooks."
     label       = "Project Name"
     is_required = true
   }

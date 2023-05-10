@@ -17,5 +17,5 @@ resource "octopusdeploy_space" "space" {
   is_default                  = false
   is_task_queue_stopped       = false
   space_managers_team_members = []
-  space_managers_teams        = ["teams-everyone"]
+  space_managers_teams        = ["teams-administrators"]
 }

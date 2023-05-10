@@ -225,6 +225,8 @@ execute_terraform_with_project () {
    popd || exit 1
 }
 
+execute_terraform 'team_variable_editor' 'shared/team/variable_editor/pgbackend' 'Spaces-1'
+
 execute_terraform 'gitcreds' 'shared/gitcreds/gitea/pgbackend' 'Spaces-1'
 
 execute_terraform 'environments' 'shared/environments/dev_test_prod/pgbackend' 'Spaces-1'

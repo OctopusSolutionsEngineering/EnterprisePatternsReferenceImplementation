@@ -1,18 +1,12 @@
 terraform {
-  backend "s3" {
+  required_providers {
+    octopusdeploy = { source = "OctopusDeployLabs/octopusdeploy", version = "0.11.1" }
   }
 }
 
 terraform {
-  required_providers {
-    octopusdeploy = { source = "OctopusDeployLabs/octopusdeploy", version = "0.12.1" }
+  backend "s3" {
   }
-}
-
-provider "octopusdeploy" {
-  address  = "${var.octopus_server}"
-  api_key  = "${var.octopus_apikey}"
-  space_id = "${var.octopus_space_id}"
 }
 
 variable "octopus_server" {
@@ -34,6 +28,7 @@ variable "octopus_space_id" {
   nullable    = false
   sensitive   = false
   description = "The ID of the Octopus space to populate."
+  default     = "Spaces-1"
 
   validation {
     condition     = length(var.octopus_space_id) > 7 && substr(var.octopus_space_id, 0, 7) == "Spaces-"
@@ -41,20 +36,13 @@ variable "octopus_space_id" {
   }
 }
 
-variable "slack_bot_token" {
-  type    = string
-  default = "dummy"
-}
-
-variable "slack_support_users" {
-  type    = string
-  default = "dummy"
+provider "octopusdeploy" {
+  address  = "http://localhost:18080"
+  api_key  = "API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+  space_id = var.octopus_space_id
 }
 
 module "octopus" {
-  source              = "../octopus"
-  slack_bot_token     = var.slack_bot_token
-  slack_support_users = var.slack_support_users
+  source           = "../octopus"
+  octopus_space_id = var.octopus_space_id
 }
-
-
