@@ -20,8 +20,7 @@ docker run \
   -defaultSecretVariableValues                                              `# for any secret variables, add a default value set to the octostache value of the variable e.g. a secret variable called "database" has a default value of "#{database}"` \
   -detachProjectTemplates                                                   `# detach any step templates, allowing the exported project to be used in a new space` \
   -ignoreCacManagedValues=false                                             `# CaC enabled projects will not export the deployment process, non-secret variables, and other CaC managed project settings` \
-  -ignoreProjectChanges=#{Exported.Project.IgnoreChanges}                   `# Determines if this a managed project (where the argument is false) or an unmanaged project (where the argument is true)` \
-  -ignoreProjectVariableChanges=#{Exported.Project.IgnoreVariableChanges}   `# Determines if changes to the project's variables are overwritten (where the argument is false) or changes are ignored (where the argument is true)` \
+  -ignoreProjectVariableChanges=true                                        `# This value is always true. Either this is an unmanaged project, in which case we are never reapplying it; or is is a variable configured project, in which case we need to ignore variable changes, or it is a shared CaC project, in which case we don't use Terraform to manage variables. ` \
   -excludeRunbook "__ 1. Serialize Project"                                 `# This is a management runbook that we do not wish to export` \
   -excludeRunbook "__ 2. Deploy Project"                                    `# This is a management runbook that we do not wish to export` \
   -excludeRunbook "__ 2. Fork and Deploy Project"                           `# This is a management runbook that we do not wish to export` \

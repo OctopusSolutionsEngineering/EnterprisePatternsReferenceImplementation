@@ -46,7 +46,7 @@ Shut the Octopus and Git stack down with:
 * Add list downstream projects runbook [DONE]
 * Add merge conflict check runbook [DONE]
 * Status runbook should show repos with upstream changes, behind downstream, equal, and merge conflict
-* Use sensible defines for ignoring changes and remove the prompts
+* Use sensible defines for ignoring changes and remove the prompts [DONE]
 * Run create space and compose resources before fork or clone
 * Add runbook variable scoping
 * Fix k8s template to work with octopub
