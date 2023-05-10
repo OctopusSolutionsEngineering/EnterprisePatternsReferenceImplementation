@@ -557,7 +557,7 @@ resource "octopusdeploy_runbook" "create_incident_channel" {
   name                        = "Create Incident Channel"
   project_id                  = octopusdeploy_project.project.id
   environment_scope           = "Specified"
-  environments                = [data.octopusdeploy_environments.production.id]
+  environments                = [data.octopusdeploy_environments.production.environments[0].id]
   force_package_download      = false
   default_guided_failure_mode = "EnvironmentDefault"
   description                 = "Create an incident channel to support production issues with this app."
