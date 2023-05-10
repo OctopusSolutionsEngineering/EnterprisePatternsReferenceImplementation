@@ -13,6 +13,16 @@ Shut the Octopus and Git stack down with:
 ./cleanup.sh
 ```
 
+# Scenarios
+* Disable steps in downstream project
+* Move project to new group
+* Rename project
+* Different tenants
+* Different variables (e.g. database creds)
+* Different environments
+  * With step/variable scoping
+* 
+
 # Todo
 
 * Create environment for synchronizing. [DONE]
@@ -35,12 +45,16 @@ Shut the Octopus and Git stack down with:
 * Add merge all runbook
 * Add list downstream projects runbook [DONE]
 * Add merge conflict check runbook [DONE]
+* Status runbook should show repos with upstream changes, behind downstream, equal, and merge conflict
+* Use sensible defines for ignoring changes and remove the prompts
 * Run create space and compose resources before fork or clone
 * Add runbook variable scoping
+* Fix k8s template to work with octopub
 * Add get k8s logs runbook
 * Add delete k8s pods runbook
 * Add curl smoke test runbook
 * Add slack incident channel creation runbook [DONE]
+* Add team that allows variable editing, release creation, and deployment
 
 * Create development, test/production spaces.
 * Add sample project to development.
