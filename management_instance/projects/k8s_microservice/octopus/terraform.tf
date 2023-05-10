@@ -64,6 +64,12 @@ data "octopusdeploy_environments" "production" {
   take         = 1
 }
 
+data "octopusdeploy_library_variable_sets" "slack" {
+  partial_name = "Shared Slack"
+  skip         = 0
+  take         = 1
+}
+
 variable "ad_service_octopusprintvariables_1" {
   type        = string
   nullable    = false
@@ -445,7 +451,8 @@ resource "octopusdeploy_project" "project_ad_service" {
   project_group_id                     = "${data.octopusdeploy_project_groups.project_group_google_microservice_demo.project_groups[0].id}"
   included_library_variable_sets       = [
     data.octopusdeploy_library_variable_sets.variable.library_variable_sets[0].id,
-    data.octopusdeploy_library_variable_sets.octopus_server.library_variable_sets[0].id
+    data.octopusdeploy_library_variable_sets.octopus_server.library_variable_sets[0].id,
+    data.octopusdeploy_library_variable_sets.slack.library_variable_sets[0].id,
   ]
   tenanted_deployment_participation    = "Untenanted"
 

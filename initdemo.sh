@@ -102,9 +102,6 @@ minikube start --container-runtime=containerd --driver=docker
 
 docker network connect minikube octopus
 
-# Extract the cluster URL. This will be a 127.0.0.1 address though, which is not quite what we need.
-CLUSTER_URL=$(docker run --rm -v /tmp:/workdir mikefarah/yq '.clusters[0].cluster.server' octoconfig.yml)
-
 # This returns the IP address of the minikube network
 DOCKER_HOST_IP=$(minikube ip)
 
