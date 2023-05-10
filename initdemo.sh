@@ -261,6 +261,8 @@ execute_terraform 'lib_var_client_slack' 'shared/variables/client_slack/pgbacken
 
 execute_terraform 'lib_var_slack' 'shared/variables/slack/pgbackend' 'Spaces-1'
 
+execute_terraform 'lib_var_export_options' 'shared/variables/export_options/pgbackend' 'Spaces-1'
+
 execute_terraform 'project_create_client_space' 'management_instance/projects/create_client_space/pgbackend' 'Spaces-1'
 
 execute_terraform 'project_hello_world' 'management_instance/projects/hello_world/pgbackend' 'Spaces-1'
