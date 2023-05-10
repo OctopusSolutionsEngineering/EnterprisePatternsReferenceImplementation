@@ -1,6 +1,6 @@
 terraform {
   backend "pg" {
-      conn_str = "postgres://terraform:terraform@localhost:15432/lib_var_slack?sslmode=disable"
+    conn_str = "postgres://terraform:terraform@localhost:15432/lib_var_slack?sslmode=disable"
   }
 }
 
@@ -29,6 +29,12 @@ provider "octopusdeploy" {
   space_id = var.octopus_space_id
 }
 
+variable "slack_bot_token" {
+  type    = string
+  default = "dummy"
+}
+
 module "octopus" {
-  source = "../octopus"
+  source          = "../octopus"
+  slack_bot_token = var.slack_bot_token
 }

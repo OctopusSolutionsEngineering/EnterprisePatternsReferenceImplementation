@@ -60,19 +60,6 @@ then
   exit 1
 fi
 
-# Use the default values for the individual tenants if there are no specific values defined
-if [[ -z "${TF_VAR_america_docker_username}" ]]
-then
-  export TF_VAR_america_docker_username=$TF_VAR_docker_username
-  export TF_VAR_america_docker_password=$TF_VAR_docker_password
-fi
-
-if [[ -z "${TF_VAR_europe_docker_username}" ]]
-then
-  export TF_VAR_europe_docker_username=$TF_VAR_docker_username
-  export TF_VAR_europe_docker_password=$TF_VAR_docker_password
-fi
-
 if [[ -z "${TF_VAR_azure_application_id}" ]]
 then
   echo "You must set the TF_VAR_azure_application_id environment variable to the Azure application ID."
@@ -95,23 +82,6 @@ if [[ -z "${TF_VAR_azure_tenant_id}" ]]
 then
   echo "You must set the TF_VAR_azure_tenant_id environment variable to the Azure tenant ID."
   exit 1
-fi
-
-# It is possible to have unique values per tenant, but most demos will simply reuse the main credentials
-if [[ -z "${TF_VAR_america_azure_application_id}" ]]
-then
-  export TF_VAR_america_azure_application_id=$TF_VAR_america_azure_application_id
-  export TF_VAR_america_azure_subscription_id=TF_VAR_azure_subscription_id
-  export TF_VAR_america_azure_password=TF_VAR_azure_password
-  export TF_VAR_america_azure_tenant_id=TF_VAR_azure_tenant_id
-fi
-
-if [[ -z "${TF_VAR_europe_azure_application_id}" ]]
-then
-  export TF_VAR_europe_azure_application_id=$TF_VAR_europe_azure_application_id
-  export TF_VAR_europe_azure_subscription_id=TF_VAR_azure_subscription_id
-  export TF_VAR_europe_azure_password=TF_VAR_azure_password
-  export TF_VAR_europe_azure_tenant_id=TF_VAR_azure_tenant_id
 fi
 
 # Start the Docker Compose stack
@@ -210,7 +180,8 @@ do
 done
 
 # Install all the tools we'll need to perform deployments
-docker-compose -f docker/compose.yml exec octopus sh -c 'apt-get install -y jq git dnsutils zip gnupg software-properties-common'
+docker-compose -f docker/compose.yml exec octopus sh -c 'apt-get install -y jq git dnsutils zip gnupg software-properties-common python3 python3-pip'
+docker-compose -f docker/compose.yml exec octopus sh -c 'pip install slack_sdk'
 docker-compose -f docker/compose.yml exec octopus sh -c 'apt update && apt install -y --no-install-recommends gnupg curl ca-certificates apt-transport-https && curl -sSfL https://apt.octopus.com/public.key | apt-key add - && sh -c "echo deb https://apt.octopus.com/ stable main > /etc/apt/sources.list.d/octopus.com.list" && apt update && apt install -y octopuscli'
 docker-compose -f docker/compose.yml exec octopus sh -c 'wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor > /usr/share/keyrings/hashicorp-archive-keyring.gpg'
 docker-compose -f docker/compose.yml exec octopus sh -c 'echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" > /etc/apt/sources.list.d/hashicorp.list'
@@ -291,6 +262,8 @@ execute_terraform 'lib_var_k8s' 'shared/variables/k8s/pgbackend' 'Spaces-1'
 
 execute_terraform 'lib_var_client_slack' 'shared/variables/client_slack/pgbackend' 'Spaces-1'
 
+execute_terraform 'lib_var_slack' 'shared/variables/slack/pgbackend' 'Spaces-1'
+
 execute_terraform 'project_create_client_space' 'management_instance/projects/create_client_space/pgbackend' 'Spaces-1'
 
 execute_terraform 'project_hello_world' 'management_instance/projects/hello_world/pgbackend' 'Spaces-1'
@@ -329,7 +302,7 @@ terraform apply -auto-approve \
   "-var=america_k8s_cert=${COMBINED_CERT}" \
   "-var=america_k8s_url=https://${DOCKER_HOST_IP}:${CLUSTER_PORT}" \
   "-var=europe_k8s_cert=${COMBINED_CERT}" \
-  "-var=europe_k8s_url=https://${DOCKER_HOST_IP}:${CLUSTER_PORT}"
+  "-var=europe_k8s_url=https://${DOCKER_HOST_IP}:${CLUSTER_PORT}" || exit 1
 popd
 
 # Add serialize and deploy runbooks to sample projects.

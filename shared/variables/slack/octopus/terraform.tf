@@ -5,18 +5,18 @@ terraform {
 }
 
 resource "octopusdeploy_library_variable_set" "octopus_library_variable_set" {
-  name        = "Client Slack"
+  name        = "Shared Slack"
   description = "Variables related to interacting with Slack"
 }
 
-variable "bot_token" {
+variable "slack_bot_token" {
   type = string
 }
 
 resource "octopusdeploy_variable" "bot_token" {
   owner_id        = octopusdeploy_library_variable_set.octopus_library_variable_set.id
-  type            = "String"
+  type            = "Sensitive"
   name            = "Slack.Bot.Token"
   is_sensitive    = true
-  sensitive_value = var.bot_token
+  sensitive_value = var.slack_bot_token
 }

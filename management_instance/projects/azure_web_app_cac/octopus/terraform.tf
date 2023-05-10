@@ -65,7 +65,6 @@ data "octopusdeploy_library_variable_sets" "azure" {
   take         = 1
 }
 
-
 data "octopusdeploy_library_variable_sets" "variable" {
   partial_name = "This Instance"
   skip         = 0
@@ -73,7 +72,7 @@ data "octopusdeploy_library_variable_sets" "variable" {
 }
 
 data "octopusdeploy_library_variable_sets" "slack" {
-  partial_name = "Slack"
+  partial_name = "Shared Slack"
   skip         = 0
   take         = 1
 }
@@ -129,7 +128,8 @@ resource "octopusdeploy_project" "project" {
   included_library_variable_sets       = [
     data.octopusdeploy_library_variable_sets.variable.library_variable_sets[0].id,
     data.octopusdeploy_library_variable_sets.azure.library_variable_sets[0].id,
-    data.octopusdeploy_library_variable_sets.octopus_server.library_variable_sets[0].id
+    data.octopusdeploy_library_variable_sets.octopus_server.library_variable_sets[0].id,
+    data.octopusdeploy_library_variable_sets.slack.library_variable_sets[0].id,
   ]
   tenanted_deployment_participation    = "Untenanted"
 
@@ -534,6 +534,115 @@ fi
 EOT
         "OctopusUseBundledTooling"           = "False"
       }
+
+      environments          = []
+      excluded_environments = []
+      channels              = []
+      tenant_tags           = []
+      features              = []
+    }
+
+    properties   = {}
+    target_roles = []
+  }
+}
+
+resource "octopusdeploy_runbook" "create_incident_channel" {
+  name                        = "Create Incident Channel"
+  project_id                  = octopusdeploy_project.project.id
+  environment_scope           = "All"
+  environments                = []
+  force_package_download      = false
+  default_guided_failure_mode = "EnvironmentDefault"
+  description                 = "Create an incident channel to support production issues with this app."
+  multi_tenancy_mode          = "Untenanted"
+
+  retention_policy {
+    quantity_to_keep    = 100
+    should_keep_forever = false
+  }
+
+  connectivity_policy {
+    allow_deployments_to_no_targets = true
+    exclude_unhealthy_targets       = false
+    skip_machine_behavior           = "None"
+  }
+}
+
+resource "octopusdeploy_runbook_process" "create_incident_channel" {
+  runbook_id = octopusdeploy_runbook.create_incident_channel.id
+
+  step {
+    condition           = "Success"
+    name                = "Create Incident Channel"
+    package_requirement = "LetOctopusDecide"
+    start_trigger       = "StartAfterPrevious"
+
+    action {
+
+      action_type                        = "Octopus.Script"
+      name                               = "Create Incident Channel"
+      condition                          = "Success"
+      run_on_server                      = true
+      is_disabled                        = false
+      can_be_used_for_project_versioning = false
+      is_required                        = true
+      worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
+      properties                         = {
+        "Octopus.Action.Script.ScriptSource" = "Inline"
+        "Octopus.Action.Script.ScriptBody"   = <<EOT
+import logging
+import os
+import re
+# Import WebClient from Python SDK (github.com/slackapi/python-slack-sdk)
+from slack_sdk import WebClient
+from slack_sdk.errors import SlackApiError
+
+# WebClient instantiates a client that can call API methods
+# When using Bolt, you can use either `app.client` or the `client` passed to listeners.
+
+client = WebClient(token=get_octopusvariable("Slack.Bot.Token"))
+logger = logging.getLogger(__name__)
+
+name = "incident-" + re.sub('[^A-Za-z0-9]', '-',  get_octopusvariable("Octopus.Project.Name").lower())
+
+try:
+    # Call the conversations.create method using the WebClient
+    # conversations_create requires the channels:manage bot scope
+    logger.info("Creating channel called " + name)
+    result = client.conversations_create(
+        # The name of the conversation
+        name=name
+    )
+    # Log the result which includes information like the ID of the conversation
+    logger.info(result)
+
+except SlackApiError as e:
+    if e.response.data['error'] != 'name_taken':
+        logger.error("Error creating conversation: {}".format(e))
+        raise e
+
+try:
+    result = client.conversations_list()
+    logger.info(result)
+
+    id = [x for x in result.data['channels'] if x['name'] == name][0]['id']
+    logger.info("Channel ID: " + id)
+
+    result = client.conversations_invite(channel=id, users="URFG7PDKN")
+    logger.info(result)
+
+except SlackApiError as e:
+    if e.response.data['error'] != 'already_in_channel':
+        logger.error("Error creating conversation: {}".format(e))
+        raise e
+
+print('Incident channel created')
+
+EOT
+        "Octopus.Action.Script.Syntax"       = "Python"
+      }
+
 
       environments          = []
       excluded_environments = []

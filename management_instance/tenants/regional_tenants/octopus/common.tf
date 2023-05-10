@@ -146,3 +146,45 @@ variable "slack_bot_token" {
   description = "The Slack Bot Token"
   default     = "dummy"
 }
+
+variable "azure_application_id" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "The Azure application ID."
+}
+
+variable "azure_subscription_id" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "The Azure subscription ID."
+}
+
+variable "azure_password" {
+  type        = string
+  nullable    = false
+  sensitive   = true
+  description = "The Azure password."
+}
+
+variable "azure_tenant_id" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "The Azure tenant ID."
+}
+
+variable "docker_username" {
+  type        = string
+  nullable    = false
+  sensitive   = true
+  description = "The DOcker username."
+}
+
+variable "docker_password" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "The Docker password"
+}

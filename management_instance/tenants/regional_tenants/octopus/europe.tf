@@ -129,7 +129,7 @@ resource "octopusdeploy_tenant_common_variable" "europe_azure_application_id" {
     tmp.id if tmp.name == "Tenant.Azure.ApplicationId"
   ])[0]
   tenant_id               = octopusdeploy_tenant.europe.id
-  value                   = var.europe_azure_application_id
+  value                   = var.europe_azure_application_id == "" ? var.azure_application_id : var.europe_azure_application_id
 }
 
 resource "octopusdeploy_tenant_common_variable" "europe_azure_subscription_id" {
@@ -139,7 +139,7 @@ resource "octopusdeploy_tenant_common_variable" "europe_azure_subscription_id" {
     tmp.id if tmp.name == "Tenant.Azure.SubscriptionId"
   ])[0]
   tenant_id               = octopusdeploy_tenant.europe.id
-  value                   = var.europe_azure_subscription_id
+  value                   = var.europe_azure_subscription_id == "" ? var.azure_subscription_id : var.europe_azure_subscription_id
 }
 
 resource "octopusdeploy_tenant_common_variable" "europe_azure_tenant_id" {
@@ -149,7 +149,7 @@ resource "octopusdeploy_tenant_common_variable" "europe_azure_tenant_id" {
     tmp.id if tmp.name == "Tenant.Azure.TenantId"
   ])[0]
   tenant_id               = octopusdeploy_tenant.europe.id
-  value                   = var.europe_azure_tenant_id
+  value                   = var.europe_azure_tenant_id== "" ? var.azure_tenant_id : var.europe_azure_tenant_id
 }
 
 resource "octopusdeploy_tenant_common_variable" "europe_azure_password" {
@@ -159,7 +159,7 @@ resource "octopusdeploy_tenant_common_variable" "europe_azure_password" {
     tmp.id if tmp.name == "Tenant.Azure.Password"
   ])[0]
   tenant_id               = octopusdeploy_tenant.europe.id
-  value                   = var.europe_azure_password
+  value                   = var.europe_azure_password == "" ? var.azure_password : var.europe_azure_password
 }
 
 resource "octopusdeploy_tenant_common_variable" "europe_k8s_cert" {
@@ -189,7 +189,7 @@ resource "octopusdeploy_tenant_common_variable" "europe_docker_username" {
     tmp.id if tmp.name == "Tenant.Docker.Username"
   ])[0]
   tenant_id               = octopusdeploy_tenant.europe.id
-  value                   = var.europe_docker_username
+  value                   = var.europe_docker_username == "" ? var.docker_username : var.europe_docker_username
 }
 
 resource "octopusdeploy_tenant_common_variable" "europe_docker_password" {
@@ -199,7 +199,7 @@ resource "octopusdeploy_tenant_common_variable" "europe_docker_password" {
     tmp.id if tmp.name == "Tenant.Docker.Password"
   ])[0]
   tenant_id               = octopusdeploy_tenant.europe.id
-  value                   = var.europe_docker_password
+  value                   = var.europe_docker_password == "" ? var.docker_password : var.europe_docker_password
 }
 
 resource "octopusdeploy_tenant_common_variable" "europe_slack_bot_token" {

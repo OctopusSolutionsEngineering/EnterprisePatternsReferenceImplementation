@@ -29,12 +29,26 @@ provider "octopusdeploy" {
   space_id = var.octopus_space_id
 }
 
+variable "docker_username" {
+  type        = string
+  nullable    = false
+  sensitive   = true
+  description = "The DOcker username."
+}
+
+variable "docker_password" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "The Docker password"
+}
+
 variable "america_azure_application_id" {
   type        = string
   nullable    = false
   sensitive   = false
   description = "The Azure application ID."
-  default     = "00000000-0000-0000-0000-000000000000"
+  default     = ""
 }
 
 variable "america_azure_subscription_id" {
@@ -42,7 +56,7 @@ variable "america_azure_subscription_id" {
   nullable    = false
   sensitive   = false
   description = "The Azure subscription ID."
-  default     = "00000000-0000-0000-0000-000000000000"
+  default     = ""
 }
 
 variable "america_azure_password" {
@@ -50,7 +64,7 @@ variable "america_azure_password" {
   nullable    = false
   sensitive   = true
   description = "The Azure password."
-  default     = "dummy"
+  default     = ""
 }
 
 variable "america_azure_tenant_id" {
@@ -58,7 +72,7 @@ variable "america_azure_tenant_id" {
   nullable    = false
   sensitive   = false
   description = "The Azure tenant ID."
-  default     = "00000000-0000-0000-0000-000000000000"
+  default     = ""
 }
 
 variable "america_k8s_cert" {
@@ -82,6 +96,7 @@ variable "america_docker_username" {
   nullable    = false
   sensitive   = true
   description = "The DOcker username."
+  default     = ""
 }
 
 variable "america_docker_password" {
@@ -89,6 +104,7 @@ variable "america_docker_password" {
   nullable    = false
   sensitive   = false
   description = "The Docker password"
+  default     = ""
 }
 
 
@@ -97,7 +113,7 @@ variable "europe_azure_application_id" {
   nullable    = false
   sensitive   = false
   description = "The Azure application ID."
-  default     = "00000000-0000-0000-0000-000000000000"
+  default     = ""
 }
 
 variable "europe_azure_subscription_id" {
@@ -105,7 +121,7 @@ variable "europe_azure_subscription_id" {
   nullable    = false
   sensitive   = false
   description = "The Azure subscription ID."
-  default     = "00000000-0000-0000-0000-000000000000"
+  default     = ""
 }
 
 variable "europe_azure_password" {
@@ -113,7 +129,7 @@ variable "europe_azure_password" {
   nullable    = false
   sensitive   = true
   description = "The Azure password."
-  default     = "dummy"
+  default     = ""
 }
 
 variable "europe_azure_tenant_id" {
@@ -121,7 +137,7 @@ variable "europe_azure_tenant_id" {
   nullable    = false
   sensitive   = false
   description = "The Azure tenant ID."
-  default     = "00000000-0000-0000-0000-000000000000"
+  default     = ""
 }
 
 variable "europe_k8s_cert" {
@@ -145,6 +161,7 @@ variable "europe_docker_username" {
   nullable    = false
   sensitive   = true
   description = "The Docker username."
+  default     = ""
 }
 
 variable "europe_docker_password" {
@@ -152,6 +169,7 @@ variable "europe_docker_password" {
   nullable    = false
   sensitive   = false
   description = "The Docker password"
+  default     = ""
 }
 
 variable "slack_bot_token" {
@@ -160,6 +178,38 @@ variable "slack_bot_token" {
   sensitive   = false
   description = "The Slack Bot Token"
   default     = "dummy"
+}
+
+variable "azure_application_id" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "The Azure application ID."
+  default     = "00000000-0000-0000-0000-000000000000"
+}
+
+variable "azure_subscription_id" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "The Azure subscription ID."
+  default     = "00000000-0000-0000-0000-000000000000"
+}
+
+variable "azure_password" {
+  type        = string
+  nullable    = false
+  sensitive   = true
+  description = "The Azure password."
+  default     = "dummy"
+}
+
+variable "azure_tenant_id" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "The Azure tenant ID."
+  default     = "00000000-0000-0000-0000-000000000000"
 }
 
 module "octopus" {
@@ -181,4 +231,10 @@ module "octopus" {
   europe_docker_username        = var.europe_docker_username
   europe_docker_password        = var.europe_docker_password
   slack_bot_token               = var.slack_bot_token
+  docker_username               = var.docker_username
+  docker_password               = var.docker_password
+  azure_application_id          = var.azure_application_id
+  azure_subscription_id         = var.azure_subscription_id
+  azure_password                = var.azure_password
+  azure_tenant_id               = var.azure_tenant_id
 }

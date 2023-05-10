@@ -4,14 +4,14 @@ terraform {
   }
 }
 
-data "octopusdeploy_library_variable_sets" "library_variable_set_octopus_server" {
+data "octopusdeploy_library_variable_sets" "octopus_server" {
   ids          = null
   partial_name = "Octopus Server"
   skip         = 0
   take         = 1
 }
 
-data "octopusdeploy_library_variable_sets" "library_variable_set_this_instance" {
+data "octopusdeploy_library_variable_sets" "this_instance" {
   ids          = null
   partial_name = "This Instance"
   skip         = 0
@@ -20,8 +20,14 @@ data "octopusdeploy_library_variable_sets" "library_variable_set_this_instance" 
 
 data "octopusdeploy_library_variable_sets" "docker" {
   partial_name = "Docker"
-  skip = 0
-  take = 1
+  skip         = 0
+  take         = 1
+}
+
+data "octopusdeploy_library_variable_sets" "slack" {
+  partial_name = "Client Slack"
+  skip         = 0
+  take         = 1
 }
 
 data "octopusdeploy_environments" "environment_sync" {
@@ -92,11 +98,12 @@ resource "octopusdeploy_project" "project____create_client_space" {
   lifecycle_id                         = "${data.octopusdeploy_lifecycles.lifecycle_simple.lifecycles[0].id}"
   project_group_id                     = "${data.octopusdeploy_project_groups.project_group_client_space.project_groups[0].id}"
   included_library_variable_sets       = [
-    data.octopusdeploy_library_variable_sets.library_variable_set_octopus_server.library_variable_sets[0].id,
-    data.octopusdeploy_library_variable_sets.library_variable_set_this_instance.library_variable_sets[0].id,
-    data.octopusdeploy_library_variable_sets.docker.library_variable_sets[0].id
+    data.octopusdeploy_library_variable_sets.octopus_server.library_variable_sets[0].id,
+    data.octopusdeploy_library_variable_sets.this_instance.library_variable_sets[0].id,
+    data.octopusdeploy_library_variable_sets.docker.library_variable_sets[0].id,
+    data.octopusdeploy_library_variable_sets.slack.library_variable_sets[0].id,
   ]
-  tenanted_deployment_participation    = "Untenanted"
+  tenanted_deployment_participation = "Untenanted"
 
   connectivity_policy {
     allow_deployments_to_no_targets = true
@@ -201,7 +208,7 @@ EOF
         "Octopus.Action.Terraform.GoogleCloudAccount"    = "False"
         "Octopus.Action.GoogleCloud.UseVMServiceAccount" = "True"
         "Octopus.Action.Terraform.TemplateParameters"    = jsonencode({
-          "space_name" = "#{Octopus.Deployment.Tenant.Name}"
+          "space_name"     = "#{Octopus.Deployment.Tenant.Name}"
           "octopus_server" = "#{ManagedTenant.Octopus.Url}"
           "octopus_apikey" = "#{ManagedTenant.Octopus.ApiKey}"
         })
@@ -303,8 +310,8 @@ EOF
         "Octopus.Action.Terraform.GoogleCloudAccount"    = "False"
         "Octopus.Action.GoogleCloud.UseVMServiceAccount" = "True"
         "Octopus.Action.Terraform.TemplateParameters"    = jsonencode({
-          "tenant" = "#{Octopus.Deployment.Tenant.Name}"
-          "space_id" = "#{Octopus.Action[Create Client Space].Output.TerraformValueOutputs[space_id]}"
+          "tenant"         = "#{Octopus.Deployment.Tenant.Name}"
+          "space_id"       = "#{Octopus.Action[Create Client Space].Output.TerraformValueOutputs[space_id]}"
           "octopus_server" = "#{ThisInstance.Server.Url}"
           "octopus_apikey" = "#{ThisInstance.Api.Key}"
         })
@@ -380,7 +387,7 @@ EOF
         "Octopus.Action.Terraform.GoogleCloudAccount"    = "False"
         "Octopus.Action.GoogleCloud.UseVMServiceAccount" = "True"
         "Octopus.Action.Terraform.TemplateParameters"    = jsonencode({
-          "space_id" = "#{Octopus.Action[Create Client Space].Output.TerraformValueOutputs[space_id]}"
+          "space_id"       = "#{Octopus.Action[Create Client Space].Output.TerraformValueOutputs[space_id]}"
           "octopus_server" = "#{ManagedTenant.Octopus.Url}"
           "octopus_apikey" = "#{ManagedTenant.Octopus.ApiKey}"
         })
@@ -457,7 +464,7 @@ EOF
         "Octopus.Action.Terraform.GoogleCloudAccount"    = "False"
         "Octopus.Action.GoogleCloud.UseVMServiceAccount" = "True"
         "Octopus.Action.Terraform.TemplateParameters"    = jsonencode({
-          "space_id" = "#{Octopus.Action[Create Client Space].Output.TerraformValueOutputs[space_id]}"
+          "space_id"       = "#{Octopus.Action[Create Client Space].Output.TerraformValueOutputs[space_id]}"
           "octopus_server" = "#{ManagedTenant.Octopus.Url}"
           "octopus_apikey" = "#{ManagedTenant.Octopus.ApiKey}"
         })
@@ -533,11 +540,11 @@ EOF
         "Octopus.Action.Terraform.GoogleCloudAccount"    = "False"
         "Octopus.Action.GoogleCloud.UseVMServiceAccount" = "True"
         "Octopus.Action.Terraform.TemplateParameters"    = jsonencode({
-          "space_id" = "#{Octopus.Action[Create Client Space].Output.TerraformValueOutputs[space_id]}"
+          "space_id"       = "#{Octopus.Action[Create Client Space].Output.TerraformValueOutputs[space_id]}"
           "octopus_server" = "#{ManagedTenant.Octopus.Url}"
           "octopus_apikey" = "#{ManagedTenant.Octopus.ApiKey}"
-          "cac_password" = "Password01!"
-          "cac_username" = "octopus"
+          "cac_password"   = "Password01!"
+          "cac_username"   = "octopus"
         })
         "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name}"
         "Octopus.Action.Terraform.PlanJsonOutput"               = "False"
@@ -611,7 +618,7 @@ EOF
         "Octopus.Action.Terraform.GoogleCloudAccount"    = "False"
         "Octopus.Action.GoogleCloud.UseVMServiceAccount" = "True"
         "Octopus.Action.Terraform.TemplateParameters"    = jsonencode({
-          "space_id" = "#{Octopus.Action[Create Client Space].Output.TerraformValueOutputs[space_id]}"
+          "space_id"       = "#{Octopus.Action[Create Client Space].Output.TerraformValueOutputs[space_id]}"
           "octopus_server" = "#{ManagedTenant.Octopus.Url}"
           "octopus_apikey" = "#{ManagedTenant.Octopus.ApiKey}"
         })
@@ -687,9 +694,9 @@ EOF
         "Octopus.Action.Terraform.GoogleCloudAccount"    = "False"
         "Octopus.Action.GoogleCloud.UseVMServiceAccount" = "True"
         "Octopus.Action.Terraform.TemplateParameters"    = jsonencode({
-          "space_id" = "#{Octopus.Action[Create Client Space].Output.TerraformValueOutputs[space_id]}"
-          "octopus_server" = "#{ManagedTenant.Octopus.Url}"
-          "octopus_apikey" = "#{ManagedTenant.Octopus.ApiKey}"
+          "space_id"        = "#{Octopus.Action[Create Client Space].Output.TerraformValueOutputs[space_id]}"
+          "octopus_server"  = "#{ManagedTenant.Octopus.Url}"
+          "octopus_apikey"  = "#{ManagedTenant.Octopus.ApiKey}"
           "docker_password" = "#{Tenant.Docker.Password}"
           "docker_username" = "#{Tenant.Docker.Username}"
         })
@@ -765,7 +772,7 @@ EOF
         "Octopus.Action.Terraform.GoogleCloudAccount"    = "False"
         "Octopus.Action.GoogleCloud.UseVMServiceAccount" = "True"
         "Octopus.Action.Terraform.TemplateParameters"    = jsonencode({
-          "space_id" = "#{Octopus.Action[Create Client Space].Output.TerraformValueOutputs[space_id]}"
+          "space_id"       = "#{Octopus.Action[Create Client Space].Output.TerraformValueOutputs[space_id]}"
           "octopus_server" = "#{ManagedTenant.Octopus.Url}"
           "octopus_apikey" = "#{ManagedTenant.Octopus.ApiKey}"
         })
@@ -841,10 +848,10 @@ EOF
         "Octopus.Action.Terraform.GoogleCloudAccount"    = "False"
         "Octopus.Action.GoogleCloud.UseVMServiceAccount" = "True"
         "Octopus.Action.Terraform.TemplateParameters"    = jsonencode({
-          "space_id" = "#{Octopus.Action[Create Client Space].Output.TerraformValueOutputs[space_id]}"
-          "octopus_server" = "#{ManagedTenant.Octopus.Url}"
-          "octopus_apikey" = "#{ManagedTenant.Octopus.ApiKey}"
-          "bot_token" = "#{Slack.Bot.Token}"
+          "space_id"        = "#{Octopus.Action[Create Client Space].Output.TerraformValueOutputs[space_id]}"
+          "octopus_server"  = "#{ManagedTenant.Octopus.Url}"
+          "octopus_apikey"  = "#{ManagedTenant.Octopus.ApiKey}"
+          "slack_bot_token" = "#{Slack.Bot.Token}"
         })
         "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name}"
         "Octopus.Action.Terraform.PlanJsonOutput"               = "False"
