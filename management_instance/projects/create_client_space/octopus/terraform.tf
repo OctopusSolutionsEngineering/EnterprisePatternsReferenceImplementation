@@ -796,7 +796,7 @@ EOF
 
     action {
       action_type                        = "Octopus.TerraformApply"
-      name                               = "Deploy Hello World Project Group"
+      name                               = "Deploy Slack Variable Library"
       condition                          = "Success"
       run_on_server                      = true
       is_disabled                        = false
