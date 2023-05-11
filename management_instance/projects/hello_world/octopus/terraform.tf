@@ -121,7 +121,7 @@ resource "octopusdeploy_project" "project_hello_world" {
   included_library_variable_sets       = [
     data.octopusdeploy_library_variable_sets.variable.library_variable_sets[0].id,
     data.octopusdeploy_library_variable_sets.octopus_server.library_variable_sets[0].id,
-    data.octopusdeploy_library_variable_sets.export_options.library_variable_sets[0].id,
+    length(data.octopusdeploy_library_variable_sets.export_options.library_variable_sets) != 0 ? data.octopusdeploy_library_variable_sets.export_options.library_variable_sets[0].id : "",
   ]
   tenanted_deployment_participation    = "Untenanted"
 

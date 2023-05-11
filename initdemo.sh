@@ -226,6 +226,24 @@ execute_terraform_with_project () {
    popd || exit 1
 }
 
+# This function allows the "project_name_override" variable to be set, which is exposed on the serialize and deploy runbook.
+execute_terraform_with_project_and_override () {
+   PG_DATABASE="${1}"
+   TF_MODULE_PATH="${2}"
+   WORKSPACE="${3}"
+   PROJECT="${4}"
+   SPACE_ID="${5}"
+   PROJECT_NAME_OVERRIDE="${6}"
+
+   docker-compose -f docker/compose.yml exec terraformdb sh -c "/usr/bin/psql -v ON_ERROR_STOP=1 --username \"\$POSTGRES_USER\" -c \"CREATE DATABASE $PG_DATABASE\""
+   pushd "${TF_MODULE_PATH}" || exit 1
+   terraform init -reconfigure -upgrade
+   terraform workspace new "${SPACE_ID}_${WORKSPACE}"
+   terraform workspace select "${SPACE_ID}_${WORKSPACE}"
+   terraform apply -auto-approve "-var=octopus_space_id=${SPACE_ID}" "-var=project_name=${PROJECT}" "-var=project_name_override=${PROJECT_NAME_OVERRIDE}" || exit 1
+   popd || exit 1
+}
+
 execute_terraform_with_spacename () {
    PG_DATABASE="${1}"
    TF_MODULE_PATH="${2}"
@@ -269,13 +287,10 @@ done
 # Deploy the sample project to the dev space
 execute_terraform 'project_hello_world' 'management_instance/projects/hello_world/pgbackend' "Spaces-2"
 
-# Add the export options library variable set
-execute_terraform 'lib_var_export_options' 'shared/variables/export_options/pgbackend' 'Spaces-2'
-
 # Append the common runbooks to the sample project
 for project in "Hello World"
 do
-  execute_terraform_with_project 'serialize_and_deploy' 'management_instance/runbooks/serialize_and_deploy/pgbackend' "${project//[^[:alnum:]]/_}" "${project}" "Spaces-2"
+  execute_terraform_with_project_and_override 'serialize_and_deploy' 'management_instance/runbooks/serialize_and_deploy/pgbackend' "${project//[^[:alnum:]]/_}" "${project}" "Spaces-2" "false"
   execute_terraform_with_project 'runbooks_list' 'management_instance/runbooks/list/pgbackend' "${project//[^[:alnum:]]/_}" "${project}" "Spaces-2"
 done
 

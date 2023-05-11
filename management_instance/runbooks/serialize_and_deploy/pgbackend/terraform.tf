@@ -30,6 +30,13 @@ variable "project_name" {
   description = "The name of the project to attach the runbooks to."
 }
 
+variable "project_name_override" {
+  type        = bool
+  nullable    = false
+  sensitive   = false
+  default     = true
+  description = "Whether the downstream project name can be customized."
+}
 
 provider "octopusdeploy" {
   address  = "http://localhost:18080"
@@ -38,6 +45,7 @@ provider "octopusdeploy" {
 }
 
 module "octopus" {
-  source       = "../octopus"
-  project_name = var.project_name
+  source                = "../octopus"
+  project_name          = var.project_name
+  project_name_override = var.project_name_override
 }
