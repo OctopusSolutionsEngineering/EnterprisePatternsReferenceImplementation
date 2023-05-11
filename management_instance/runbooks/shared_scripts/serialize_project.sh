@@ -19,6 +19,7 @@ docker run \
   -lookupProjectDependencies                                                `# use data sources to lookup external dependencies (like environments, accounts etc) rather than serialize those external resources` \
   -defaultSecretVariableValues                                              `# for any secret variables, add a default value set to the octostache value of the variable e.g. a secret variable called "database" has a default value of "#{database}"` \
   -detachProjectTemplates                                                   `# detach any step templates, allowing the exported project to be used in a new space` \
+  -ignoreProjectGroupChanges                                                `# allow the downstream project to move between project groups` \
   -ignoreCacManagedValues=false                                             `# CaC enabled projects will not export the deployment process, non-secret variables, and other CaC managed project settings` \
   -ignoreProjectVariableChanges=true                                        `# This value is always true. Either this is an unmanaged project, in which case we are never reapplying it; or is is a variable configured project, in which case we need to ignore variable changes, or it is a shared CaC project, in which case we don't use Terraform to manage variables. ` \
   -excludeRunbook "__ 1. Serialize Project"                                 `# This is a management runbook that we do not wish to export` \
