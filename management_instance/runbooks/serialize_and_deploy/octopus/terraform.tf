@@ -6,7 +6,7 @@ terraform {
 
 locals {
   backend               = "#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
-  workspace             = "#{Octopus.Deployment.Tenant.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_#{Exported.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
+  workspace             = "#{Octopus.Deployment.Tenant.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_${var.project_name_override ? "#{Exported.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}" : "#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"}"
   project_name_variable = "project_#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_name"
 }
 
@@ -22,7 +22,7 @@ variable "project_name_override" {
   nullable    = false
   sensitive   = false
   default     = true
-  description = "Whether the downstream project name can be customized."
+  description = "Whether the downstream project name can be customized. If false, the downstream project has the same name as the upstream project."
 }
 
 data "octopusdeploy_worker_pools" "workerpool_default" {
