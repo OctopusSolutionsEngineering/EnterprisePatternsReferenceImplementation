@@ -225,7 +225,29 @@ execute_terraform_with_project () {
    popd || exit 1
 }
 
-execute_terraform 'team_variable_editor' 'shared/team/variable_editor/pgbackend' 'Spaces-1'
+execute_terraform_with_spacename () {
+   PG_DATABASE="${1}"
+   TF_MODULE_PATH="${2}"
+   SPACENAME="${4}"
+
+   docker-compose -f docker/compose.yml exec terraformdb sh -c "/usr/bin/psql -v ON_ERROR_STOP=1 --username \"\$POSTGRES_USER\" -c \"CREATE DATABASE $PG_DATABASE\""
+   pushd "${TF_MODULE_PATH}" || exit 1
+   terraform init -reconfigure -upgrade
+   terraform workspace new "${SPACENAME}"
+   terraform workspace select "${SPACENAME}"
+   terraform apply -auto-approve -var=octopus_space_id=Spaces-1 "-var=space_name=${SPACENAME}" || exit 1
+   popd || exit 1
+}
+
+# This is the space used to represent a development Octopus instance. This instance is where teams
+# edit the deployment process before it is applied to the test and production Octopus instances.
+execute_terraform_with_spacename 'spaces' 'shared/spaces/pgbackend' 'Development'
+
+# This is the space used to represent a test and production Octopus instance. The projects on this
+# instance are prompted from the development instance.
+execute_terraform_with_spacename 'spaces' 'shared/spaces/pgbackend' 'Test/Production'
+
+execute_terraform 'team_variable_editor' 'shared/team/variable_edito/pgbackend' 'Spaces-1'
 
 execute_terraform 'gitcreds' 'shared/gitcreds/gitea/pgbackend' 'Spaces-1'
 
