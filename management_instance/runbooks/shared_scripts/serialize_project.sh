@@ -22,7 +22,8 @@ docker run \
   -ignoreProjectGroupChanges                                                `# allow the downstream project to move between project groups` \
   -ignoreProjectNameChanges                                                 `# allow the downstream project to change names` \
   -ignoreCacManagedValues=false                                             `# CaC enabled projects will not export the deployment process, non-secret variables, and other CaC managed project settings` \
-  -ignoreProjectVariableChanges=true                                        `# This value is always true. Either this is an unmanaged project, in which case we are never reapplying it; or is is a variable configured project, in which case we need to ignore variable changes, or it is a shared CaC project, in which case we don't use Terraform to manage variables. ` \
+  -ignoreProjectVariableChanges                                             `# This value is always true. Either this is an unmanaged project, in which case we are never reapplying it; or is is a variable configured project, in which case we need to ignore variable changes, or it is a shared CaC project, in which case we don't use Terraform to manage variables. ` \
+  -excludeProjectVariablesRegex "Private\..*"                               `# Exclude any variables starting with "Private."` \
   -excludeRunbook "__ 1. Serialize Project"                                 `# This is a management runbook that we do not wish to export` \
   -excludeRunbook "__ 2. Deploy Project"                                    `# This is a management runbook that we do not wish to export` \
   -excludeRunbook "__ 2. Fork and Deploy Project"                           `# This is a management runbook that we do not wish to export` \

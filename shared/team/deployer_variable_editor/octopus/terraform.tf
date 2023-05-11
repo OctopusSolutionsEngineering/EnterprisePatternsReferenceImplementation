@@ -28,30 +28,16 @@ resource "octopusdeploy_user_role" "viewer" {
   space_permission_descriptions = []
 }
 
-resource "octopusdeploy_user" "deployer" {
-  display_name  = "Deployer"
-  email_address = "deployer@example.org"
+resource "octopusdeploy_user" "user" {
+  display_name  = "Editor"
+  email_address = "editor@example.org"
   is_active     = true
   is_service    = false
   password      = "Password01!"
-  username      = "deployer"
-
-  identity {
-    provider = "Octopus ID"
-    claim {
-      name                 = "email"
-      is_identifying_claim = true
-      value                = "bob.smith@example.com"
-    }
-    claim {
-      name                 = "dn"
-      is_identifying_claim = false
-      value                = "Bob Smith"
-    }
-  }
+  username      = "editor"
 }
 
-resource "octopusdeploy_team" "variable_configured_project_contributors" {
-  name  = "Deployers"
-  users = [octopusdeploy_user.deployer.id]
+resource "octopusdeploy_team" "editors" {
+  name  = "Editors"
+  users = [octopusdeploy_user.user.id]
 }

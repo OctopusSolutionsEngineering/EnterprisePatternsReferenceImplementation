@@ -4,10 +4,16 @@ terraform {
   }
 }
 
-data "octopusdeploy_teams" "deployers" {
-  partial_name = "Deployers"
+data "octopusdeploy_teams" "editors" {
+  partial_name = "Editors"
   take         = 1
   skip         = 0
+}
+
+data "octopusdeploy_user_roles" "user_role" {
+  partial_name = "Variable editor"
+  skip         = 0
+  take         = 1
 }
 
 data "octopusdeploy_user_roles" "viewer" {
@@ -28,20 +34,26 @@ variable "octopus_space_id" {
   }
 }
 
+resource "octopusdeploy_scoped_user_role" "variable_edit" {
+  space_id     = var.octopus_space_id
+  team_id      = data.octopusdeploy_teams.editors.teams[0].id
+  user_role_id = data.octopusdeploy_user_roles.user_role.user_roles[0].id
+}
+
 resource "octopusdeploy_scoped_user_role" "viewer" {
   space_id     = var.octopus_space_id
-  team_id      = data.octopusdeploy_teams.deployers.teams[0].id
+  team_id      = data.octopusdeploy_teams.editors.teams[0].id
   user_role_id = data.octopusdeploy_user_roles.viewer.user_roles[0].id
 }
 
 resource "octopusdeploy_scoped_user_role" "release" {
   space_id     = var.octopus_space_id
-  team_id      = data.octopusdeploy_teams.deployers.teams[0].id
+  team_id      = data.octopusdeploy_teams.editors.teams[0].id
   user_role_id = "userroles-releasecreator"
 }
 
 resource "octopusdeploy_scoped_user_role" "deploy" {
   space_id     = var.octopus_space_id
-  team_id      = data.octopusdeploy_teams.deployers.teams[0].id
+  team_id      = data.octopusdeploy_teams.editors.teams[0].id
   user_role_id = "userroles-deploymentcreator"
 }

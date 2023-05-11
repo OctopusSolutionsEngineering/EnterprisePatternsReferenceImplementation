@@ -297,7 +297,9 @@ do
   execute_terraform_with_project 'runbooks_list' 'management_instance/runbooks/list/pgbackend' "${project//[^[:alnum:]]/_}" "${project}" "Spaces-2"
 done
 
-execute_terraform 'team_variable_editor' 'shared/team/variable_editor/pgbackend' 'Spaces-1'
+execute_terraform 'team_variable_editor' 'shared/team/deployer_variable_editor/pgbackend' 'Spaces-1'
+
+execute_terraform 'team_deployer' 'shared/team/deployer/pgbackend' 'Spaces-1'
 
 execute_terraform 'gitcreds' 'shared/gitcreds/gitea/pgbackend' 'Spaces-1'
 
