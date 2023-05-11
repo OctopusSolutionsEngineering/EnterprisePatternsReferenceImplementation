@@ -29,7 +29,7 @@ resource "octopusdeploy_lifecycle" "simple_lifecycle" {
 
   phase {
     automatic_deployment_targets = []
-    optional_deployment_targets  = [data.octopusdeploy_environments.dev.environments[0]id]
+    optional_deployment_targets  = [data.octopusdeploy_environments.dev.environments[0].id]
     name                         = data.octopusdeploy_environments.dev.environments[0].name
 
     release_retention_policy {
