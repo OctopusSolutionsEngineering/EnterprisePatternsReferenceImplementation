@@ -269,6 +269,9 @@ done
 # Deploy the sample project to the dev space
 execute_terraform 'project_hello_world' 'management_instance/projects/hello_world/pgbackend' "Spaces-2"
 
+# Add the export options library variable set
+execute_terraform 'lib_var_export_options' 'shared/variables/export_options/pgbackend' 'Spaces-2'
+
 # Append the common runbooks to the sample project
 for project in "Hello World"
 do
