@@ -273,19 +273,21 @@ execute_terraform 'environments_dev' 'shared/environments/dev/pgbackend' 'Spaces
 # The test/prod "instance" has test and production environments
 execute_terraform 'environments_test_prod' 'shared/environments/test_prod/pgbackend' 'Spaces-3'
 
-# The dev instance gets a tenant representing test/prod
-execute_terraform 'management_tenants' 'management_instance/tenants/environment_tenants/pgbackend' "Spaces-2"
-execute_terraform 'lib_var_octopus_server' 'shared/variables/octopus_server/pgbackend' "Spaces-2"
-execute_terraform 'lib_var_this_instance' 'shared/variables/this_instance/pgbackend' "Spaces-2"
-
 # Prepare both spaces with the global resources needed to host the sample project
 for space in "Spaces-2" "Spaces-3"
 do
   execute_terraform 'project_group_hello_world' 'shared/project_group/hello_world/pgbackend' "${space}"
 done
 
+# The dev instance gets library variable sets for exporting projects
+execute_terraform 'lib_var_octopus_server' 'shared/variables/octopus_server/pgbackend' "Spaces-2"
+execute_terraform 'lib_var_this_instance' 'shared/variables/this_instance/pgbackend' "Spaces-2"
+
 # Deploy the sample project to the dev space
 execute_terraform 'project_hello_world' 'management_instance/projects/hello_world/pgbackend' "Spaces-2"
+
+# The dev instance gets a tenant representing test/prod
+execute_terraform 'management_tenants' 'management_instance/tenants/environment_tenants/pgbackend' "Spaces-2"
 
 # Append the common runbooks to the sample project
 for project in "Hello World"
