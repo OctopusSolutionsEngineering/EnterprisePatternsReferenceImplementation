@@ -1,6 +1,6 @@
 terraform {
   backend "pg" {
-    conn_str = "postgres://terraform:terraform@localhost:15432/management_tenants?sslmode=disable"
+    conn_str = "postgres://terraform:terraform@localhost:15432/tenants_environment?sslmode=disable"
   }
 }
 

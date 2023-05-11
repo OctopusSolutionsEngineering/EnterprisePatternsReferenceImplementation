@@ -204,7 +204,7 @@ execute_terraform () {
    docker-compose -f docker/compose.yml exec terraformdb sh -c "/usr/bin/psql -v ON_ERROR_STOP=1 --username \"\$POSTGRES_USER\" -c \"CREATE DATABASE $PG_DATABASE\""
    pushd "${TF_MODULE_PATH}" || exit 1
    terraform init -reconfigure -upgrade
-   until terraform workspace select -or-create "${SPACE_ID}"; do sleep 1; done
+   terraform workspace select -or-create "${SPACE_ID}"
    terraform apply -auto-approve -var=octopus_space_id=${SPACE_ID} || exit 1
    popd || exit 1
 }
@@ -220,7 +220,7 @@ execute_terraform_with_project () {
    pushd "${TF_MODULE_PATH}" || exit 1
    terraform init -reconfigure -upgrade
    # I've seen workspace creation fail, so we retry until it is created
-   until terraform workspace select -or-create "${SPACE_ID}_${WORKSPACE}"; do sleep 1; done
+   terraform workspace select -or-create "${SPACE_ID}_${WORKSPACE}"
    terraform apply -auto-approve "-var=octopus_space_id=${SPACE_ID}" "-var=project_name=${PROJECT}" || exit 1
    popd || exit 1
 }
@@ -238,7 +238,7 @@ execute_terraform_with_project_and_override () {
    pushd "${TF_MODULE_PATH}" || exit 1
    terraform init -reconfigure -upgrade
    # I've seen workspace creation fail, so we retry until it is created
-   until terraform workspace select -or-create "${SPACE_ID}_${WORKSPACE}"; do sleep 1; done
+   terraform workspace select -or-create "${SPACE_ID}_${WORKSPACE}"
    terraform apply -auto-approve "-var=octopus_space_id=${SPACE_ID}" "-var=project_name=${PROJECT}" "-var=project_name_override=${PROJECT_NAME_OVERRIDE}" || exit 1
    popd || exit 1
 }
@@ -252,7 +252,7 @@ execute_terraform_with_spacename () {
    pushd "${TF_MODULE_PATH}" || exit 1
    terraform init -reconfigure -upgrade
    # I've seen workspace creation fail, so we retry until it is created
-   until terraform workspace select -or-create "${SPACENAME//[^[:alnum:]]/_}"; do sleep 1; done
+   terraform workspace select -or-create "${SPACENAME//[^[:alnum:]]/_}"
    terraform apply -auto-approve "-var=space_name=${SPACENAME}" || exit 1
    popd || exit 1
 }
@@ -288,7 +288,7 @@ execute_terraform 'lib_var_this_instance' 'shared/variables/this_instance/pgback
 execute_terraform 'project_hello_world' 'management_instance/projects/hello_world/pgbackend' "Spaces-2"
 
 # The dev instance gets a tenant representing test/prod
-execute_terraform 'management_tenants' 'management_instance/tenants/environment_tenants/pgbackend' "Spaces-2"
+execute_terraform 'tenants_environment' 'management_instance/tenants/environment_tenants/pgbackend' "Spaces-2"
 
 # Append the common runbooks to the sample project
 for project in "Hello World"
@@ -359,7 +359,7 @@ execute_terraform 'project_k8s_space_initialization' 'management_instance/projec
 docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE target_k8s"'
 pushd shared/targets/k8s/pgbackend || exit 1
 terraform init -reconfigure -upgrade
-until terraform workspace select -or-create "Spaces-1"; do sleep 1; done
+terraform workspace select -or-create "Spaces-1"
 terraform apply \
   -auto-approve \
   -var=octopus_space_id=Spaces-1 \
@@ -368,7 +368,7 @@ terraform apply \
 popd
 
 # Add the tenants
-docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE management_tenants"'
+docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE tenants_region"'
 pushd management_instance/tenants/regional_tenants/pgbackend || exit 1
 terraform init -reconfigure -upgrade
 terraform workspace select -or-create "Spaces-1"
