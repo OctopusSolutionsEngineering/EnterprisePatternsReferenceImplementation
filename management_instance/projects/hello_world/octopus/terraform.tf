@@ -52,6 +52,27 @@ data "octopusdeploy_library_variable_sets" "export_options" {
   take         = 1
 }
 
+data "octopusdeploy_environments" "development" {
+  ids          = []
+  partial_name = "Development"
+  skip         = 0
+  take         = 1
+}
+
+data "octopusdeploy_environments" "test" {
+  ids          = []
+  partial_name = "Test"
+  skip         = 0
+  take         = 1
+}
+
+data "octopusdeploy_environments" "production" {
+  ids          = []
+  partial_name = "Production"
+  skip         = 0
+  take         = 1
+}
+
 resource "octopusdeploy_variable" "world" {
   owner_id = octopusdeploy_project.project_hello_world.id
   type     = "String"
@@ -59,33 +80,139 @@ resource "octopusdeploy_variable" "world" {
   value    = "World"
 }
 
+resource "octopusdeploy_variable" "from" {
+  owner_id = octopusdeploy_project.project_hello_world.id
+  type     = "String"
+  name     = "Private.Hello.From"
+  value    = "the Development space!"
+}
+
+# Facade non-sensitive variables can be scoped. Here we have a facade variable scoped to a step passing through
+# a non-scoped secret value.
+resource "octopusdeploy_variable" "db_password_facade_dev" {
+  owner_id = octopusdeploy_project.project_hello_world.id
+  type     = "String"
+  name     = "Database.Password.Facade"
+  value    = "#{Database.Password.Development}"
+
+  scope {
+    environments = [data.octopusdeploy_environments.development.environments[0].id]
+  }
+}
+
+# This is another scoped facade variable, passing through a second non-scoped secret variable.
+resource "octopusdeploy_variable" "db_password_facade_test" {
+  owner_id = octopusdeploy_project.project_hello_world.id
+  type     = "String"
+  name     = "Database.Password.Facade"
+  value    = "#{Database.Password.Test}"
+
+  scope {
+    environments = [data.octopusdeploy_environments.test.environments[0].id]
+  }
+}
+
+# The final scoped facade variable, passing through a second non-scoped secret variable.
+resource "octopusdeploy_variable" "db_password_facade_prod" {
+  owner_id = octopusdeploy_project.project_hello_world.id
+  type     = "String"
+  name     = "Database.Password.Facade"
+  value    = "#{Database.Password.Production}"
+
+  scope {
+    environments = [data.octopusdeploy_environments.production.environments[0].id]
+  }
+}
+
+
+# Secret variables can not be scoped if they are to be deployed to downstream environments
+resource "octopusdeploy_variable" "db_password_dev" {
+  owner_id        = octopusdeploy_project.project_hello_world.id
+  type            = "Sensitive"
+  name            = "Database.Password.Development"
+  is_sensitive    = true
+  sensitive_value = "DevelopmentPassword"
+}
+
+resource "octopusdeploy_variable" "db_password_test" {
+  owner_id        = octopusdeploy_project.project_hello_world.id
+  type            = "Sensitive"
+  name            = "Database.Password.Test"
+  is_sensitive    = true
+  sensitive_value = "PasswordTest"
+}
+
+resource "octopusdeploy_variable" "db_password_production" {
+  owner_id        = octopusdeploy_project.project_hello_world.id
+  type            = "Sensitive"
+  name            = "Database.Password.Production"
+  is_sensitive    = true
+  sensitive_value = "PasswordProduction"
+}
+
 resource "octopusdeploy_deployment_process" "deployment_process_project_hello_world" {
   project_id = octopusdeploy_project.project_hello_world.id
 
-  lifecycle {
-    ignore_changes = [
-      step,
-    ]
-  }
-
   step {
     condition           = "Success"
-    name                = "Hello world (using Bash)"
+    name                = "Hello world"
     package_requirement = "LetOctopusDecide"
     start_trigger       = "StartAfterPrevious"
 
     action {
       action_type                        = "Octopus.Script"
-      name                               = "Hello world (using Bash)"
+      name                               = "Hello world"
       condition                          = "Success"
       run_on_server                      = true
       is_disabled                        = false
       can_be_used_for_project_versioning = false
       is_required                        = true
-      worker_pool_id                     = "${data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id}"
+      worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
       properties                         = {
         "Octopus.Action.Script.ScriptSource" = "Inline"
-        "Octopus.Action.Script.ScriptBody"   = "echo 'Hello #{Hello.Target}, using Bash'\n\n#TODO: Experiment with steps of your own :)\n\necho '[Learn more about the types of steps available in Octopus](https://oc.to/OnboardingAddStepsLearnMore)'"
+        "Octopus.Action.Script.ScriptBody"   = "echo 'Hello #{Hello.Target} from #{Private.Hello.From}'"
+        "Octopus.Action.Script.Syntax"       = "Bash"
+      }
+      environments          = []
+      excluded_environments = []
+      channels              = []
+      tenant_tags           = []
+      features              = []
+    }
+
+    properties   = {}
+    target_roles = []
+  }
+
+  step {
+    condition           = "Success"
+    name                = "Secret Scoped Variable Test 1"
+    package_requirement = "LetOctopusDecide"
+    start_trigger       = "StartAfterPrevious"
+
+    action {
+      action_type                        = "Octopus.Script"
+      name                               = "Secret Scoped Variable Test"
+      condition                          = "Success"
+      run_on_server                      = true
+      is_disabled                        = false
+      can_be_used_for_project_versioning = false
+      is_required                        = true
+      worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
+      properties                         = {
+        "Octopus.Action.Script.ScriptSource" = "Inline"
+        "Octopus.Action.Script.ScriptBody"   = <<EOT
+ENVIRONMENT=$(get_octopusvariable "Octopus.Environment.Name")
+FACADE=$(get_octopusvariable "Database.Password.Facade")
+ORIGINAL=$(get_octopusvariable "Database.Password.$${ENVIRONMENT}")
+
+if [[ "$${FACADE}" == "$${ORIGINAL}" ]]
+then
+  echo "The secret value was successfully exported."
+else
+  echo "The secret value was not successfully exported."
+fi
+EOT
         "Octopus.Action.Script.Syntax"       = "Bash"
       }
       environments          = []
@@ -123,7 +250,7 @@ resource "octopusdeploy_project" "project_hello_world" {
     data.octopusdeploy_library_variable_sets.octopus_server.library_variable_sets[0].id,
     length(data.octopusdeploy_library_variable_sets.export_options.library_variable_sets) != 0 ? data.octopusdeploy_library_variable_sets.export_options.library_variable_sets[0].id : "",
   ]
-  tenanted_deployment_participation    = "Untenanted"
+  tenanted_deployment_participation = "Untenanted"
 
   connectivity_policy {
     allow_deployments_to_no_targets = true
