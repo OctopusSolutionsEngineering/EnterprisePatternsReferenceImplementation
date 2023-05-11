@@ -235,13 +235,13 @@ EOF
 
   step {
     condition           = "Success"
-    name                = "Configure Variable Configured Project Manager Team"
+    name                = "Configure Project Editor Team"
     package_requirement = "LetOctopusDecide"
     start_trigger       = "StartAfterPrevious"
 
     action {
       action_type                        = "Octopus.TerraformApply"
-      name                               = "Configure Variable Configured Project Manager Team"
+      name                               = "Configure Project Editor Team"
       condition                          = "Success"
       run_on_server                      = true
       is_disabled                        = false
