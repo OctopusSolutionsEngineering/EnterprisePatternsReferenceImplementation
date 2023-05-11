@@ -18,7 +18,7 @@ Shut the Octopus and Git stack down with:
 * Move project to new group [DONE]
 * Rename project [DONE]
 * Different tenants
-* Different variables (e.g. database creds)
+* Different variables (e.g. database creds) [DONE]
 * Different environments [DONE]
   * With step/variable scoping [DONE]
 * 
