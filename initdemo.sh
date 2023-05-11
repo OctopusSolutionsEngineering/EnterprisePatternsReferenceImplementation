@@ -371,7 +371,7 @@ popd
 docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE management_tenants"'
 pushd management_instance/tenants/regional_tenants/pgbackend || exit 1
 terraform init -reconfigure -upgrade
-until terraform workspace select -or-create "Spaces-1"; do sleep 1; done
+terraform workspace select -or-create "Spaces-1"
 terraform apply -auto-approve \
   "-var=octopus_space_id=Spaces-1" \
   "-var=america_k8s_cert=${COMBINED_CERT}" \
