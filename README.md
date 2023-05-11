@@ -56,8 +56,8 @@ Shut the Octopus and Git stack down with:
 * Add runbook variable scoping
 * Fix k8s template to work with octopub
 
-* Create development, test/production spaces.
-* Add sample project to development.
+* Create development, test/production spaces. [DONE]
+* Add sample project to development. [DONE]
 * Use variable sets for database connection string.
   * Allow variables to be ignored. [DONE]
-* Add promotion runbook.
+* Add promotion runbook. [DONE]
