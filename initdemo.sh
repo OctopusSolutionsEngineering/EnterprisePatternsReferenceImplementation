@@ -199,14 +199,14 @@ echo ""
 execute_terraform () {
    PG_DATABASE="${1}"
    TF_MODULE_PATH="${2}"
-   WORKSPACE="${3}"
+   SPACE_ID="${3}"
 
    docker-compose -f docker/compose.yml exec terraformdb sh -c "/usr/bin/psql -v ON_ERROR_STOP=1 --username \"\$POSTGRES_USER\" -c \"CREATE DATABASE $PG_DATABASE\""
    pushd "${TF_MODULE_PATH}" || exit 1
    terraform init -reconfigure -upgrade
-   terraform workspace new "${WORKSPACE}"
-   terraform workspace select "${WORKSPACE}"
-   terraform apply -auto-approve -var=octopus_space_id=Spaces-1 || exit 1
+   terraform workspace new "${SPACE_ID}"
+   terraform workspace select "${SPACE_ID}"
+   terraform apply -auto-approve -var=octopus_space_id=${SPACE_ID} || exit 1
    popd || exit 1
 }
 
@@ -215,13 +215,14 @@ execute_terraform_with_project () {
    TF_MODULE_PATH="${2}"
    WORKSPACE="${3}"
    PROJECT="${4}"
+   SPACE_ID="${5}"
 
    docker-compose -f docker/compose.yml exec terraformdb sh -c "/usr/bin/psql -v ON_ERROR_STOP=1 --username \"\$POSTGRES_USER\" -c \"CREATE DATABASE $PG_DATABASE\""
    pushd "${TF_MODULE_PATH}" || exit 1
    terraform init -reconfigure -upgrade
-   terraform workspace new "${WORKSPACE}"
-   terraform workspace select "${WORKSPACE}"
-   terraform apply -auto-approve -var=octopus_space_id=Spaces-1 "-var=project_name=${PROJECT}" || exit 1
+   terraform workspace new "${SPACE_ID}_${WORKSPACE}"
+   terraform workspace select "${SPACE_ID}_${WORKSPACE}"
+   terraform apply -auto-approve "-var=octopus_space_id=${SPACE_ID}" "-var=project_name=${PROJECT}" || exit 1
    popd || exit 1
 }
 
@@ -246,6 +247,34 @@ execute_terraform_with_spacename 'spaces' 'shared/spaces/pgbackend' 'Development
 # This is the space used to represent a test and production Octopus instance. The projects on this
 # instance are prompted from the development instance.
 execute_terraform_with_spacename 'spaces' 'shared/spaces/pgbackend' 'Test\Production'
+
+# The development "instance" has the dev environment, and a sync environment to promote projects
+execute_terraform 'sync_environment' 'shared/environments/sync/pgbackend' 'Spaces-2'
+execute_terraform 'environments_dev' 'shared/environments/dev/pgbackend' 'Spaces-2'
+
+# The test/prod "instance" has test and production environments
+execute_terraform 'environments_test_prod' 'shared/environments/test_prod/pgbackend' 'Spaces-3'
+
+# The dev instance gets a tenant representing test/prod
+execute_terraform 'management_tenants' 'management_instance/tenants/environment_tenants/pgbackend' "Spaces-2"
+execute_terraform 'lib_var_octopus_server' 'shared/variables/octopus_server/pgbackend' "Spaces-2"
+execute_terraform 'lib_var_this_instance' 'shared/variables/this_instance/pgbackend' "Spaces-2"
+
+# Prepare both spaces with the global resources needed to host the sample project
+for space in "Spaces-2" "Spaces-3"
+do
+  execute_terraform 'project_group_hello_world' 'shared/project_group/hello_world/pgbackend' "${space}"
+done
+
+# Deploy the sample project to the dev space
+execute_terraform 'project_hello_world' 'management_instance/projects/hello_world/pgbackend' "Spaces-2"
+
+# Append the common runbooks to the sample project
+for project in "Hello World"
+do
+  execute_terraform_with_project 'serialize_and_deploy' 'management_instance/runbooks/serialize_and_deploy/pgbackend' "${project//[^[:alnum:]]/_}" "${project}" "Spaces-2"
+  execute_terraform_with_project 'runbooks_list' 'management_instance/runbooks/list/pgbackend' "${project//[^[:alnum:]]/_}" "${project}" "Spaces-2"
+done
 
 execute_terraform 'team_variable_editor' 'shared/team/variable_editor/pgbackend' 'Spaces-1'
 
@@ -303,7 +332,7 @@ execute_terraform 'project_k8s_space_initialization' 'management_instance/projec
 
 # Setup targets
 docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE target_k8s"'
-pushd shared/targets/k8s/pgbackend
+pushd shared/targets/k8s/pgbackend || exit 1
 terraform init -reconfigure -upgrade
 terraform workspace new "Spaces-1"
 terraform workspace select "Spaces-1"
@@ -316,10 +345,10 @@ popd
 
 # Add the tenants
 docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE management_tenants"'
-pushd management_instance/tenants/regional_tenants/pgbackend
+pushd management_instance/tenants/regional_tenants/pgbackend || exit 1
 terraform init -reconfigure -upgrade
-terraform workspace new Spaces-1
-terraform workspace select Spaces-1
+terraform workspace new "Spaces-1"
+terraform workspace select "Spaces-1"
 terraform apply -auto-approve \
   "-var=octopus_space_id=Spaces-1" \
   "-var=america_k8s_cert=${COMBINED_CERT}" \
@@ -333,16 +362,16 @@ popd
 # are associated with. So they are linked up to each project individually, even though they all come from the same source.
 for project in "Hello World" "K8S Microservice Template"
 do
-  execute_terraform_with_project 'serialize_and_deploy' 'management_instance/runbooks/serialize_and_deploy/pgbackend' "${project//[^[:alnum:]]/_}" "${project}"
-  execute_terraform_with_project 'runbooks_list' 'management_instance/runbooks/list/pgbackend' "${project//[^[:alnum:]]/_}" "${project}"
+  execute_terraform_with_project 'serialize_and_deploy' 'management_instance/runbooks/serialize_and_deploy/pgbackend' "${project//[^[:alnum:]]/_}" "${project}" "Spaces-1"
+  execute_terraform_with_project 'runbooks_list' 'management_instance/runbooks/list/pgbackend' "${project//[^[:alnum:]]/_}" "${project}" "Spaces-1"
 done
 
 # Link up the CaC selection of runbooks. Like above, these runbooks are copied into each CaC project that is to be
 # serialized and shared with other spaces.
 for project in "Hello World CaC" "Azure Web App CaC"
 do
-  execute_terraform_with_project 'runbooks_fork' 'management_instance/runbooks/fork/pgbackend' "${project//[^[:alnum:]]/_}" "${project}"
-  execute_terraform_with_project 'runbooks_merge' 'management_instance/runbooks/merge/pgbackend' "${project//[^[:alnum:]]/_}" "${project}"
-  execute_terraform_with_project 'runbooks_list' 'management_instance/runbooks/list/pgbackend' "${project//[^[:alnum:]]/_}" "${project}"
-  execute_terraform_with_project 'runbooks_updates' 'management_instance/runbooks/conflict/pgbackend' "${project//[^[:alnum:]]/_}" "${project}"
+  execute_terraform_with_project 'runbooks_fork' 'management_instance/runbooks/fork/pgbackend' "${project//[^[:alnum:]]/_}" "${project}" "Spaces-1"
+  execute_terraform_with_project 'runbooks_merge' 'management_instance/runbooks/merge/pgbackend' "${project//[^[:alnum:]]/_}" "${project}" "Spaces-1"
+  execute_terraform_with_project 'runbooks_list' 'management_instance/runbooks/list/pgbackend' "${project//[^[:alnum:]]/_}" "${project}" "Spaces-1"
+  execute_terraform_with_project 'runbooks_updates' 'management_instance/runbooks/conflict/pgbackend' "${project//[^[:alnum:]]/_}" "${project}" "Spaces-1"
 done
