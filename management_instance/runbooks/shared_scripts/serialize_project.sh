@@ -23,7 +23,8 @@ docker run \
   -ignoreProjectNameChanges                                                 `# allow the downstream project to change names` \
   -ignoreCacManagedValues=false                                             `# CaC enabled projects will not export the deployment process, non-secret variables, and other CaC managed project settings` \
   -ignoreProjectVariableChanges                                             `# This value is always true. Either this is an unmanaged project, in which case we are never reapplying it; or is is a variable configured project, in which case we need to ignore variable changes, or it is a shared CaC project, in which case we don't use Terraform to manage variables. ` \
-  -excludeProjectVariableRegex "Private\..*"                               `# Exclude any variables starting with "Private."` \
+  -excludeVariableEnvironmentScopes "Sync"                                  `# To have secret variables available when applying a downstream project, they must be scoped to the Sync environment. But we do not need this scoping in the downstream project, so the Sync environment is removed from any variable scopes when serializing it to Terraform. ` \
+  -excludeProjectVariableRegex "Private\..*"                                `# Exclude any variables starting with "Private."` \
   -excludeRunbookRegex "__ .*"                                              `# This is a management runbook that we do not wish to export` \
   -excludeLibraryVariableSet "Octopus Server"                               `# This is library variable set used by excluded runbooks, and so we don't want to link to it in the export` \
   -excludeLibraryVariableSet "This Instance"                                `# This is library variable set used by excluded runbooks, and so we don't want to link to it in the export` \

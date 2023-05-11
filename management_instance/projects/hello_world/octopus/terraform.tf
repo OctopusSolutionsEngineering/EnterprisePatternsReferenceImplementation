@@ -73,6 +73,14 @@ data "octopusdeploy_environments" "production" {
   take         = 1
 }
 
+
+data "octopusdeploy_environments" "sync" {
+  ids          = []
+  partial_name = "Sync"
+  skip         = 0
+  take         = 1
+}
+
 resource "octopusdeploy_variable" "world" {
   owner_id = octopusdeploy_project.project_hello_world.id
   type     = "String"
@@ -87,67 +95,50 @@ resource "octopusdeploy_variable" "from" {
   value    = "the Development space!"
 }
 
-# Facade non-sensitive variables can be scoped. Here we have a facade variable scoped to a step passing through
-# a non-scoped secret value.
-resource "octopusdeploy_variable" "db_password_facade_dev" {
-  owner_id = octopusdeploy_project.project_hello_world.id
-  type     = "String"
-  name     = "Database.Password.Facade"
-  value    = "#{Database.Password.Development}"
-
-  scope {
-    environments = [data.octopusdeploy_environments.development.environments[0].id]
-  }
-}
-
-# This is another scoped facade variable, passing through a second non-scoped secret variable.
-resource "octopusdeploy_variable" "db_password_facade_test" {
-  owner_id = octopusdeploy_project.project_hello_world.id
-  type     = "String"
-  name     = "Database.Password.Facade"
-  value    = "#{Database.Password.Test}"
-
-  scope {
-    environments = [data.octopusdeploy_environments.test.environments[0].id]
-  }
-}
-
-# The final scoped facade variable, passing through a second non-scoped secret variable.
-resource "octopusdeploy_variable" "db_password_facade_prod" {
-  owner_id = octopusdeploy_project.project_hello_world.id
-  type     = "String"
-  name     = "Database.Password.Facade"
-  value    = "#{Database.Password.Production}"
-
-  scope {
-    environments = [data.octopusdeploy_environments.production.environments[0].id]
-  }
-}
-
-
 # Secret variables can not be scoped if they are to be deployed to downstream environments
 resource "octopusdeploy_variable" "db_password_dev" {
   owner_id        = octopusdeploy_project.project_hello_world.id
   type            = "Sensitive"
-  name            = "Database.Password.Development"
+  name            = "Database[Development].Password"
   is_sensitive    = true
   sensitive_value = "DevelopmentPassword"
+
+  scope {
+    environments = [
+      data.octopusdeploy_environments.development.environments[0].id,
+      data.octopusdeploy_environments.sync.environments[0].id,
+    ]
+  }
 }
 
 resource "octopusdeploy_variable" "db_password_test" {
   owner_id        = octopusdeploy_project.project_hello_world.id
   type            = "Sensitive"
-  name            = "Database.Password.Test"
+  name            = "Database[Test].Password"
   is_sensitive    = true
   sensitive_value = "PasswordTest"
+
+  scope {
+    environments = [
+      data.octopusdeploy_environments.test.environments[0].id,
+      data.octopusdeploy_environments.sync.environments[0].id,
+    ]
+  }
 }
 
 resource "octopusdeploy_variable" "db_password_production" {
   owner_id        = octopusdeploy_project.project_hello_world.id
   type            = "Sensitive"
-  name            = "Database.Password.Production"
+  name            = "Database[Production].Password"
   is_sensitive    = true
   sensitive_value = "PasswordProduction"
+
+  scope {
+    environments = [
+      data.octopusdeploy_environments.production.environments[0].id,
+      data.octopusdeploy_environments.sync.environments[0].id,
+    ]
+  }
 }
 
 resource "octopusdeploy_deployment_process" "deployment_process_project_hello_world" {
@@ -186,7 +177,7 @@ resource "octopusdeploy_deployment_process" "deployment_process_project_hello_wo
 
   step {
     condition           = "Success"
-    name                = "Secret Scoped Variable Test 1"
+    name                = "Secret Scoped Variable Test"
     package_requirement = "LetOctopusDecide"
     start_trigger       = "StartAfterPrevious"
 
@@ -203,10 +194,9 @@ resource "octopusdeploy_deployment_process" "deployment_process_project_hello_wo
         "Octopus.Action.Script.ScriptSource" = "Inline"
         "Octopus.Action.Script.ScriptBody"   = <<EOT
 ENVIRONMENT=$(get_octopusvariable "Octopus.Environment.Name")
-FACADE=$(get_octopusvariable "Database.Password.Facade")
-ORIGINAL=$(get_octopusvariable "Database.Password.$${ENVIRONMENT}")
+PASSWORD=$(get_octopusvariable "Database[${ENVIRONMENT}].Password")
 
-if [[ "$${FACADE}" == "$${ORIGINAL}" ]]
+if [[ "${PASSWORD}" != "##{Database[#{Octopus.Environment.Name}].Password}" ]]
 then
   echo "The secret value was successfully exported."
 else
