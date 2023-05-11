@@ -265,12 +265,14 @@ execute_terraform_with_spacename 'spaces' 'shared/spaces/pgbackend' 'Development
 # instance are prompted from the development instance.
 execute_terraform_with_spacename 'spaces' 'shared/spaces/pgbackend' 'Test\Production'
 
-# The development "instance" has the dev environment, and a sync environment to promote projects
+# The development "instance" has the dev environment in its simple lifecycle, and a sync environment to promote projects
 execute_terraform 'sync_environment' 'shared/environments/sync/pgbackend' 'Spaces-2'
-execute_terraform 'environments_dev' 'shared/environments/dev/pgbackend' 'Spaces-2'
+execute_terraform 'environments' 'shared/environments/dev_test_prod/pgbackend' 'Spaces-2'
+execute_terraform 'lifecycle_simple_dev' 'shared/lifecycles/simple_dev/pgbackend' 'Spaces-2'
 
-# The test/prod "instance" has test and production environments
-execute_terraform 'environments_test_prod' 'shared/environments/test_prod/pgbackend' 'Spaces-3'
+# The test/prod "instance" has test and production environments in their simple lifecycle
+execute_terraform 'environments' 'shared/environments/dev_test_prod/pgbackend' 'Spaces-3'
+execute_terraform 'lifecycle_simple_test_prod' 'shared/lifecycles/simple_test_prod/pgbackend' 'Spaces-3'
 
 # Prepare both spaces with the global resources needed to host the sample project
 for space in "Spaces-2" "Spaces-3"
@@ -300,6 +302,8 @@ execute_terraform 'team_variable_editor' 'shared/team/variable_editor/pgbackend'
 execute_terraform 'gitcreds' 'shared/gitcreds/gitea/pgbackend' 'Spaces-1'
 
 execute_terraform 'environments' 'shared/environments/dev_test_prod/pgbackend' 'Spaces-1'
+
+execute_terraform 'lifecycle_simple_dev_test_prod' 'shared/lifecycles/simple_dev_test_prod/pgbackend' 'Spaces-1'
 
 execute_terraform 'sync_environment' 'shared/environments/sync/pgbackend' 'Spaces-1'
 

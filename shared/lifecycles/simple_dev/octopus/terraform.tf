@@ -4,26 +4,12 @@ terraform {
   }
 }
 
-resource "octopusdeploy_environment" "environment_dev" {
-  name                         = "Development"
-  description                  = ""
-  allow_dynamic_infrastructure = true
-  use_guided_failure           = false
-  sort_order                   = 0
-
-  jira_extension_settings {
-    environment_type = "development"
-  }
-
-  jira_service_management_extension_settings {
-    is_enabled = true
-  }
-
-  servicenow_extension_settings {
-    is_enabled = true
-  }
+data "octopusdeploy_environments" "dev" {
+  ids          = []
+  partial_name = "Development"
+  skip         = 0
+  take         = 1
 }
-
 
 resource "octopusdeploy_lifecycle" "simple_lifecycle" {
   description = "Lifecycle including security scanning"
@@ -43,8 +29,8 @@ resource "octopusdeploy_lifecycle" "simple_lifecycle" {
 
   phase {
     automatic_deployment_targets = []
-    optional_deployment_targets  = [octopusdeploy_environment.environment_dev.id]
-    name                         = octopusdeploy_environment.environment_dev.name
+    optional_deployment_targets  = [data.octopusdeploy_environments.dev.environments[0]id]
+    name                         = data.octopusdeploy_environments.dev.environments[0].name
 
     release_retention_policy {
       quantity_to_keep    = 1
