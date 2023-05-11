@@ -14,12 +14,12 @@ Shut the Octopus and Git stack down with:
 ```
 
 # Scenarios
-* Disable steps in downstream project
+* Disable steps in downstream project [DONE]
 * Move project to new group
 * Rename project
 * Different tenants
 * Different variables (e.g. database creds)
-* Different environments
+* Different environments [DONE]
   * With step/variable scoping
 * 
 
