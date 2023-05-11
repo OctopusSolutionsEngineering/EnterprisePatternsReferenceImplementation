@@ -24,13 +24,7 @@ docker run \
   -ignoreCacManagedValues=false                                             `# CaC enabled projects will not export the deployment process, non-secret variables, and other CaC managed project settings` \
   -ignoreProjectVariableChanges                                             `# This value is always true. Either this is an unmanaged project, in which case we are never reapplying it; or is is a variable configured project, in which case we need to ignore variable changes, or it is a shared CaC project, in which case we don't use Terraform to manage variables. ` \
   -excludeProjectVariablesRegex "Private\..*"                               `# Exclude any variables starting with "Private."` \
-  -excludeRunbook "__ 1. Serialize Project"                                 `# This is a management runbook that we do not wish to export` \
-  -excludeRunbook "__ 2. Deploy Project"                                    `# This is a management runbook that we do not wish to export` \
-  -excludeRunbook "__ 2. Fork and Deploy Project"                           `# This is a management runbook that we do not wish to export` \
-  -excludeRunbook "__ 3. Merge with Downstream Project"                     `# This is a management runbook that we do not wish to export` \
-  -excludeRunbook "__ 4. List Downstream Projects"                          `# This is a management runbook that we do not wish to export` \
-  -excludeRunbook "__ 4. List Downstream Projects"                          `# This is a management runbook that we do not wish to export` \
-  -excludeRunbook "__ 5. Find Updates"                                      `# This is a management runbook that we do not wish to export` \
+  -excludeRunbookRegex "__ .*"                                              `# This is a management runbook that we do not wish to export` \
   -excludeLibraryVariableSet "Octopus Server"                               `# This is library variable set used by excluded runbooks, and so we don't want to link to it in the export` \
   -excludeLibraryVariableSet "This Instance"                                `# This is library variable set used by excluded runbooks, and so we don't want to link to it in the export` \
   -excludeLibraryVariableSet "Azure"                                        `# This is library variable set used by excluded runbooks, and so we don't want to link to it in the export` \
