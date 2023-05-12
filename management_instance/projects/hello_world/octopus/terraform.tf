@@ -197,7 +197,7 @@ if [[ "#{Database[#{Octopus.Environment.Name}].Password}" != "##{Database[#{Octo
 then
   echo "The secret value was successfully exported."
   echo "The base 64 encoded password (because raw passwords are masked):"
-  echo "$${PASSWORD}" | base64 -w0
+  echo "#{Database[#{Octopus.Environment.Name}].Password}" | base64 -w0
 else
   echo "The secret value was not successfully exported."
 fi
