@@ -180,7 +180,7 @@ do
       -u "octopus:Password01!" \
       --location \
       --request POST \
-      'http://localhost:3000/api/v1/repos/octopuscac/${repo}/hooks' \
+      "http://localhost:3000/api/v1/repos/octopuscac/${repo}/hooks" \
       --header 'Content-Type: application/json' \
       --header 'Content-Type: application/json' \
       --data-raw '{
