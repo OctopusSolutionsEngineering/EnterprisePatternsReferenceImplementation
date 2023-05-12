@@ -174,6 +174,29 @@ do
     -H "accept: application/json" \
     -H "Content-Type: application/json" \
     -d "{ \"author\": { \"email\": \"user@example.com\", \"name\": \"Octopus\" }, \"branch\": \"main\", \"committer\": { \"email\": \"user@example.com\", \"name\": \"string\" }, \"content\": \"UkVBRE1FCg==\", \"dates\": { \"author\": \"2020-04-06T01:37:35.137Z\", \"committer\": \"2020-04-06T01:37:35.137Z\" }, \"message\": \"Initializing repo\"}"
+
+  # Add a webhook
+  curl \
+      -u "octopus:Password01!" \
+      --location \
+      --request POST \
+      'http://localhost:3000/api/v1/repos/octopuscac/${repo}/hooks' \
+      --header 'Content-Type: application/json' \
+      --header 'Content-Type: application/json' \
+      --data-raw '{
+        "active": true,
+        "branch_filter": "*",
+        "config": {
+          "content_type": "json",
+          "url": "http://gitaproxy:4000",
+          "http_method": "post"
+        },
+        "events": [
+          "pull_request",
+          "pull_request_sync"
+        ],
+        "type": "gitea"
+      }'
 done
 
 # Install all the tools we'll need to perform deployments
