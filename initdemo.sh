@@ -390,6 +390,8 @@ execute_terraform 'project_azure_space_initialization' 'management_instance/proj
 
 execute_terraform 'project_k8s_space_initialization' 'management_instance/projects/k8s_space_initialization/pgbackend' 'Spaces-1'
 
+execute_terraform 'project_pr_checks' 'management_instance/projects/pr_checks/pgbackend' 'Spaces-1'
+
 # Setup targets
 docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE target_k8s"'
 pushd shared/targets/k8s/pgbackend || exit 1
