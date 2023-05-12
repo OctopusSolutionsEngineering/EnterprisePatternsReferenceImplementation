@@ -203,7 +203,7 @@ zip -r hello_world_check.1.0.0.zip . || exit 1
 octo push \
     --apiKey API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA \
     --server http://localhost:18080 \
-    --space Spaces- \
+    --space Spaces-1 \
     --package hello_world_check.1.0.0.zip \
     --replace-existing || exit 1
 popd || exit 1
