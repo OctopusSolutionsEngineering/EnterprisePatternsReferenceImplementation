@@ -109,10 +109,6 @@ resource "octopusdeploy_variable" "db_password_dev" {
       data.octopusdeploy_environments.sync.environments[0].id,
     ]
   }
-
-  lifecycle {
-    ignore_changes = all
-  }
 }
 
 resource "octopusdeploy_variable" "db_password_test" {
@@ -128,10 +124,6 @@ resource "octopusdeploy_variable" "db_password_test" {
       data.octopusdeploy_environments.sync.environments[0].id,
     ]
   }
-
-  lifecycle {
-    ignore_changes = all
-  }
 }
 
 resource "octopusdeploy_variable" "db_password_production" {
@@ -146,10 +138,6 @@ resource "octopusdeploy_variable" "db_password_production" {
       data.octopusdeploy_environments.production.environments[0].id,
       data.octopusdeploy_environments.sync.environments[0].id,
     ]
-  }
-
-  lifecycle {
-    ignore_changes = all
   }
 }
 
