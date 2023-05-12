@@ -52,6 +52,14 @@ data "octopusdeploy_worker_pools" "workerpool_default" {
   take = 1
 }
 
+data "octopusdeploy_environments" "production" {
+  ids          = []
+  partial_name = "Production"
+  skip         = 0
+  take         = 1
+}
+
+
 resource "octopusdeploy_deployment_process" "deployment_process_project_hello_world" {
   project_id = "${octopusdeploy_project.project_hello_world.id}"
 
@@ -59,6 +67,36 @@ resource "octopusdeploy_deployment_process" "deployment_process_project_hello_wo
     ignore_changes = [
       step,
     ]
+  }
+
+  step {
+    condition           = "Success"
+    name                = "Prompt to continue"
+    package_requirement = "LetOctopusDecide"
+    start_trigger       = "StartAfterPrevious"
+
+    action {
+      action_type                        = "Octopus.Manual"
+      name                               = "Prompt to continue"
+      condition                          = "Success"
+      run_on_server                      = true
+      is_disabled                        = false
+      can_be_used_for_project_versioning = false
+      is_required                        = false
+      worker_pool_id                     = ""
+      properties                         = {
+        "Octopus.Action.Manual.BlockConcurrentDeployments" = "False"
+        "Octopus.Action.Manual.Instructions" = "Do you wish the deployment to proceed?"
+      }
+      environments                       = [data.octopusdeploy_environments.production.environments[0].id]
+      excluded_environments              = []
+      channels                           = []
+      tenant_tags                        = []
+      features                           = []
+    }
+
+    properties   = {}
+    target_roles = []
   }
 
   step {
