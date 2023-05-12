@@ -188,7 +188,7 @@ do
         "branch_filter": "*",
         "config": {
           "content_type": "json",
-          "url": "http://gitaproxy:4000",
+          "url": "http://giteaproxy:4000",
           "http_method": "post"
         },
         "events": [
