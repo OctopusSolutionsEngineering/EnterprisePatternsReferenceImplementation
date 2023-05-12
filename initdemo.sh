@@ -177,6 +177,7 @@ do
 done
 
 # Install all the tools we'll need to perform deployments
+docker-compose -f docker/compose.yml exec octopus sh -c 'curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && apt-get install -y nodejs'
 docker-compose -f docker/compose.yml exec octopus sh -c 'apt-get install -y jq git dnsutils zip gnupg software-properties-common python3 python3-pip'
 docker-compose -f docker/compose.yml exec octopus sh -c 'pip install slack_sdk'
 docker-compose -f docker/compose.yml exec octopus sh -c 'apt update && apt install -y --no-install-recommends gnupg curl ca-certificates apt-transport-https && curl -sSfL https://apt.octopus.com/public.key | apt-key add - && sh -c "echo deb https://apt.octopus.com/ stable main > /etc/apt/sources.list.d/octopus.com.list" && apt update && apt install -y octopuscli'

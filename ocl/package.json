@@ -1,0 +1,6 @@
+{
+  "type": "module",
+  "dependencies": {
+    "@octopusdeploy/ocl": "^0.1.1"
+  }
+}
