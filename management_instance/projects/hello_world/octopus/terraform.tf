@@ -193,12 +193,11 @@ resource "octopusdeploy_deployment_process" "deployment_process_project_hello_wo
       properties                         = {
         "Octopus.Action.Script.ScriptSource" = "Inline"
         "Octopus.Action.Script.ScriptBody"   = <<EOT
-ENVIRONMENT=$(get_octopusvariable "Octopus.Environment.Name")
-PASSWORD=$(get_octopusvariable "Database[${ENVIRONMENT}].Password")
-
-if [[ "${PASSWORD}" != "##{Database[#{Octopus.Environment.Name}].Password}" ]]
+if [[ "#{Database[#{Octopus.Environment.Name}].Password}" != "##{Database[#{Octopus.Environment.Name}].Password}" ]]
 then
   echo "The secret value was successfully exported."
+  echo "The base 64 encoded password (because raw passwords are masked):"
+  echo "$${PASSWORD}" | base64 -w0
 else
   echo "The secret value was not successfully exported."
 fi
