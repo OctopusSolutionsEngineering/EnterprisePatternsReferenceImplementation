@@ -197,6 +197,17 @@ done
 
 echo ""
 
+pushd ocl || exit 1
+npm install || exit 1
+zip -r hello_world_check.1.0.0.zip . || exit 1
+octo push \
+    --apiKey API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA \
+    --server http://localhost:18080 \
+    --space Spaces- \
+    --package hello_world_check.1.0.0.zip \
+    --replace-existing || exit 1
+popd || exit 1
+
 execute_terraform () {
    PG_DATABASE="${1}"
    TF_MODULE_PATH="${2}"
