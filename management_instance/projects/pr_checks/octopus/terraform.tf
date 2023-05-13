@@ -123,15 +123,6 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_serial
       channels              = []
       tenant_tags           = []
       features              = []
-
-      package {
-        name                      = "check"
-        package_id                = "hello_world_check"
-        acquisition_location      = "Server"
-        extract_during_deployment = false
-        feed_id                   = data.octopusdeploy_feeds.feed_octopus_server__built_in_.feeds[0].id
-        properties                = { Extract = "True", Purpose = "", SelectionMode = "immediate" }
-      }
     }
 
     properties   = {}

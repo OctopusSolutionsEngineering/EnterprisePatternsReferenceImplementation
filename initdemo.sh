@@ -199,6 +199,19 @@ do
       }'
 done
 
+for repo in hello_world_cac
+do
+  CHECK_JS=$(cat "ocl/check.js" | base64 -w0)
+  curl \
+    --output /dev/null \
+    --silent \
+    -u "octopus:Password01!" \
+    -X POST "http://localhost:3000/api/v1/repos/octopuscac/${repo}/contents/check.js" \
+    -H "accept: application/json" \
+    -H "Content-Type: application/json" \
+    -d "{ \"author\": { \"email\": \"user@example.com\", \"name\": \"Octopus\" }, \"branch\": \"main\", \"committer\": { \"email\": \"user@example.com\", \"name\": \"string\" }, \"content\": \"${CHECK_JS}\", \"dates\": { \"author\": \"2020-04-06T01:37:35.137Z\", \"committer\": \"2020-04-06T01:37:35.137Z\" }, \"message\": \"Upload PR check script\"}"
+done
+
 # Install all the tools we'll need to perform deployments
 docker-compose -f docker/compose.yml exec octopus sh -c 'curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && apt-get install -y nodejs'
 docker-compose -f docker/compose.yml exec octopus sh -c 'apt-get install -y jq git dnsutils zip gnupg software-properties-common python3 python3-pip'
@@ -219,17 +232,6 @@ do
 done
 
 echo ""
-
-pushd ocl || exit 1
-npm install || exit 1
-zip -r hello_world_check.1.0.0.zip . || exit 1
-octo push \
-    --apiKey API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA \
-    --server http://localhost:18080 \
-    --space Spaces-1 \
-    --package hello_world_check.1.0.0.zip \
-    --replace-existing || exit 1
-popd || exit 1
 
 execute_terraform () {
    PG_DATABASE="${1}"
