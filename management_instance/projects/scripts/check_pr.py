@@ -2,7 +2,13 @@ import subprocess
 import json
 import os
 import shutil
-from urllib.request import urlopen, Request
+from urllib.request import Request
+import sys
+from pathlib import Path
+
+if "get_octopusvariable" not in globals():
+    print("Script must be run as an Octopus step")
+    sys.exit(1)
 
 
 def execute(args, cwd=None):
@@ -19,18 +25,24 @@ def execute(args, cwd=None):
 execute(['git', 'config', '--global', 'user.email', 'octopus@octopus.com'])
 execute(['git', 'config', '--global', 'user.name', 'Octopus Server'])
 
-pr = json.loads(get_octopusvariable("Webhook.Pr.Body"))
+webhook_body = get_octopusvariable("Webhook.Pr.Body") if "get_octopusvariable" in globals() else Path(
+    'test.json').read_text()
+pr = json.loads(webhook_body)
 base_repo = pr['base']['repo']['clone_url']
 
-pr['head']['ref']
+if os.path.exists('clone'):
+    shutil.rmtree('clone')
 
-execute(['git', 'clone', base_repo + "/localhost/gitea", '.'])
+os.mkdir('clone')
 
-if not os.path.exists('check.js') or not os.path.exists('package.json'):
+execute(['git', 'clone', base_repo.replace('localhost', 'gitea'), '.'], 'clone')
+
+if not os.path.exists('clone/check.js') or not os.path.exists('clone/package.json'):
     print('No check.js file in the main branch')
+    sys.exit(1)
 
-shutil.copy2('check.js', '..')
-shutil.copy2('package.json', '..')
+shutil.copy2('clone/check.js', '.')
+shutil.copy2('clone/package.json', '.')
 
 execute(['git', 'checkout', '-b', pr['head']['ref'], pr['base']['ref']], 'clone')
 execute(['git', 'pull', 'origin', pr['head']['ref']], 'clone')
@@ -43,9 +55,13 @@ stdout, stderr, retcode = execute(['node', 'check.js', 'clone/.octopus/project']
 print(stdout)
 
 shutil.rmtree('clone')
+shutil.rmtree('node_modules')
+os.remove('check.js')
+os.remove('package.json')
+os.remove('package-lock.json')
 
 url = "http://gitea:3000/api/v1/repos/" + pr['base']['repo']['full_name'] + "/statuses/" + pr['head']['sha']
-status = {"context": "octopus", "description": stdout.rep, "state": "success" if retcode == 0 else "failure",
+status = {"context": "octopus", "description": stdout, "state": "success" if retcode == 0 else "failure",
           "target_url": "http://localhost:18080"}
 
-request = Request(url, headers={"Content-Type": "application/json"} or {}, data=json.dumps(status))
+request = Request(url, headers={"Content-Type": "application/json"} or {}, data=json.dumps(status).encode("utf-8"))
