@@ -203,6 +203,7 @@ done
 for repo in hello_world_cac
 do
   CHECK_JS=$(cat "ocl/check.js" | base64 -w0)
+  PACKAGE_JSON=$(cat "ocl/package.json" | base64 -w0)
   curl \
     --output /dev/null \
     --silent \
@@ -211,6 +212,15 @@ do
     -H "accept: application/json" \
     -H "Content-Type: application/json" \
     -d "{ \"author\": { \"email\": \"user@example.com\", \"name\": \"Octopus\" }, \"branch\": \"main\", \"committer\": { \"email\": \"user@example.com\", \"name\": \"string\" }, \"content\": \"${CHECK_JS}\", \"dates\": { \"author\": \"2020-04-06T01:37:35.137Z\", \"committer\": \"2020-04-06T01:37:35.137Z\" }, \"message\": \"Upload PR check script\"}"
+
+  curl \
+      --output /dev/null \
+      --silent \
+      -u "octopus:Password01!" \
+      -X POST "http://localhost:3000/api/v1/repos/octopuscac/${repo}/contents/package.json" \
+      -H "accept: application/json" \
+      -H "Content-Type: application/json" \
+      -d "{ \"author\": { \"email\": \"user@example.com\", \"name\": \"Octopus\" }, \"branch\": \"main\", \"committer\": { \"email\": \"user@example.com\", \"name\": \"string\" }, \"content\": \"${PACKAGE_JSON}\", \"dates\": { \"author\": \"2020-04-06T01:37:35.137Z\", \"committer\": \"2020-04-06T01:37:35.137Z\" }, \"message\": \"Upload PR check script\"}"
 done
 
 # Install all the tools we'll need to perform deployments

@@ -17,7 +17,14 @@ BASEREPO=$(echo "$PR" | jq -r '.base.repo.clone_url')
 # Gitea thinks it is hosted on "localhost", but we need to access it via the hostname "gitea"
 git clone "${BASEREPO/localhost/gitea}" . 2>&1
 
+if [[ ! -f check.js || ! -f package.json ]]
+then
+  echo "No check.js file in the main branch"
+  exit 0
+fi
+
 cp check.js ..
+cp package.json ..
 
 # Pull the branches and attempt a merge
 git checkout -b "$(echo "$PR" | jq -r '.head.ref')" "$(echo "$PR" | jq -r '.base.ref')" 2>&1
@@ -28,7 +35,8 @@ git merge --no-ff --no-edit "$(echo "$PR" | jq -r '.head.ref')" 2>&1
 popd
 
 # Run the PR check
-STATUS=$(node check.js "../clone/.octopus/project")
+npm install
+STATUS=$(node check.js "clone/.octopus/project")
 RESULT=$?
 
 echo "##octopus[stdout-default]"
