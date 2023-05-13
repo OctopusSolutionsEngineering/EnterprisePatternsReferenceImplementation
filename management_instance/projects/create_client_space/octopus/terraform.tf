@@ -46,10 +46,10 @@ variable "runbook____create_client_space_create_client_space_name" {
 }
 
 resource "octopusdeploy_runbook" "runbook____create_client_space_create_client_space" {
-  name                        = "${var.runbook____create_client_space_create_client_space_name}"
-  project_id                  = "${octopusdeploy_project.project____create_client_space.id}"
+  name                        = var.runbook____create_client_space_create_client_space_name
+  project_id                  = octopusdeploy_project.project____create_client_space.id
   environment_scope           = "Specified"
-  environments                = ["${data.octopusdeploy_environments.environment_sync.environments[0].id}"]
+  environments                = [data.octopusdeploy_environments.environment_sync.environments[0].id]
   force_package_download      = false
   default_guided_failure_mode = "EnvironmentDefault"
   description                 = ""
@@ -68,7 +68,7 @@ resource "octopusdeploy_runbook" "runbook____create_client_space_create_client_s
 }
 
 resource "octopusdeploy_deployment_process" "deployment_process_project____create_client_space" {
-  project_id = "${octopusdeploy_project.project____create_client_space.id}"
+  project_id = octopusdeploy_project.project____create_client_space.id
 }
 
 data "octopusdeploy_lifecycles" "lifecycle_simple" {
@@ -87,7 +87,7 @@ variable "project____create_client_space_name" {
 }
 
 resource "octopusdeploy_project" "project____create_client_space" {
-  name                                 = "${var.project____create_client_space_name}"
+  name                                 = var.project____create_client_space_name
   auto_create_release                  = false
   default_guided_failure_mode          = "EnvironmentDefault"
   default_to_skip_if_already_installed = false
@@ -95,8 +95,8 @@ resource "octopusdeploy_project" "project____create_client_space" {
   discrete_channel_release             = false
   is_disabled                          = false
   is_version_controlled                = false
-  lifecycle_id                         = "${data.octopusdeploy_lifecycles.lifecycle_simple.lifecycles[0].id}"
-  project_group_id                     = "${data.octopusdeploy_project_groups.project_group_client_space.project_groups[0].id}"
+  lifecycle_id                         = data.octopusdeploy_lifecycles.lifecycle_simple.lifecycles[0].id
+  project_group_id                     = data.octopusdeploy_project_groups.project_group_client_space.project_groups[0].id
   included_library_variable_sets       = [
     data.octopusdeploy_library_variable_sets.octopus_server.library_variable_sets[0].id,
     data.octopusdeploy_library_variable_sets.this_instance.library_variable_sets[0].id,
@@ -117,7 +117,7 @@ resource "octopusdeploy_project" "project____create_client_space" {
 }
 
 resource "octopusdeploy_runbook_process" "runbook_process____create_client_space_create_client_space" {
-  runbook_id = "${octopusdeploy_runbook.runbook____create_client_space_create_client_space.id}"
+  runbook_id = octopusdeploy_runbook.runbook____create_client_space_create_client_space.id
 
   step {
     condition           = "Success"
