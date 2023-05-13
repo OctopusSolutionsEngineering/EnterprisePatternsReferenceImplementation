@@ -20,10 +20,10 @@ git clone "${BASEREPO/localhost/gitea}" . 2>&1
 cp check.js ..
 
 # Pull the branches and attempt a merge
-git checkout -b $(echo "$PR" | jq -r '.head.ref') $(echo "$PR" | jq -r '.base.ref') 2>&1
-git pull origin $(echo "$PR" | jq -r '.head.ref') 2>&1
-git checkout $(echo "$PR" | jq -r '.base.ref') 2>&1
-git merge --no-ff --no-edit $(echo "$PR" | jq -r '.head.ref') 2>&1
+git checkout -b "$(echo "$PR" | jq -r '.head.ref')" "$(echo "$PR" | jq -r '.base.ref')" 2>&1
+git pull origin "$(echo "$PR" | jq -r '.head.ref')" 2>&1
+git checkout "$(echo "$PR" | jq -r '.base.ref')" 2>&1
+git merge --no-ff --no-edit "$(echo "$PR" | jq -r '.head.ref')" 2>&1
 
 popd
 
@@ -44,14 +44,14 @@ then
   curl \
     --silent \
     -u 'octopus:Password01!' \
-    -X POST "http://gitea:3000/api/v1/repos/octopuscac/hello_world_cac/statuses/$(echo "$PR" | jq -r '.head.sha')" \
+    -X POST "http://gitea:3000/api/v1/repos/$(echo "$PR" | jq -r '.base.repo.full_name')/statuses/$(echo "$PR" | jq -r '.head.sha')" \
     -H "Content-Type: application/json" \
     -d "{\"context\":\"octopus\",\"description\":\"${STATUS//\"/\\\"}\",\"state\":\"success\",\"target_url\":\"http://localhost:18080\"}"
 else
   curl \
     --silent \
     -u 'octopus:Password01!' \
-    -X POST "http://gitea:3000/api/v1/repos/octopuscac/hello_world_cac/statuses/$(echo "$PR" | jq -r '.head.sha')" \
+    -X POST "http://gitea:3000/api/v1/repos/$(echo "$PR" | jq -r '.base.repo.full_name')/statuses/$(echo "$PR" | jq -r '.head.sha')" \
     -H "Content-Type: application/json" \
     -d "{\"context\":\"octopus\",\"description\":\"${STATUS//\"/\\\"}\",\"state\":\"failure\",\"target_url\":\"http://localhost:18080\"}"
 fi

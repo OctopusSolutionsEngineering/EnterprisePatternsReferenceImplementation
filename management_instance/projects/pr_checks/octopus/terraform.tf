@@ -73,8 +73,8 @@ resource "octopusdeploy_project" "project" {
   }
 }
 
-resource "octopusdeploy_runbook" "check_hello_world" {
-  name                        = "hello_world_cac"
+resource "octopusdeploy_runbook" "runbook" {
+  name                        = "PR Check"
   project_id                  = octopusdeploy_project.project.id
   environment_scope           = "Specified"
   environments                = [data.octopusdeploy_environments.sync.environments[0].id]
@@ -96,7 +96,7 @@ resource "octopusdeploy_runbook" "check_hello_world" {
 }
 
 resource "octopusdeploy_runbook_process" "runbook_process_backend_service_serialize_project" {
-  runbook_id = octopusdeploy_runbook.check_hello_world.id
+  runbook_id = octopusdeploy_runbook.runbook.id
 
   step {
     condition           = "Success"

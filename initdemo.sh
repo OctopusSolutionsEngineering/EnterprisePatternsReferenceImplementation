@@ -179,6 +179,7 @@ do
   curl \
       -u "octopus:Password01!" \
       --location \
+      --silent \
       --request POST \
       "http://localhost:3000/api/v1/repos/octopuscac/${repo}/hooks" \
       --header 'Content-Type: application/json' \
