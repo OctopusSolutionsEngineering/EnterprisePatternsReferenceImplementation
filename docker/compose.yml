@@ -109,3 +109,11 @@ services:
       - octopus
     volumes:
       - terraformdb:/var/lib/postgresql/data
+  giteaproxy:
+    image: octopussamples/giteaproxy
+    container_name: giteaproxy
+    ports:
+      - "127.0.0.1:14000:4000"
+    restart: always
+    networks:
+      - octopus

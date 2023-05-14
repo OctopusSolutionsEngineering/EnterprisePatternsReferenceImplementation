@@ -16,12 +16,18 @@ def execute(args, cwd=None):
 @route('/', method='POST')
 def index(name):
     body = request.body.readlines()
-    execute(
-        ['octo', 'run-runbook', '--server', 'http://octopus:8080', '--apiKey', 'API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+    stdout, stderr, _ = execute(
+        ['octo',
+         'run-runbook',
+         '--server', 'http://octopus:8080',
+         '--apiKey', 'API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
          'space', 'Default',
-         "--project", 'PR Checks',
-         '--runbook', 'PR Check', '--environment', 'Sync',
+         '--project', 'PR Checks',
+         '--runbook', 'PR Check',
+         '--environment', 'Sync',
          '--variable', 'Webhook.Pr.Body:' + body])
+    print(stdout)
+    print(stderr)
 
 
 run(host='localhost', port=4000)
