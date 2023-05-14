@@ -122,7 +122,7 @@ if [[ $? -ne 0 ]]; then
   COMBINED_CERT=$(cat /tmp/kind.pfx | base64)
 fi
 
-# Set the initial Gitea user
+# Set the initial admin Gitea user
 EXISTING=$(docker exec -it gitea su git bash -c "gitea admin user list")
 USER='octopus'
 if [[ "$EXISTING" == *"$USER"* ]]; then
@@ -139,6 +139,9 @@ else
      ((counter++))
   done
 fi
+
+# Create a regular Gitea users
+docker exec -it gitea su git bash -c "gitea admin user create --username editor --password Password01! --email me@example.com"
 
 # Create the orgs.
 curl \
@@ -205,6 +208,25 @@ do
           "type": "gitea"
         }'
     fi
+
+    # Enable branch protections
+    curl \
+        -u "octopus:Password01!" \
+        --output /dev/null \
+        --location \
+        --silent \
+        --request POST \
+        "http://localhost:3000/api/v1/repos/octopuscac/${repo}/branch_protections" \
+        --header 'Content-Type: application/json' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+            "branch_protections": "main",
+            "rule_name": "main",
+            "enable_status_check": true,
+            "status_check_contexts": [
+                "octopus"
+            ]
+        }'
 done
 
 for repo in hello_world_cac
