@@ -70,7 +70,7 @@ try:
 
     # Gitea thinks it is hosted on localhost, but we know it is hosted on "gitea"
     parsedUrl = urlparse(pr['url'])
-    baseUrl = parsedUrl.scheme + '://gitea:' + parsedUrl.port
+    baseUrl = parsedUrl.scheme + '://gitea:' + str(parsedUrl.port)
 
     # Post the check results back to Gitea
     url = baseUrl + '/api/v1/repos/' + pr['base']['repo']['full_name'] + "/statuses/" + pr['head']['sha']
