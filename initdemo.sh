@@ -141,7 +141,7 @@ else
 fi
 
 # Create a regular Gitea users
-docker exec -it gitea su git bash -c "gitea admin user create --username editor --password Password01! --email me@example.com"
+docker exec -it gitea su git bash -c "gitea admin user create --username editor --password Password01! --email editor@example.com --must-change-password=false"
 
 # Create the orgs.
 curl \
@@ -271,7 +271,7 @@ docker-compose -f docker/compose.yml exec octopus sh -c 'wget -O- https://apt.re
 docker-compose -f docker/compose.yml exec octopus sh -c 'echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" > /etc/apt/sources.list.d/hashicorp.list'
 docker-compose -f docker/compose.yml exec octopus sh -c 'apt update && apt-get install -y terraform'
 docker-compose -f docker/compose.yml exec octopus sh -c 'curl -sL https://aka.ms/InstallAzureCLIDeb | bash'
-docker-compose -f docker/compose.yml exec octopus sh -c 'if [ ! -f /usr/local/bin/kubectl ]; then curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"; install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl; fi'
+docker-compose -f docker/compose.yml exec octopus sh -c 'if [[ ! -f /usr/local/bin/kubectl ]]; then curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"; install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl; fi'
 
 # Wait for the Octopus server.
 echo "Waiting for the Octopus server"
