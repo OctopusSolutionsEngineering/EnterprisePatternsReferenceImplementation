@@ -307,7 +307,7 @@ docker-compose -f docker/compose.yml exec octopus sh -c 'if [ ! -f /usr/local/bi
 
 # Wait for the Octopus server.
 echo "Waiting for the Octopus server"
-until $(curl --output /dev/null --silent --fail http://localhost:18080/api)
+until curl --output /dev/null --silent --fail http://localhost:18080/api
 do
     printf '.'
     sleep 5
@@ -521,7 +521,7 @@ do
 done
 
 # Enable branch protections after the projects are initially committed
-for repo in europe_product_service europe_frontend america_product_service america_frontend hello_world_cac azure_web_app_cac k8s_microservice_template
+for repo in hello_world_cac
 do
     curl \
         -u "octopus:Password01!" \
