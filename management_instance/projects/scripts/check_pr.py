@@ -2,11 +2,12 @@ import subprocess
 import json
 import os
 import shutil
-from urllib.request import Request
 import sys
 from pathlib import Path
 from urllib.parse import urlparse
+import urllib.request
 import contextlib
+import base64
 
 if "get_octopusvariable" not in globals():
     print("Script must be run as an Octopus step")
@@ -83,11 +84,25 @@ try:
     baseUrl = parsedUrl.scheme + '://gitea:' + str(parsedUrl.port)
 
     # Post the check results back to Gitea
-    url = baseUrl + '/api/v1/repos/' + pr['pull_request']['base']['repo']['full_name'] + "/statuses/" + pr['pull_request']['head']['sha']
+    url = baseUrl + '/api/v1/repos/' + pr['pull_request']['base']['repo']['full_name'] + "/statuses/" + \
+          pr['pull_request']['head']['sha']
     status = {"context": "octopus", "description": stdout, "state": "success" if retcode == 0 else "failure",
               "target_url": "http://localhost:18080"}
+    status_string = json.dumps(status)
 
-    request = Request(url, headers={"Content-Type": "application/json"} or {}, data=json.dumps(status).encode("utf-8"))
+    auth = base64.b64encode("octopus:Password01!".encode('ascii'))
+    auth_header = "Basic " + auth.decode('ascii')
+
+    headers = {
+        "Authorization": auth_header,
+        "Content-Type": "application/json"
+    }
+
+    request = urllib.request.Request(url, headers=headers, data=status_string.encode('utf-8'))
+    with urllib.request.urlopen(request) as response:
+        data = json.loads(response.read().decode("utf-8"))
+        print(data)
+
 finally:
     # Clean everything up
     with contextlib.suppress(FileNotFoundError):
