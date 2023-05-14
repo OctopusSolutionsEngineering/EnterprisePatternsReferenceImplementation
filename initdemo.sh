@@ -176,7 +176,7 @@ do
     -d "{ \"author\": { \"email\": \"user@example.com\", \"name\": \"Octopus\" }, \"branch\": \"main\", \"committer\": { \"email\": \"user@example.com\", \"name\": \"string\" }, \"content\": \"UkVBRE1FCg==\", \"dates\": { \"author\": \"2020-04-06T01:37:35.137Z\", \"committer\": \"2020-04-06T01:37:35.137Z\" }, \"message\": \"Initializing repo\"}"
 
   WEBHOOKS=$(curl -u "octopus:Password01!" --location --silent "http://localhost:3000/api/v1/repos/octopuscac/${repo}/hooks")
-  EXISTS=$(echo ${WEBHOOKS} | jq -r '[ .[] | select(.config.url == "http://giteaproxy:4000") ] | length')
+  EXISTS=$(echo "${WEBHOOKS}" | jq -r '[ .[] | select(.config.url == "http://giteaproxy:4000") ] | length')
 
   if [[ "${EXISTS}" == 0 ]]
   then
