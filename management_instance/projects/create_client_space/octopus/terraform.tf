@@ -143,11 +143,11 @@ echo "##octopus[stdout-verbose]"
 docker pull postgres
 echo "##octopus[stdout-default]"
 DATABASE=$(dig +short terraformdb)
-docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/psql' postgres -h $${DATABASE} -v ON_ERROR_STOP=1 --username "terraform" -c "CREATE DATABASE spaces" 2>&1
-docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/psql' postgres -h $${DATABASE} -v ON_ERROR_STOP=1 --username "terraform" -c "CREATE DATABASE tenant_variables" 2>&1
-docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/psql' postgres -h $${DATABASE} -v ON_ERROR_STOP=1 --username "terraform" -c "CREATE DATABASE var_lib_slack" 2>&1
-docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/psql' postgres -h $${DATABASE} -v ON_ERROR_STOP=1 --username "terraform" -c "CREATE DATABASE scoped_user_role_deployer_variable_editor" 2>&1
-docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/psql' postgres -h $${DATABASE} -v ON_ERROR_STOP=1 --username "terraform" -c "CREATE DATABASE scoped_user_role_deployer" 2>&1
+docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username "terraform" -c "CREATE DATABASE spaces" 2>&1
+docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username "terraform" -c "CREATE DATABASE tenant_variables" 2>&1
+docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username "terraform" -c "CREATE DATABASE var_lib_slack" 2>&1
+docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username "terraform" -c "CREATE DATABASE scoped_user_role_deployer_variable_editor" 2>&1
+docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username "terraform" -c "CREATE DATABASE scoped_user_role_deployer" 2>&1
 exit 0
 EOT
       }
