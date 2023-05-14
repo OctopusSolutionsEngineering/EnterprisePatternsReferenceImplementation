@@ -40,9 +40,9 @@ try:
     try:
         pr = json.loads(pr)
     except:
-        pass
+        print("failed to double decode value")
 
-    base_repo = pr['base']['repo']['clone_url']
+    base_repo = pr['pull_request']['base']['repo']['clone_url']
 
     # Clean up any existing clones
     if os.path.exists('clone'):
@@ -65,10 +65,10 @@ try:
     shutil.copy2('clone/package.json', '.')
 
     # Checkout the branch being merged, and initiate the merge
-    execute(['git', 'checkout', '-b', pr['head']['ref'], pr['base']['ref']], 'clone')
-    execute(['git', 'pull', 'origin', pr['head']['ref']], 'clone')
-    execute(['git', 'checkout', pr['base']['ref']], 'clone')
-    execute(['git', 'merge', '--no-ff', '--no-edit', pr['head']['ref']], 'clone')
+    execute(['git', 'checkout', '-b', pr['pull_request']['head']['ref'], pr['pull_request']['base']['ref']], 'clone')
+    execute(['git', 'pull', 'origin', pr['pull_request']['head']['ref']], 'clone')
+    execute(['git', 'checkout', pr['pull_request']['base']['ref']], 'clone')
+    execute(['git', 'merge', '--no-ff', '--no-edit', pr['pull_request']['head']['ref']], 'clone')
 
     # Install the check file dependencies and run the check
     execute(['npm', 'install'])
@@ -79,11 +79,11 @@ try:
     print(stderr)
 
     # Gitea thinks it is hosted on localhost, but we know it is hosted on "gitea"
-    parsedUrl = urlparse(pr['url'])
+    parsedUrl = urlparse(pr['pull_request']['url'])
     baseUrl = parsedUrl.scheme + '://gitea:' + str(parsedUrl.port)
 
     # Post the check results back to Gitea
-    url = baseUrl + '/api/v1/repos/' + pr['base']['repo']['full_name'] + "/statuses/" + pr['head']['sha']
+    url = baseUrl + '/api/v1/repos/' + pr['pull_request']['base']['repo']['full_name'] + "/statuses/" + pr['pull_request']['head']['sha']
     status = {"context": "octopus", "description": stdout, "state": "success" if retcode == 0 else "failure",
               "target_url": "http://localhost:18080"}
 
