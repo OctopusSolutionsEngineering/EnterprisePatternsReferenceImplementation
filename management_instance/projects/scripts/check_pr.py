@@ -101,7 +101,9 @@ try:
     request = urllib.request.Request(url, headers=headers, data=status_string.encode('utf-8'))
     with urllib.request.urlopen(request) as response:
         data = json.loads(response.read().decode("utf-8"))
+        print("##octopus[stdout-verbose]")
         print(data)
+        print("##octopus[stdout-default]")
 
 finally:
     # Clean everything up
