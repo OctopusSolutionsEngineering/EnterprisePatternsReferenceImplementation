@@ -208,25 +208,6 @@ do
           "type": "gitea"
         }'
     fi
-
-    # Enable branch protections
-    curl \
-        -u "octopus:Password01!" \
-        --output /dev/null \
-        --location \
-        --silent \
-        --request POST \
-        "http://localhost:3000/api/v1/repos/octopuscac/${repo}/branch_protections" \
-        --header 'Content-Type: application/json' \
-        --header 'Content-Type: application/json' \
-        --data-raw '{
-            "branch_protections": "main",
-            "rule_name": "main",
-            "enable_status_check": true,
-            "status_check_contexts": [
-                "octopus"
-            ]
-        }'
 done
 
 for repo in hello_world_cac
@@ -486,4 +467,26 @@ do
   execute_terraform_with_project 'runbooks_merge' 'management_instance/runbooks/merge/pgbackend' "${project//[^[:alnum:]]/_}" "${project}" "Spaces-1"
   execute_terraform_with_project 'runbooks_list' 'management_instance/runbooks/list/pgbackend' "${project//[^[:alnum:]]/_}" "${project}" "Spaces-1"
   execute_terraform_with_project 'runbooks_updates' 'management_instance/runbooks/conflict/pgbackend' "${project//[^[:alnum:]]/_}" "${project}" "Spaces-1"
+done
+
+# Enable branch protections after the projects are initially committed
+for repo in europe_product_service europe_frontend america_product_service america_frontend hello_world_cac azure_web_app_cac k8s_microservice_template
+do
+    curl \
+        -u "octopus:Password01!" \
+        --output /dev/null \
+        --location \
+        --silent \
+        --request POST \
+        "http://localhost:3000/api/v1/repos/octopuscac/${repo}/branch_protections" \
+        --header 'Content-Type: application/json' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+            "branch_protections": "main",
+            "rule_name": "main",
+            "enable_status_check": true,
+            "status_check_contexts": [
+                "octopus"
+            ]
+        }'
 done
