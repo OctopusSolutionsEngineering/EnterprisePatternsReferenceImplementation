@@ -6,6 +6,7 @@ from urllib.request import Request
 import sys
 from pathlib import Path
 from urllib.parse import urlparse
+import contextlib
 
 if "get_octopusvariable" not in globals():
     print("Script must be run as an Octopus step")
