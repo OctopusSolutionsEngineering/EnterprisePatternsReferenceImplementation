@@ -36,12 +36,17 @@ fs.readFile(path.join(process.argv[2], 'deployment_process.ocl'), 'utf8', (err, 
     }
 
     // Test that the first step has the correct name
-    if (!ast[0].children.some(c =>
+    const name = ast[0].children.filter(c =>
         c.type === NodeType.ATTRIBUTE_NODE &&
-        c.name.value === "name" &&
-        // You do need to dig right down to find the value of an attribute
-        c.value.value.value === FirstStepName)) {
-        console.log("First step must be called " + FirstStepName + " (was " + c.value.value.value + ")")
+        c.name.value === "name")
+
+    if (name.length === 0) {
+        console.log("Failed to find the name of the first step")
+        process.exit(1)
+    }
+
+    if (name[0].value.value.value !== FirstStepName) {
+        console.log("First step must be called " + FirstStepName + " (was " + name[0].value.value.value + ")")
         process.exit(1)
     }
 

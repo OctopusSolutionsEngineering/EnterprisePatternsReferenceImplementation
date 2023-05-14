@@ -1,1 +1,0 @@
-This directory holds configuration files for the local Kubernetes cluster.
