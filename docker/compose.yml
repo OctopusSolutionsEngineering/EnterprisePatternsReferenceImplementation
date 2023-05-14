@@ -73,6 +73,7 @@ services:
       - GITEA__database__USER=gitea
       - GITEA__database__PASSWD=gitea
       - GITEA__security__INSTALL_LOCK=true # https://discourse.gitea.io/t/unattended-gitea-installation-from-the-cli/3373/19
+      - GITEA__webhook__ALLOWED_HOST_LIST=*
     restart: always
     networks:
       - octopus
