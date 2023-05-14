@@ -204,7 +204,17 @@ done
 for repo in hello_world_cac
 do
   CHECK_JS=$(cat "ocl/check.js" | base64 -w0)
+  if [[ $? -ne 0 ]]; then
+    # Assume we are on a mac, which doesn't have -w
+    CHECK_JS=$(cat "ocl/check.js" | base64)
+  fi
+
   PACKAGE_JSON=$(cat "ocl/package.json" | base64 -w0)
+  if [[ $? -ne 0 ]]; then
+    # Assume we are on a mac, which doesn't have -w
+    PACKAGE_JSON=$(cat "ocl/package.json" | base64)
+  fi
+
   curl \
     --output /dev/null \
     --silent \
