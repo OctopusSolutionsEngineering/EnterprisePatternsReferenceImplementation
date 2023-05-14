@@ -68,6 +68,7 @@ try:
 
     # This is the result of the check
     print(stdout)
+    print(stderr)
 
     # Gitea thinks it is hosted on localhost, but we know it is hosted on "gitea"
     parsedUrl = urlparse(pr['url'])
