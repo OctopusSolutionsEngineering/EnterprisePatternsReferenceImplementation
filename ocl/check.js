@@ -47,11 +47,11 @@ fs.readFile(path.join(process.argv[2], 'deployment_process.ocl'), 'utf8', (err, 
         process.exit(1)
     }
 
-    const action = getProperty(ast[0], "action")
+    const action = getBlock(ast[0], "action")
     const actionType = getPropertyValue(getProperty(action, "action_type"))
 
     if (actionType !== ManualInterventionType) {
-        console.log("First step must be a manual intervention step")
+        console.log("First step must be a manual intervention step (was " + actionType + ")")
         process.exit(1)
     }
 
@@ -59,6 +59,12 @@ fs.readFile(path.join(process.argv[2], 'deployment_process.ocl'), 'utf8', (err, 
     process.exit(0)
 })
 
+/**
+ * Returns the attribute node with the supplied name
+ * @param ast The block to search
+ * @param name The attribute name
+ * @returns {undefined|any} The attribute node, or undefined if no match was found
+ */
 function getProperty(ast, name) {
     if (!ast) {
         return undefined
@@ -71,6 +77,31 @@ function getProperty(ast, name) {
         .pop()
 }
 
+/**
+ * Returns the block node with the supplied name
+ * @param ast The block to search
+ * @param name The block name
+ * @returns {undefined|any} The block node, or undefined if no match was found
+ */
+function getBlock(ast, name) {
+    if (!ast) {
+        return undefined
+    }
+
+    return ast.children
+        .filter(c =>
+            c.type === NodeType.BLOCK_NODE &&
+            c.name.value === name)
+        .pop()
+}
+
+/**
+ * Returns the attribute node with the supplied name and value
+ * @param ast The block to search
+ * @param name The attribute name
+ * @value name The attribute value
+ * @returns {undefined|any} The attribute node, or undefined if no match was found
+ */
 function getPropertyWithValue(ast, name, value) {
     if (!ast) {
         return undefined
@@ -84,6 +115,12 @@ function getPropertyWithValue(ast, name, value) {
         .pop()
 }
 
+
+/**
+ * Gets the value of the attribute node
+ * @param ast The attribute node
+ * @returns {undefined|*} The attribute node value, or undefined if ast was falsy
+ */
 function getPropertyValue(ast) {
     if (!ast) {
         return undefined
