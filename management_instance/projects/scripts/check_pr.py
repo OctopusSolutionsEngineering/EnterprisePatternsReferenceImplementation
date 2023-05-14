@@ -59,7 +59,7 @@ try:
     # If not, there is nothing to check
     if not os.path.exists('clone/check.js') or not os.path.exists('clone/package.json'):
         print('No check.js file in the main branch')
-        sys.exit(1)
+        sys.exit(0)
 
     # Copy the check files out of the main branch
     shutil.copy2('clone/check.js', '.')
