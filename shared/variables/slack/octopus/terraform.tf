@@ -16,7 +16,7 @@ variable "slack_bot_token" {
 
 variable "slack_support_users" {
   type    = string
-  default = ""
+  default = "dummy"
 }
 
 resource "octopusdeploy_variable" "bot_token" {

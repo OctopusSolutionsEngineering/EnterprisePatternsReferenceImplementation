@@ -39,8 +39,9 @@ fs.readFile(path.join(process.argv[2], 'deployment_process.ocl'), 'utf8', (err, 
     if (!ast[0].children.some(c =>
         c.type === NodeType.ATTRIBUTE_NODE &&
         c.name.value === "name" &&
-        c.value.value.value === FirstStepName)) {                   // You do need to dig right down to find the value of an attribute
-        console.log("First step must be called " + FirstStepName)
+        // You do need to dig right down to find the value of an attribute
+        c.value.value.value === FirstStepName)) {
+        console.log("First step must be called " + FirstStepName + " (was " + c.value.value.value + ")")
         process.exit(1)
     }
 
