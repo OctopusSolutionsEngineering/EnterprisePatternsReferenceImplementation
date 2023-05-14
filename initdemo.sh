@@ -175,30 +175,36 @@ do
     -H "Content-Type: application/json" \
     -d "{ \"author\": { \"email\": \"user@example.com\", \"name\": \"Octopus\" }, \"branch\": \"main\", \"committer\": { \"email\": \"user@example.com\", \"name\": \"string\" }, \"content\": \"UkVBRE1FCg==\", \"dates\": { \"author\": \"2020-04-06T01:37:35.137Z\", \"committer\": \"2020-04-06T01:37:35.137Z\" }, \"message\": \"Initializing repo\"}"
 
-  # Add a webhook
-  curl \
-      -u "octopus:Password01!" \
-      --output /dev/null \
-      --location \
-      --silent \
-      --request POST \
-      "http://localhost:3000/api/v1/repos/octopuscac/${repo}/hooks" \
-      --header 'Content-Type: application/json' \
-      --header 'Content-Type: application/json' \
-      --data-raw '{
-        "active": true,
-        "branch_filter": "*",
-        "config": {
-          "content_type": "json",
-          "url": "http://giteaproxy:4000",
-          "http_method": "post"
-        },
-        "events": [
-          "pull_request",
-          "pull_request_sync"
-        ],
-        "type": "gitea"
-      }'
+  WEBHOOKS=$(curl -u "octopus:Password01!" --location --silent "http://localhost:3000/api/v1/repos/octopuscac/${repo}/hooks")
+  EXISTS=$(echo ${WEBHOOKS} | jq -r '[ .[] | select(.config.url == "http://giteaproxy:4000") ] | length')
+
+  if [[ "${EXISTS}" == 0 ]]
+  then
+    # Add a webhook
+    curl \
+        -u "octopus:Password01!" \
+        --output /dev/null \
+        --location \
+        --silent \
+        --request POST \
+        "http://localhost:3000/api/v1/repos/octopuscac/${repo}/hooks" \
+        --header 'Content-Type: application/json' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+          "active": true,
+          "branch_filter": "*",
+          "config": {
+            "content_type": "json",
+            "url": "http://giteaproxy:4000",
+            "http_method": "post"
+          },
+          "events": [
+            "pull_request",
+            "pull_request_sync"
+          ],
+          "type": "gitea"
+        }'
+    fi
 done
 
 for repo in hello_world_cac
