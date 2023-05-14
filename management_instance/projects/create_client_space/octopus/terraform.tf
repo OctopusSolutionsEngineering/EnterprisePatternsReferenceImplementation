@@ -143,11 +143,11 @@ echo "##octopus[stdout-verbose]"
 docker pull postgres
 echo "##octopus[stdout-default]"
 DATABASE=$(dig +short terraformdb)
-docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /bin/bash -c "/usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform' -c 'CREATE DATABASE spaces'; sleep 3" 2>&1
-docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /bin/bash -c "/usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform' -c 'CREATE DATABASE tenant_variables'; sleep 3" 2>&1
-docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /bin/bash -c "/usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform' -c 'CREATE DATABASE var_lib_slack'; sleep 3" 2>&1
-docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /bin/bash -c "/usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform' -c 'CREATE DATABASE scoped_user_role_deployer_variable_editor'; sleep 3" 2>&1
-docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /bin/bash -c "/usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform' -c 'CREATE DATABASE scoped_user_role_deployer'; sleep 3" 2>&1
+docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /bin/bash -c "/usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform' -c 'CREATE DATABASE spaces'; sleep 5" 2>&1
+docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /bin/bash -c "/usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform' -c 'CREATE DATABASE tenant_variables'; sleep 5" 2>&1
+docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /bin/bash -c "/usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform' -c 'CREATE DATABASE var_lib_slack'; sleep 5" 2>&1
+docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /bin/bash -c "/usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform' -c 'CREATE DATABASE scoped_user_role_deployer_variable_editor'; sleep 5" 2>&1
+docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /bin/bash -c "/usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform' -c 'CREATE DATABASE scoped_user_role_deployer'; sleep 5" 2>&1
 exit 0
 EOT
       }
