@@ -178,6 +178,7 @@ do
   # Add a webhook
   curl \
       -u "octopus:Password01!" \
+      --output /dev/null \
       --location \
       --silent \
       --request POST \
