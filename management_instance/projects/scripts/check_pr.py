@@ -34,6 +34,14 @@ try:
     webhook_body = get_octopusvariable("Webhook.Pr.Body") if "get_octopusvariable" in globals() else Path(
         'test.json').read_text()
     pr = json.loads(webhook_body)
+
+    # When passing JSON variables via the octo cli, the JSON will be an escaped string.
+    # Double-decoding the input allows us to work around this.
+    try:
+        pr = json.loads(pr)
+    except:
+        pass
+
     base_repo = pr['base']['repo']['clone_url']
 
     # Clean up any existing clones

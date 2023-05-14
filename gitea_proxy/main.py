@@ -1,5 +1,6 @@
 from bottle import route, run, request
 import subprocess
+import json
 
 
 def execute(args, cwd=None):
@@ -14,20 +15,24 @@ def execute(args, cwd=None):
 
 
 @route('/', method='POST')
-def index(name):
-    body = request.body.readlines()
+def index():
+    body = json.dumps(request.json)
+
+    print(body)
+
     stdout, stderr, _ = execute(
-        ['octo',
+        ['/usr/bin/octo',
          'run-runbook',
          '--server', 'http://octopus:8080',
          '--apiKey', 'API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-         'space', 'Default',
+         '--space', 'Default',
          '--project', 'PR Checks',
          '--runbook', 'PR Check',
          '--environment', 'Sync',
-         '--variable', 'Webhook.Pr.Body:' + body])
+         '--variable', 'Webhook.Pr.Body:' + json.dumps(body)])
+
     print(stdout)
     print(stderr)
 
 
-run(host='localhost', port=4000)
+run(host='0.0.0.0', port=4000)
