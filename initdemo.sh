@@ -154,6 +154,57 @@ curl \
   -H "accept: application/json" \
   --data '{"username": "octopuscac"}'
 
+# Create a users team in the new org
+curl \
+  --output /dev/null \
+  --silent \
+  -u "octopus:Password01!" \
+  -X POST \
+  "http://localhost:3000/api/v1/orgs/octopuscac/teams" \
+  -H "Content-Type: application/json" \
+  -H "accept: application/json" \
+  --data '{
+      "name": "Users",
+      "description": "",
+      "organization": null,
+      "includes_all_repositories": true,
+      "permission": "write",
+      "units": [
+          "repo.releases",
+          "repo.packages",
+          "repo.ext_issues",
+          "actions.actions",
+          "repo.projects",
+          "repo.ext_wiki",
+          "repo.issues",
+          "repo.wiki",
+          "repo.pulls",
+          "repo.code"
+      ],
+      "units_map": {
+          "actions.actions": "write",
+          "repo.code": "write",
+          "repo.ext_issues": "read",
+          "repo.ext_wiki": "read",
+          "repo.issues": "write",
+          "repo.packages": "write",
+          "repo.projects": "write",
+          "repo.pulls": "write",
+          "repo.releases": "write",
+          "repo.wiki": "write"
+      },
+      "can_create_org_repo": false
+  }'
+
+# Add the editor user to the users team
+curl \
+  --output /dev/null \
+  --silent \
+  -u "octopus:Password01!" \
+  -X PUT \
+  "http://localhost:3000/api/v1/teams/2/members/editor" \
+  -H "accept: application/json"
+
 # Create the repos and populate with an initial commit.
 for repo in europe_product_service europe_frontend america_product_service america_frontend hello_world_cac azure_web_app_cac k8s_microservice_template
 do
