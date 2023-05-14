@@ -35,36 +35,22 @@ fs.readFile(path.join(process.argv[2], 'deployment_process.ocl'), 'utf8', (err, 
         process.exit(1)
     }
 
-    // Test that the first step has the correct name
-    const name = ast[0].children.filter(c =>
-        c.type === NodeType.ATTRIBUTE_NODE &&
-        c.name.value === "name")
+    const firstStepName = getPropertyValue(getProperty(ast[0], "name"))
 
-    if (name.length === 0) {
+    if (!firstStepName) {
         console.log("Failed to find the name of the first step")
         process.exit(1)
     }
 
-    if (name[0].value.value.value !== FirstStepName) {
-        console.log("First step must be called " + FirstStepName + " (was " + name[0].value.value.value + ")")
+    if (firstStepName !== FirstStepName) {
+        console.log("First step must be called " + FirstStepName + " (was " + firstStepName + ")")
         process.exit(1)
     }
 
-    // Test that the first step is of the correct type
-    let foundManualIntervention = false
-    for (const block of ast[0].children) {
-        if (block.name.value === "action") {
-            for (const actionBlock of block.children) {
-                if (actionBlock.name.value === "action_type" &&
-                    actionBlock.value.value.value === ManualInterventionType) {
-                    foundManualIntervention = true
-                    break
-                }
-            }
-        }
-    }
+    const action = getProperty(ast[0], "action")
+    const actionType = getPropertyValue(getProperty(action, "action_type"))
 
-    if (!foundManualIntervention) {
+    if (actionType !== ManualInterventionType) {
         console.log("First step must be a manual intervention step")
         process.exit(1)
     }
@@ -73,54 +59,35 @@ fs.readFile(path.join(process.argv[2], 'deployment_process.ocl'), 'utf8', (err, 
     process.exit(0)
 })
 
-function blockEquals(a, b) {
-    if (a.type !== NodeType.BLOCK_NODE || b.type !== NodeType.BLOCK_NODE) {
-        return false
+function getProperty(ast, name) {
+    if (!ast) {
+        return undefined
     }
 
-    if (a.name.type !== b.name.type) {
-        return false
-    }
-
-    if (a.name.value !== b.name.value) {
-        return false
-    }
-
-    if (a.children.length !== b.children.length) {
-        return false
-    }
-
-    for (let i = 0; i < a.children.length; ++i) {
-        if (a.children[i].type === NodeType.BLOCK_NODE) {
-            if (!blockEquals(a.children[i], b.children[i])) {
-                return false
-            }
-        }
-
-        if (a.children[i].type === NodeType.ATTRIBUTE_NODE) {
-            if (!attributeEquals(a.children[i], b.children[i])) {
-                return false
-            }
-        }
-    }
+    return ast.children
+        .filter(c =>
+            c.type === NodeType.ATTRIBUTE_NODE &&
+            c.name.value === name)
+        .pop()
 }
 
-function attributeEquals(a, b) {
-    if (a.type !== NodeType.ATTRIBUTE_NODE || b.type !== NodeType.ATTRIBUTE_NODE) {
-        return false
+function getPropertyWithValue(ast, name, value) {
+    if (!ast) {
+        return undefined
     }
 
-    if (a.name.type !== b.name.type) {
-        return false
+    return ast.children
+        .filter(c =>
+            c.type === NodeType.ATTRIBUTE_NODE &&
+            c.name.value === name &&
+            c.value.value.value === value)
+        .pop()
+}
+
+function getPropertyValue(ast) {
+    if (!ast) {
+        return undefined
     }
 
-    if (a.name.value !== b.name.value) {
-        return false
-    }
-
-    if (a.value.value.value !== b.value.value.value) {
-        return false
-    }
-
-    return true
+    return ast.value.value.value
 }
