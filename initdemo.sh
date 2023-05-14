@@ -531,7 +531,6 @@ do
         --request POST \
         "http://localhost:3000/api/v1/repos/octopuscac/${repo}/branch_protections" \
         --header 'Content-Type: application/json' \
-        --header 'Content-Type: application/json' \
         --data-raw '{
             "branch_protections": "main",
             "rule_name": "main",
@@ -541,3 +540,8 @@ do
             ]
         }'
 done
+
+# Publish the check PR runbook
+PROJECT_ID=$(curl --silent --header 'X-Octopus-ApiKey: API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' http://localhost:18080/api/Spaces-1/Projects/all | jq -r '.[] | select(.Name == "PR Checks") | .Id')
+RUNBOOK_ID=$(curl --silent --header 'X-Octopus-ApiKey: API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' http://localhost:18080/api/Spaces-1/Projects/${PROJECT_ID}/runbooks | jq -r '.Items[] | select(.Name == "PR Check") | .Id')
+PUBLISH=$(curl --request POST --silent --header 'X-Octopus-ApiKey: API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' --header 'Content-Type: application/json' http://localhost:18080/api/Spaces-1/runbookSnapshots?publish=true --data-raw "{\"ProjectId\":\"${PROJECT_ID}\",\"RunbookId\":\"${RUNBOOK_ID}\",\"Notes\":null,\"Name\":\"Initial Snapshot\",\"SelectedPackages\":[]}")

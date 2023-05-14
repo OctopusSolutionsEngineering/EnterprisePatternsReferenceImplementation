@@ -40,7 +40,7 @@ Shut the Octopus and Git stack down with:
   * Allow CaC url to be overridden. [DONE]
   * Ignore versioning strategy for CaC enabled projects.[DONE]
 * Add merge runbooks. [DONE]
-* Add ocl check during merge.
+* Add ocl check during merge. [DONE]
 * Add one-to-many project deployments. [DONE]
 * Add merge all runbook
 * Add list downstream projects runbook [DONE]
