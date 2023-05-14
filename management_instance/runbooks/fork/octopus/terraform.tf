@@ -188,7 +188,7 @@ echo "##octopus[stdout-verbose]"
 docker pull postgres
 echo "##octopus[stdout-default]"
 DATABASE=$(dig +short terraformdb)
-docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/psql' '/usr/bin/flock' postgres /root/createdb.lock /bin/bash -c "/usr/bin/psql $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform' -c 'CREATE DATABASE ${local.backend}'; sleep 5" 2>&1
+docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /bin/bash -c "echo \"SELECT 'CREATE DATABASE ${local.backend}' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '${local.backend}')\gexec\" | /usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform'"
 exit 0
 EOT
       }

@@ -143,11 +143,16 @@ echo "##octopus[stdout-verbose]"
 docker pull postgres
 echo "##octopus[stdout-default]"
 DATABASE=$(dig +short terraformdb)
-docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /bin/bash -c "/usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform' -c 'CREATE DATABASE spaces'; sleep 5" 2>&1
-docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /bin/bash -c "/usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform' -c 'CREATE DATABASE tenant_variables'; sleep 5" 2>&1
-docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /bin/bash -c "/usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform' -c 'CREATE DATABASE var_lib_slack'; sleep 5" 2>&1
-docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /bin/bash -c "/usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform' -c 'CREATE DATABASE scoped_user_role_deployer_variable_editor'; sleep 5" 2>&1
-docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /bin/bash -c "/usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform' -c 'CREATE DATABASE scoped_user_role_deployer'; sleep 5" 2>&1
+
+# Create database if not exists:
+# https://stackoverflow.com/a/18389184
+# Also use flock to prevent concurrent database creation.
+
+docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /bin/bash -c "echo \"SELECT 'CREATE DATABASE spaces' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'spaces')\gexec\" | /usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform'"
+docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /bin/bash -c "echo \"SELECT 'CREATE DATABASE tenant_variables' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'tenant_variables')\gexec\" | /usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform'"
+docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /bin/bash -c "echo \"SELECT 'CREATE DATABASE var_lib_slack' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'var_lib_slack')\gexec\" | /usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform'"
+docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /bin/bash -c "echo \"SELECT 'CREATE DATABASE scoped_user_role_deployer_variable_editor' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'scoped_user_role_deployer_variable_editor')\gexec\" | /usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform'"
+docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /bin/bash -c "echo \"SELECT 'CREATE DATABASE scoped_user_role_deployer' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'scoped_user_role_deployer')\gexec\" | /usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform'"
 exit 0
 EOT
       }
