@@ -86,8 +86,16 @@ try:
     # Post the check results back to Gitea
     url = baseUrl + '/api/v1/repos/' + pr['pull_request']['base']['repo']['full_name'] + "/statuses/" + \
           pr['pull_request']['head']['sha']
+    runbook_url = "http://localhost:18080/app#/Spaces-1/projects/pr-checks/operations/runbooks/" + \
+                  get_octopusvariable("Octopus.Runbook.Id") + \
+                  "/snapshots/" + \
+                  get_octopusvariable("Octopus.RunbookSnapshot.Id") + \
+                  "/runs/" + \
+                  get_octopusvariable("Octopus.RunbookRun.Id") + \
+                  "?activeTab=taskLog"
+
     status = {"context": "octopus", "description": stdout, "state": "success" if retcode == 0 else "failure",
-              "target_url": "http://localhost:18080"}
+              "target_url": runbook_url}
     status_string = json.dumps(status)
 
     auth = base64.b64encode("octopus:Password01!".encode('ascii'))
