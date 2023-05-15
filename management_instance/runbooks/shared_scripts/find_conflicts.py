@@ -75,7 +75,7 @@ for workspace in workspaces:
 
     execute(['terraform', 'workspace', 'select', trimmed_workspace])
 
-    state_json, _, _ = execute(['terraform', 'show', '-json'], print_output=verbose_print)
+    state_json, _, _ = execute(['terraform', 'show', '-json'])
     state = json.loads(state_json)
 
     resources = [x for x in state.get('values', {}).get('root_module', {}).get('resources', {}) if
