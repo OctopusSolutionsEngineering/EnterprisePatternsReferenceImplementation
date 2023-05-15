@@ -15,6 +15,7 @@ if "get_octopusvariable" not in globals():
 
 
 def execute(args, cwd=None):
+    print(' '.join(args))
     process = subprocess.Popen(args,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE,
@@ -22,7 +23,7 @@ def execute(args, cwd=None):
                                cwd=cwd)
     stdout, stderr = process.communicate()
     retcode = process.returncode
-    return stdout, stderr, retcode
+    return ''.join(stdout).strip(), ''.join(stderr).strip(), retcode
 
 
 try:
