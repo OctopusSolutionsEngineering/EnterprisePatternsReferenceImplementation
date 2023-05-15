@@ -28,6 +28,8 @@ execute(['docker', 'pull', 'octopussamples/octoterra'])
 # Find out the IP address of the Octopus container
 octopus, _, _ = execute(['dig', '+short', 'octopus'])
 
+print ("Octopus container IP: " + octopus)
+
 stdout = execute(['docker', 'run',
          '--add-host=octopus:' + octopus,
          '-v', os.getcwd() + "/export:/export",
@@ -44,7 +46,7 @@ stdout = execute(['docker', 'run',
          '-ignoreProjectGroupChanges',                                             # allow the downstream project to move between project groups
          '-ignoreProjectNameChanges',                                              # allow the downstream project to change names
          '-ignoreCacManagedValues=false',                                          # CaC enabled projects will not export the deployment process, non-secret variables, and other CaC managed project settings
-         '-ignoreProjectVariableChanges,',                                         # This value is always true. Either this is an unmanaged project, in which case we are never reapplying it; or is is a variable configured project, in which case we need to ignore variable changes, or it is a shared CaC project, in which case we don't use Terraform to manage variables.
+         '-ignoreProjectVariableChanges',                                          # This value is always true. Either this is an unmanaged project, in which case we are never reapplying it; or is is a variable configured project, in which case we need to ignore variable changes, or it is a shared CaC project, in which case we don't use Terraform to manage variables.
          '-excludeVariableEnvironmentScopes', 'Sync',                              # To have secret variables available when applying a downstream project, they must be scoped to the Sync environment. But we do not need this scoping in the downstream project, so the Sync environment is removed from any variable scopes when serializing it to Terraform.
          '-excludeProjectVariableRegex', 'Private\\..*',                           # Exclude any variables starting with "Private."
          '-excludeRunbookRegex', '__ .*',                                          # This is a management runbook that we do not wish to export
@@ -61,7 +63,7 @@ date = datetime.now().strftime('%Y.%m.%d.%H%M%S')
 stdout = execute(['octo', 'pack',
                   '--format', 'zip',
                   '--id', re.sub('[^0-9a-zA-Z]', '_', get_octopusvariable('Octopus.Project.Name')),
-                  '--version', '$${date}',
+                  '--version', date,
                   '--basePath', os.getcwd() + '/export',
                   '--outFolder', os.getcwd() + '/export'])
 
@@ -72,7 +74,7 @@ stdout = execute(['octo', 'push',
                   '--server', get_octopusvariable('ThisInstance.Server.InternalUrl'),
                   '--space', get_octopusvariable('Octopus.Space.Id'),
                   '--package', os.getcwd() + '/export/' +
-                  re.sub('[^0-9a-zA-Z]', '_', get_octopusvariable('Octopus.Project.Name')) + date + '.zip',
+                  re.sub('[^0-9a-zA-Z]', '_', get_octopusvariable('Octopus.Project.Name')) + '.' + date + '.zip',
                   '--replace-existing'])
 
 print(stdout)
