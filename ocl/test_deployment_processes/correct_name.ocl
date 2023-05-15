@@ -1,0 +1,13 @@
+step "prompt-to-continue" {
+    name = "Manual Intervention"
+
+    action {
+        action_type = "Octopus.Manual"
+        environments = ["production"]
+        properties = {
+            Octopus.Action.Manual.BlockConcurrentDeployments = "False"
+            Octopus.Action.Manual.Instructions = "Do you wish the deployment to proceed?"
+            Octopus.Action.RunOnServer = "True"
+        }
+    }
+}

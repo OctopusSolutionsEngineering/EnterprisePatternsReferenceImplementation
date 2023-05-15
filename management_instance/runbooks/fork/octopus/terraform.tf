@@ -219,8 +219,8 @@ EOT
       is_required                        = false
       worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
       properties                         = {
-        "Octopus.Action.Script.Syntax"     = "Bash"
-        "Octopus.Action.Script.ScriptBody" = templatefile("../../shared_scripts/fork_repo.sh", {
+        "Octopus.Action.Script.Syntax"     = "Python"
+        "Octopus.Action.Script.ScriptBody" = templatefile("../../shared_scripts/fork_repo.py", {
           cac_host      = local.cac_host,
           cac_proto     = local.cac_proto,
           cac_username  = local.cac_username,

@@ -9,17 +9,7 @@ if "get_octopusvariable" not in globals():
     sys.exit(1)
 
 
-def simple_print(msg):
-    print(msg)
-
-
-def verbose_print(msg):
-    print("##octopus[stdout-verbose]")
-    print(msg)
-    print("##octopus[stdout-default]")
-
-
-def execute(args, cwd=None, print_output=None):
+def execute(args, cwd=None, print_args=None, print_output=printverbose):
     process = subprocess.Popen(args,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE,
@@ -28,8 +18,10 @@ def execute(args, cwd=None, print_output=None):
     stdout, stderr = process.communicate()
     retcode = process.returncode
 
-    if print_output is not None:
+    if print_args is not None:
         print_output(' '.join(args))
+
+    if print_output is not None:
         print_output(stdout)
         print_output(stderr)
 
