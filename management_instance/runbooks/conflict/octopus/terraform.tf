@@ -144,8 +144,8 @@ EOT
       worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
       properties                         = {
         "Octopus.Action.Script.ScriptSource" = "Inline"
-        "Octopus.Action.Script.Syntax"       = "Bash"
-        "Octopus.Action.Script.ScriptBody"   = templatefile("../../shared_scripts/find_conflicts.sh", {
+        "Octopus.Action.Script.Syntax"       = "Python"
+        "Octopus.Action.Script.ScriptBody"   = templatefile("../../shared_scripts/find_conflicts.py", {
           "backend"      = local.backend
           "cac_password" = "Password01!"
           "cac_username" = "octopus"
