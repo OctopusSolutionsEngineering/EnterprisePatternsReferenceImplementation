@@ -68,12 +68,12 @@ stdout = execute(['octo', 'pack',
 print(stdout)
 
 stdout = execute(['octo', 'push',
-         '--apiKey', get_octopusvariable('ThisInstance.Api.Key'),
-         '--server', get_octopusvariable('ThisInstance.Server.InternalUrl'),
-         '--space', get_octopusvariable('Octopus.Space.Id'),
-         '--package', os.getcwd() + '/export/' +
-         re.sub('[^0-9a-zA-Z]', '_', get_octopusvariable('Octopus.Project.Name')) + date + '.zip',
-         '--replace-existing'])
+                  '--apiKey', get_octopusvariable('ThisInstance.Api.Key'),
+                  '--server', get_octopusvariable('ThisInstance.Server.InternalUrl'),
+                  '--space', get_octopusvariable('Octopus.Space.Id'),
+                  '--package', os.getcwd() + '/export/' +
+                  re.sub('[^0-9a-zA-Z]', '_', get_octopusvariable('Octopus.Project.Name')) + date + '.zip',
+                  '--replace-existing'])
 
 print(stdout)
 
