@@ -9,8 +9,9 @@ if "get_octopusvariable" not in globals():
     sys.exit(1)
 
 
-def execute(args, cwd=None):
-    print(' '.join(args))
+simple_print = lambda x: print(x)
+
+def execute(args, cwd=None, print_output=None):
     process = subprocess.Popen(args,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE,
@@ -18,11 +19,18 @@ def execute(args, cwd=None):
                                cwd=cwd)
     stdout, stderr = process.communicate()
     retcode = process.returncode
+
+    if print_output is not None:
+        print_output(' '.join(args))
+        print_output(stdout)
+        print_output(stderr)
+
     return stdout, stderr, retcode
 
 
 cac_username = '${cac_username}'
 cac_password = '${cac_password}'
+backend = '${backend}'
 project_name = re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable('Octopus.Project.Name').lower())
 template_repo = 'http://' + cac_username + ':' + cac_password + '@gitea:3000/octopuscac/' + project_name + '.git'
 branch = 'main'
@@ -30,7 +38,7 @@ branch = 'main'
 with open('backend.tf', 'w') as f:
     f.write("""
     terraform {
-      backend "pg" {
+        backend "pg" {
       }
       required_providers {
         octopusdeploy = { source = "OctopusDeployLabs/octopusdeploy", version = "0.12.1" }
@@ -42,7 +50,7 @@ execute(['git', 'config', '--global', 'user.email', "octopus@octopus.com"])
 execute(['git', 'config', '--global', 'user.name', "Octopus Server"])
 
 execute(['terraform', 'init', '-no-color',
-         '-backend-config="conn_str=postgres://terraform:terraform@terraformdb:5432/${backend}?sslmode=disable"'])
+         '-backend-config=conn_str=postgres://terraform:terraform@terraformdb:5432/' + backend + '?sslmode=disable'])
 
 print("✓ - Up to date")
 print("▶ - Can automatically merge")
@@ -52,10 +60,12 @@ workspaces, _, _ = execute(['terraform', 'workspace', 'list'])
 workspaces = workspaces.replace('*', '').split('\n')
 
 for workspace in workspaces:
-    if workspace == "default":
+    trimmed_workspace = workspace.strip()
+
+    if trimmed_workspace == "default" or trimmed_workspace == "":
         continue
 
-    execute(['terraform', 'workspace', 'select', workspace])
+    execute(['terraform', 'workspace', 'select', trimmed_workspace])
 
     state_json, _, _ = execute(['terraform', 'show', '-json'])
     state = json.loads(state_json)
@@ -67,21 +77,21 @@ for workspace in workspaces:
     name = resource.get('values', {}).get('name', None)
 
     if url is not None:
-        os.mkdir(workspace)
+        os.mkdir(trimmed_workspace)
 
-        execute(['git', 'clone', url, workspace])
-        execute(['git', 'remote', 'add', 'upstream', template_repo], cwd=workspace)
-        execute(['git', 'fetch', '--all'], cwd=workspace)
-        execute(['git', 'checkout', '-b', 'upstream-' + branch, 'upstream/' + branch], cwd=workspace)
+        execute(['git', 'clone', url, trimmed_workspace])
+        execute(['git', 'remote', 'add', 'upstream', template_repo], cwd=trimmed_workspace)
+        execute(['git', 'fetch', '--all'], cwd=trimmed_workspace)
+        execute(['git', 'checkout', '-b', 'upstream-' + branch, 'upstream/' + branch], cwd=trimmed_workspace)
 
         if branch != 'master' and branch != 'main':
-            execute(['git', 'checkout', '-b', branch, 'origin/' + branch], cwd=workspace)
+            execute(['git', 'checkout', '-b', branch, 'origin/' + branch], cwd=trimmed_workspace)
         else:
-            execute(['git', 'checkout', branch], cwd=workspace)
+            execute(['git', 'checkout', branch], cwd=trimmed_workspace)
 
-        merge_base, _, _ = execute(['git', 'merge-base', branch, 'upstream-' + branch], cwd=workspace)
-        merge_source_current_commit, _, _ = execute(['git', 'rev-parse', 'upstream-' + branch], cwd=workspace)
-        _, _, merge_result = execute(['git', 'merge', '--no-commit', '--no-ff', 'upstream-' + branch], cwd=workspace)
+        merge_base, _, _ = execute(['git', 'merge-base', branch, 'upstream-' + branch], cwd=trimmed_workspace)
+        merge_source_current_commit, _, _ = execute(['git', 'rev-parse', 'upstream-' + branch], cwd=trimmed_workspace)
+        _, _, merge_result = execute(['git', 'merge', '--no-commit', '--no-ff', 'upstream-' + branch], cwd=trimmed_workspace)
 
         if merge_base == merge_source_current_commit:
             print(space_id + ' "' + name + '" ' + url + " ✓")
