@@ -58,7 +58,7 @@ for workspace in workspaces:
                  x.get('type', '') == 'octopusdeploy_project']
 
     for resource in resources:
-        url = resource.get('values', {}).get('git_library_persistence_settings', [{'url': None}])[0].get('url', None)
+        url = resource.get('values', {}).get('git_library_persistence_settings', [{}])[0].get('url', None)
         space_id = resource.get('values', {}).get('space_id', None)
         name = resource.get('values', {}).get('name', None)
 
