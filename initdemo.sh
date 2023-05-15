@@ -508,6 +508,14 @@ for project in "Hello World" "K8S Microservice Template"
 do
   execute_terraform_with_project 'serialize_and_deploy' 'management_instance/runbooks/serialize_and_deploy/pgbackend' "${project//[^[:alnum:]]/_}" "${project}" "Spaces-1"
   execute_terraform_with_project 'runbooks_list' 'management_instance/runbooks/list/pgbackend' "${project//[^[:alnum:]]/_}" "${project}" "Spaces-1"
+
+    PROJECT_ID=$(curl --silent --header 'X-Octopus-ApiKey: API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' http://localhost:18080/api/Spaces-1/Projects/all | jq -r ".[] | select(.Name == \"${project}\") | .Id")
+
+    for runbook in "__ 1. Serialize Project" "__ 2. Fork and Deploy Project" "__ 4. List Downstream Projects"
+    do
+      RUNBOOK_ID=$(curl --silent --header 'X-Octopus-ApiKey: API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' http://localhost:18080/api/Spaces-1/Projects/${PROJECT_ID}/runbooks | jq -r ".Items[] | select(.Name == \"${runbook}\") | .Id")
+      PUBLISH=$(curl --request POST --silent --header 'X-Octopus-ApiKey: API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' --header 'Content-Type: application/json' http://localhost:18080/api/Spaces-1/runbookSnapshots?publish=true --data-raw "{\"ProjectId\":\"${PROJECT_ID}\",\"RunbookId\":\"${RUNBOOK_ID}\",\"Notes\":null,\"Name\":\"Initial Snapshot\",\"SelectedPackages\":[]}")
+    done
 done
 
 # Link up the CaC selection of runbooks. Like above, these runbooks are copied into each CaC project that is to be
@@ -518,6 +526,14 @@ do
   execute_terraform_with_project 'runbooks_merge' 'management_instance/runbooks/merge/pgbackend' "${project//[^[:alnum:]]/_}" "${project}" "Spaces-1"
   execute_terraform_with_project 'runbooks_list' 'management_instance/runbooks/list/pgbackend' "${project//[^[:alnum:]]/_}" "${project}" "Spaces-1"
   execute_terraform_with_project 'runbooks_updates' 'management_instance/runbooks/conflict/pgbackend' "${project//[^[:alnum:]]/_}" "${project}" "Spaces-1"
+
+  PROJECT_ID=$(curl --silent --header 'X-Octopus-ApiKey: API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' http://localhost:18080/api/Spaces-1/Projects/all | jq -r ".[] | select(.Name == \"${project}\") | .Id")
+
+  for runbook in "__ 1. Serialize Project" "__ 2. Fork and Deploy Project" "__ 3. Merge with Downstream Project" "__ 4. List Downstream Projects" "__ 5. Find Updates"
+  do
+    RUNBOOK_ID=$(curl --silent --header 'X-Octopus-ApiKey: API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' http://localhost:18080/api/Spaces-1/Projects/${PROJECT_ID}/runbooks | jq -r ".Items[] | select(.Name == \"${runbook}\") | .Id")
+    PUBLISH=$(curl --request POST --silent --header 'X-Octopus-ApiKey: API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' --header 'Content-Type: application/json' http://localhost:18080/api/Spaces-1/runbookSnapshots?publish=true --data-raw "{\"ProjectId\":\"${PROJECT_ID}\",\"RunbookId\":\"${RUNBOOK_ID}\",\"Notes\":null,\"Name\":\"Initial Snapshot\",\"SelectedPackages\":[]}")
+  done
 done
 
 # Enable branch protections after the projects are initially committed
