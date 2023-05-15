@@ -9,7 +9,15 @@ if "get_octopusvariable" not in globals():
     sys.exit(1)
 
 
-simple_print = lambda x: print(x)
+def simple_print(msg):
+    print(msg)
+
+
+def verbose_print(msg):
+    print("##octopus[stdout-verbose]")
+    print(msg)
+    print("##octopus[stdout-default]")
+
 
 def execute(args, cwd=None, print_output=None):
     process = subprocess.Popen(args,
@@ -91,7 +99,8 @@ for workspace in workspaces:
 
         merge_base, _, _ = execute(['git', 'merge-base', branch, 'upstream-' + branch], cwd=trimmed_workspace)
         merge_source_current_commit, _, _ = execute(['git', 'rev-parse', 'upstream-' + branch], cwd=trimmed_workspace)
-        _, _, merge_result = execute(['git', 'merge', '--no-commit', '--no-ff', 'upstream-' + branch], cwd=trimmed_workspace)
+        _, _, merge_result = execute(['git', 'merge', '--no-commit', '--no-ff', 'upstream-' + branch],
+                                     cwd=trimmed_workspace)
 
         if merge_base == merge_source_current_commit:
             print(space_id + ' "' + name + '" ' + url + " ✓")
