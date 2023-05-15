@@ -114,8 +114,8 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_serial
       is_required                        = false
       worker_pool_id                     = "${data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id}"
       properties                         = {
-        "Octopus.Action.Script.Syntax"       = "Bash"
-        "Octopus.Action.Script.ScriptBody"   = templatefile("../../shared_scripts/serialize_project.sh", {})
+        "Octopus.Action.Script.Syntax"       = "Python"
+        "Octopus.Action.Script.ScriptBody"   = templatefile("../../shared_scripts/serialize_project.py", {})
         "Octopus.Action.Script.ScriptSource" = "Inline"
       }
       environments          = []
