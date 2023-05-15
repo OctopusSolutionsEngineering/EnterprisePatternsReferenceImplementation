@@ -75,36 +75,39 @@ for workspace in workspaces:
 
     execute(['terraform', 'workspace', 'select', trimmed_workspace])
 
-    state_json, _, _ = execute(['terraform', 'show', '-json'])
+    state_json, _, _ = execute(['terraform', 'show', '-json'], print_output=verbose_print)
     state = json.loads(state_json)
 
-    resource = [x for x in state.get('values', {}).get('root_module', {}).get('resources', {}) if
-                x.get('type', '') == 'octopusdeploy_project']
-    url = resource.get('values', {}).get('git_library_persistence_settings', [{'url': None}])[0].get('url', None)
-    space_id = resource.get('values', {}).get('space_id', None)
-    name = resource.get('values', {}).get('name', None)
+    resources = [x for x in state.get('values', {}).get('root_module', {}).get('resources', {}) if
+                 x.get('type', '') == 'octopusdeploy_project']
 
-    if url is not None:
-        os.mkdir(trimmed_workspace)
+    for resource in resources:
+        url = resource.get('values', {}).get('git_library_persistence_settings', [{'url': None}])[0].get('url', None)
+        space_id = resource.get('values', {}).get('space_id', None)
+        name = resource.get('values', {}).get('name', None)
 
-        execute(['git', 'clone', url, trimmed_workspace])
-        execute(['git', 'remote', 'add', 'upstream', template_repo], cwd=trimmed_workspace)
-        execute(['git', 'fetch', '--all'], cwd=trimmed_workspace)
-        execute(['git', 'checkout', '-b', 'upstream-' + branch, 'upstream/' + branch], cwd=trimmed_workspace)
+        if url is not None:
+            os.mkdir(trimmed_workspace)
 
-        if branch != 'master' and branch != 'main':
-            execute(['git', 'checkout', '-b', branch, 'origin/' + branch], cwd=trimmed_workspace)
-        else:
-            execute(['git', 'checkout', branch], cwd=trimmed_workspace)
+            execute(['git', 'clone', url, trimmed_workspace])
+            execute(['git', 'remote', 'add', 'upstream', template_repo], cwd=trimmed_workspace)
+            execute(['git', 'fetch', '--all'], cwd=trimmed_workspace)
+            execute(['git', 'checkout', '-b', 'upstream-' + branch, 'upstream/' + branch], cwd=trimmed_workspace)
 
-        merge_base, _, _ = execute(['git', 'merge-base', branch, 'upstream-' + branch], cwd=trimmed_workspace)
-        merge_source_current_commit, _, _ = execute(['git', 'rev-parse', 'upstream-' + branch], cwd=trimmed_workspace)
-        _, _, merge_result = execute(['git', 'merge', '--no-commit', '--no-ff', 'upstream-' + branch],
-                                     cwd=trimmed_workspace)
+            if branch != 'master' and branch != 'main':
+                execute(['git', 'checkout', '-b', branch, 'origin/' + branch], cwd=trimmed_workspace)
+            else:
+                execute(['git', 'checkout', branch], cwd=trimmed_workspace)
 
-        if merge_base == merge_source_current_commit:
-            print(space_id + ' "' + name + '" ' + url + " ✓")
-        elif merge_result != 0:
-            print(space_id + ' "' + name + '" ' + url + " ×")
-        else:
-            print(space_id + ' "' + name + '" ' + url + " ▶")
+            merge_base, _, _ = execute(['git', 'merge-base', branch, 'upstream-' + branch], cwd=trimmed_workspace)
+            merge_source_current_commit, _, _ = execute(['git', 'rev-parse', 'upstream-' + branch],
+                                                        cwd=trimmed_workspace)
+            _, _, merge_result = execute(['git', 'merge', '--no-commit', '--no-ff', 'upstream-' + branch],
+                                         cwd=trimmed_workspace)
+
+            if merge_base == merge_source_current_commit:
+                print(space_id + ' "' + name + '" ' + url + " ✓")
+            elif merge_result != 0:
+                print(space_id + ' "' + name + '" ' + url + " ×")
+            else:
+                print(space_id + ' "' + name + '" ' + url + " ▶")
