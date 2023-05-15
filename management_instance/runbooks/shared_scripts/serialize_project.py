@@ -18,7 +18,7 @@ def execute(args, cwd=None):
                                cwd=cwd)
     stdout, stderr = process.communicate()
     retcode = process.returncode
-    return ''.join(stdout).strip(), ''.join(stderr).strip(), retcode
+    return stdout, stderr, retcode
 
 
 print("Pulling the octoterra image")
@@ -29,10 +29,10 @@ execute(['docker', 'pull', 'octopussamples/octoterra'])
 # Find out the IP address of the Octopus container
 octopus, _, _ = execute(['dig', '+short', 'octopus'])
 
-print ("Octopus container IP: " + octopus)
+print ("Octopus container IP: " + octopus.strip())
 
-stdout = execute(['docker', 'run',
-         '--add-host=octopus:' + octopus,
+stdout, _, _ = execute(['docker', 'run',
+         '--add-host=octopus:' + octopus.strip(),
          '-v', os.getcwd() + "/export:/export",
          'octopussamples/octoterra',
          '-url', get_octopusvariable('ThisInstance.Server.Url'),                   # the url of the instance
@@ -61,7 +61,7 @@ print(stdout)
 
 date = datetime.now().strftime('%Y.%m.%d.%H%M%S')
 
-stdout = execute(['octo', 'pack',
+stdout, _, _ = execute(['octo', 'pack',
                   '--format', 'zip',
                   '--id', re.sub('[^0-9a-zA-Z]', '_', get_octopusvariable('Octopus.Project.Name')),
                   '--version', date,
@@ -70,7 +70,7 @@ stdout = execute(['octo', 'pack',
 
 print(stdout)
 
-stdout = execute(['octo', 'push',
+stdout, _, _ = execute(['octo', 'push',
                   '--apiKey', get_octopusvariable('ThisInstance.Api.Key'),
                   '--server', get_octopusvariable('ThisInstance.Server.InternalUrl'),
                   '--space', get_octopusvariable('Octopus.Space.Id'),

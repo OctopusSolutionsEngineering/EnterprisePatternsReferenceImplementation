@@ -23,7 +23,7 @@ def execute(args, cwd=None):
                                cwd=cwd)
     stdout, stderr = process.communicate()
     retcode = process.returncode
-    return ''.join(stdout).strip(), ''.join(stderr).strip(), retcode
+    return stdout, stderr, retcode
 
 
 try:
