@@ -13,7 +13,7 @@ Shut the Octopus and Git stack down with:
 ./cleanup.sh
 ```
 
-### Common Prerequisites
+## Common Prerequisites
 Windows users should run this script in WSL.
 
 You must have [Docker](https://docs.docker.com/get-docker/) installed.
@@ -71,7 +71,7 @@ export TF_VAR_azure_tenant_id=your_azure_tenant_id
 
 ## Optional Settings
 
-Set these values if you want the Slack incident channel runbook to work:
+Set these environment variables if you want the Slack incident channel runbook to work:
 
 * `TF_VAR_slack_bot_token` - set to a [Slack bot token](https://api.slack.com/authentication/basics) (i.e. a token starting with `xoxb-`).
 * `TF_VAR_slack_support_users` - set to the comma separated list of Slack user IDs that will be pulled into the incident channels.
