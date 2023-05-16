@@ -43,6 +43,8 @@ Shut the Octopus and Git stack down with:
 * Add ocl check during merge. [DONE]
 * Add one-to-many project deployments. [DONE]
 * Add merge all runbook
+* Deal with merging deleted projects
+* Deal with moved projects
 * Add list downstream projects runbook [DONE]
 * Add merge conflict check runbook [DONE]
 * Status runbook should show repos with upstream changes, behind downstream, equal, and merge conflict
