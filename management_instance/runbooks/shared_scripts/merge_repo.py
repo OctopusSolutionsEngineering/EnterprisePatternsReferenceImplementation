@@ -107,11 +107,11 @@ _, _, merge_result = execute(['git', 'merge', '--no-commit', '--no-ff', 'upstrea
 if merge_result == 0:
     # All good, so actually do the merge
     execute(['git', 'merge', 'upstream-' + branch], cwd=new_repo)
-    execute(['git', 'merge' '--continue'], cwd=new_repo, env=dict(os.environ, GIT_EDITOR="/bin/true"))
+    execute(['git', 'merge', '--continue'], cwd=new_repo, env=dict(os.environ, GIT_EDITOR="/bin/true"))
 
     _, _, diff_result = execute(['git', 'diff', '--quiet', '--exit-code', '@{upstream}'], cwd=new_repo)
     if diff_result != 0:
-        execute(['git', 'push' 'origin'], cwd=new_repo)
+        execute(['git', 'push', 'origin'], cwd=new_repo)
     else:
         print('No changes found.')
 else:
