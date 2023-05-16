@@ -342,9 +342,10 @@ execute_terraform_with_project () {
     docker-compose -f docker/compose.yml exec terraformdb sh -c "/usr/bin/psql -v ON_ERROR_STOP=1 --username \"\$POSTGRES_USER\" -c \"CREATE DATABASE $PG_DATABASE\""
     pushd "${TF_MODULE_PATH}" || exit 1
     terraform init -reconfigure -upgrade
-    # I've seen workspace creation fail, so we retry until it is created
+
     terraform workspace select -or-create "${SPACE_ID}_${WORKSPACE}"
 
+    # Sometimes the TF provider fails, especially with scoped variables. A retry usually fixes it.
     max_retry=2
     counter=0
     exit_code=1
@@ -386,9 +387,10 @@ execute_terraform_with_project_and_override () {
   docker-compose -f docker/compose.yml exec terraformdb sh -c "/usr/bin/psql -v ON_ERROR_STOP=1 --username \"\$POSTGRES_USER\" -c \"CREATE DATABASE $PG_DATABASE\""
   pushd "${TF_MODULE_PATH}" || exit 1
   terraform init -reconfigure -upgrade
-  # I've seen workspace creation fail, so we retry until it is created
+
   terraform workspace select -or-create "${SPACE_ID}_${WORKSPACE}"
 
+  # Sometimes the TF provider fails, especially with scoped variables. A retry usually fixes it.
   max_retry=2
   counter=0
   exit_code=1
@@ -413,28 +415,29 @@ execute_terraform_with_project_and_override () {
 }
 
 execute_terraform_with_spacename () {
-   PG_DATABASE="${1}"
-   TF_MODULE_PATH="${2}"
-   SPACENAME="${3}"
+  PG_DATABASE="${1}"
+  TF_MODULE_PATH="${2}"
+  SPACENAME="${3}"
 
-   docker-compose -f docker/compose.yml exec terraformdb sh -c "/usr/bin/psql -v ON_ERROR_STOP=1 --username \"\$POSTGRES_USER\" -c \"CREATE DATABASE $PG_DATABASE\""
-   pushd "${TF_MODULE_PATH}" || exit 1
-   terraform init -reconfigure -upgrade
-   # I've seen workspace creation fail, so we retry until it is created
-   terraform workspace select -or-create "${SPACENAME//[^[:alnum:]]/_}"
+  docker-compose -f docker/compose.yml exec terraformdb sh -c "/usr/bin/psql -v ON_ERROR_STOP=1 --username \"\$POSTGRES_USER\" -c \"CREATE DATABASE $PG_DATABASE\""
+  pushd "${TF_MODULE_PATH}" || exit 1
+  terraform init -reconfigure -upgrade
 
-     max_retry=2
-     counter=0
-     exit_code=1
-     until [[ "${exit_code}" == "0" ]]
-     do
-       [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
-       ((counter++))
+  terraform workspace select -or-create "${SPACENAME//[^[:alnum:]]/_}"
 
-        terraform apply -auto-approve "-var=space_name=${SPACENAME}"
-        exit_code=$?
-      done
-   popd || exit 1
+  # Sometimes the TF provider fails, especially with scoped variables. A retry usually fixes it.
+  max_retry=2
+  counter=0
+  exit_code=1
+  until [[ "${exit_code}" == "0" ]]
+  do
+   [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
+   ((counter++))
+
+    terraform apply -auto-approve "-var=space_name=${SPACENAME}"
+    exit_code=$?
+  done
+  popd || exit 1
 }
 
 publish_runbook() {
