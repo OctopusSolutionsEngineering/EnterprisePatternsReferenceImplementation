@@ -182,7 +182,7 @@ curl \
   -H "accept: application/json"
 
 # Create the repos and populate with an initial commit.
-for repo in europe_product_service europe_frontend america_product_service america_frontend hello_world_cac azure_web_app_cac k8s_microservice_template
+for repo in hello_world_cac azure_web_app_cac k8s_microservice_template
 do
   # Create the repo
   curl \
