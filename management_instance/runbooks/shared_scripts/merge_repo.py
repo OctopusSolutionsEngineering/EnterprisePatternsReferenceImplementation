@@ -1,6 +1,8 @@
 import subprocess
 import sys
 import os
+import urllib.request
+import base64
 
 if "get_octopusvariable" not in globals():
     print("Script must be run as an Octopus step")
@@ -37,14 +39,45 @@ template_repo = '${template_repo}'
 project_dir = '${project_dir}'
 branch = 'main'
 
+new_repo_url = cac_proto + '://' + cac_host + '/' + cac_org + '/' + new_repo + '.git'
+new_repo_url_wth_creds = cac_proto + '://' + cac_username + ':' + cac_password + '@' + cac_host + '/' + cac_org + '/' + new_repo + '.git'
+template_repo_url = cac_proto + '://' + cac_host + '/' + cac_org + '/' + template_repo + '.git'
+template_repo_url_with_creds = cac_proto + '://' + cac_username + ':' + cac_password + '@' + cac_host + '/' + cac_org + '/' + template_repo + '.git'
+
+# Verify the repos are accessible
+try:
+    auth = base64.b64encode((cac_username + ':' + cac_password).encode('ascii'))
+    auth_header = "Basic " + auth.decode('ascii')
+    headers = {
+        "Authorization": auth_header
+    }
+    request = urllib.request.Request(new_repo_url, headers=headers)
+    urllib.request.urlopen(request)
+except Exception as ex:
+    print(ex)
+    print('Downstream repo ' + new_repo_url + ' is not available')
+    sys.exit(1)
+
+try:
+    auth = base64.b64encode((cac_username + ':' + cac_password).encode('ascii'))
+    auth_header = "Basic " + auth.decode('ascii')
+    headers = {
+        "Authorization": auth_header
+    }
+    request = urllib.request.Request(template_repo_url, headers=headers)
+    urllib.request.urlopen(request)
+except Exception as ex:
+    print(ex)
+    print('Upstream repo ' + template_repo_url + ' is not available')
+    sys.exit(1)
+
 # Set some default user details
 execute(['git', 'config', '--global', 'user.email', 'octopus@octopus.com'])
 execute(['git', 'config', '--global', 'user.name', 'Octopus Server'])
 
 # Clone the template repo to test for a step template reference
 os.mkdir('template')
-execute(['git', 'clone',
-         cac_proto + '://' + cac_username + ':' + cac_password + '@' + cac_host + '/' + cac_org + '/' + template_repo + '.git', 'template'])
+execute(['git', 'clone', template_repo_url, 'template'])
 if branch != 'master' and branch != 'main':
     execute(['git', 'checkout', '-b', branch, 'origin/' + branch], cwd='template')
 else:
@@ -54,18 +87,16 @@ try:
     with open('template/' + project_dir + '/deployment_process.ocl', 'r') as file:
         data = file.read()
         if 'ActionTemplates' in data:
-            print("Template repo references a step template. Step templates can not be merged across spaces or instances.")
+            print(
+                'Template repo references a step template. Step templates can not be merged across spaces or instances.')
             sys.exit(1)
 except Exception as ex:
     print(ex)
     print('Failed to open template/' + project_dir + '/deployment_process.ocl to check for ActionTemplates')
 
 # Merge the template changes
-execute(['git', 'clone',
-         cac_proto + '://' + cac_username + ':' + cac_password + '@' + cac_host + '/' + cac_org + '/' + new_repo + '.git'])
-execute(['git', 'remote', 'add', 'upstream',
-         cac_proto + '://' + cac_username + ':' + cac_password + '@' + cac_host + '/' + cac_org + '/' + template_repo + '.git'],
-        cwd=new_repo)
+execute(['git', 'clone', new_repo_url_wth_creds])
+execute(['git', 'remote', 'add', 'upstream', template_repo_url_with_creds], cwd=new_repo)
 execute(['git', 'fetch', '--all'], cwd=new_repo)
 execute(['git', 'checkout', '-b', 'upstream-' + branch, 'upstream/' + branch], cwd=new_repo)
 
