@@ -316,16 +316,28 @@ done
 echo ""
 
 execute_terraform () {
-   PG_DATABASE="${1}"
-   TF_MODULE_PATH="${2}"
-   SPACE_ID="${3}"
+  PG_DATABASE="${1}"
+  TF_MODULE_PATH="${2}"
+  SPACE_ID="${3}"
 
-   docker-compose -f docker/compose.yml exec terraformdb sh -c "/usr/bin/psql -v ON_ERROR_STOP=1 --username \"\$POSTGRES_USER\" -c \"CREATE DATABASE $PG_DATABASE\""
-   pushd "${TF_MODULE_PATH}" || exit 1
-   terraform init -reconfigure -upgrade
-   terraform workspace select -or-create "${SPACE_ID}"
-   terraform apply -auto-approve -var=octopus_space_id=${SPACE_ID} || exit 1
-   popd || exit 1
+  docker-compose -f docker/compose.yml exec terraformdb sh -c "/usr/bin/psql -v ON_ERROR_STOP=1 --username \"\$POSTGRES_USER\" -c \"CREATE DATABASE $PG_DATABASE\""
+  pushd "${TF_MODULE_PATH}" || exit 1
+  terraform init -reconfigure -upgrade
+  terraform workspace select -or-create "${SPACE_ID}"
+
+  # Sometimes the TF provider fails, especially with scoped variables. A retry usually fixes it.
+  max_retry=2
+  counter=0
+  exit_code=1
+  until [[ "${exit_code}" == "0" ]]
+  do
+    [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
+    ((counter++))
+    terraform apply -auto-approve "-var=octopus_space_id=${SPACE_ID}"
+    exit_code=$?
+  done
+
+  popd || exit 1
 }
 
 execute_terraform_with_project () {
