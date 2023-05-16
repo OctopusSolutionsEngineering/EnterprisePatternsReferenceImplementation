@@ -348,7 +348,7 @@ execute_terraform_with_project () {
     max_retry=2
     counter=0
     exit_code=1
-    until $exit_code
+    until [[ "${exit_code}" == "0" ]]
     do
        [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
        ((counter++))
@@ -392,7 +392,7 @@ execute_terraform_with_project_and_override () {
   max_retry=2
   counter=0
   exit_code=1
-  until $exit_code
+  until [[ "${exit_code}" == "0" ]]
   do
     [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
     ((counter++))
@@ -426,7 +426,7 @@ execute_terraform_with_spacename () {
      max_retry=2
      counter=0
      exit_code=1
-     until $exit_code
+     until [[ "${exit_code}" == "0" ]]
      do
        [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
        ((counter++))
