@@ -214,7 +214,7 @@ EOT
     condition           = "Success"
     name                = "Deploy Azure Project Group"
     package_requirement = "LetOctopusDecide"
-    start_trigger       = "StartAfterPrevious"
+    start_trigger       = "StartWithPrevious"
 
     action {
       action_type                        = "Octopus.TerraformApply"
