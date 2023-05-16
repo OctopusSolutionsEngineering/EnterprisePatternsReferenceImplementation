@@ -47,7 +47,7 @@ Shut the Octopus and Git stack down with:
 * Add merge conflict check runbook [DONE]
 * Status runbook should show repos with upstream changes, behind downstream, equal, and merge conflict
 * Use sensible defines for ignoring changes and remove the prompts [DONE]
-* Run create space and compose resources before fork or clone
+* Run create space and compose resources before fork or clone [DONE]
 * Add get k8s logs runbook
 * Add delete k8s pods runbook
 * Add curl smoke test runbook

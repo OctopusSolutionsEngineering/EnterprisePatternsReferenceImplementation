@@ -23,6 +23,12 @@ variable "octopus_space_id" {
   }
 }
 
+provider "octopusdeploy" {
+  address  = "http://localhost:18080"
+  api_key  = "API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+  space_id = var.octopus_space_id
+}
+
 variable "project_name" {
   type        = string
   nullable    = false
@@ -38,14 +44,44 @@ variable "project_name_override" {
   description = "Whether the downstream project name can be customized."
 }
 
-provider "octopusdeploy" {
-  address  = "http://localhost:18080"
-  api_key  = "API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-  space_id = var.octopus_space_id
+variable "compose_project" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "The name of the project containing the runbook required to compose in global resource"
+  default     = ""
+}
+
+variable "compose_runbook" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "The name of the runbook required to compose in global resource"
+  default     = ""
+}
+
+variable "create_space_project" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "The name of the project containing the runbook required to create the space"
+  default     = ""
+}
+
+variable "create_space_runbook" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "The name of the runbook required to create the space"
+  default     = ""
 }
 
 module "octopus" {
   source                = "../octopus"
   project_name          = var.project_name
   project_name_override = var.project_name_override
+  compose_project       = var.compose_project
+  compose_runbook       = var.compose_runbook
+  create_space_project  = var.create_space_project
+  create_space_runbook  = var.create_space_runbook
 }

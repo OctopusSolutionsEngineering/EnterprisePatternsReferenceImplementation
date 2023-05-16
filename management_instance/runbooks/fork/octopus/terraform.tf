@@ -74,6 +74,38 @@ variable "runbook_backend_service_deploy_project_name" {
   default     = "__ 2. Fork and Deploy Project"
 }
 
+variable "compose_project" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "The name of the project containing the runbook required to compose in global resource"
+  default     = ""
+}
+
+variable "compose_runbook" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "The name of the runbook required to compose in global resource"
+  default     = ""
+}
+
+variable "create_space_project" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "The name of the project containing the runbook required to create the space"
+  default     = ""
+}
+
+variable "create_space_runbook" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "The name of the runbook required to create the space"
+  default     = ""
+}
+
 resource "octopusdeploy_runbook" "runbook_backend_service_deploy_project" {
   name                        = var.runbook_backend_service_deploy_project_name
   project_id                  = data.octopusdeploy_projects.project.projects[0].id
@@ -190,6 +222,102 @@ echo "##octopus[stdout-default]"
 DATABASE=$(dig +short terraformdb)
 docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /bin/bash -c "echo \"SELECT 'CREATE DATABASE ${local.backend}' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '${local.backend}')\gexec\" | /usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform'"
 exit 0
+EOT
+      }
+      environments          = []
+      excluded_environments = []
+      channels              = []
+      tenant_tags           = []
+      features              = []
+    }
+
+    properties   = {}
+    target_roles = []
+  }
+
+  step {
+    condition           = "Success"
+    name                = "Trigger Create Space"
+    package_requirement = "LetOctopusDecide"
+    start_trigger       = "StartAfterPrevious"
+
+    action {
+      action_type                        = "Octopus.Script"
+      name                               = "Trigger Create Space"
+      condition                          = "Success"
+      run_on_server                      = true
+      is_disabled                        = false
+      can_be_used_for_project_versioning = false
+      is_required                        = false
+      worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
+      properties                         = {
+        "Octopus.Action.Script.ScriptSource" = "Inline"
+        "Octopus.Action.Script.Syntax"       = "Bash"
+        "Octopus.Action.Script.ScriptBody"   = <<EOT
+if [[ -z "${var.create_space_project}" ]]
+then
+  echo "No space create project to run"
+  exit 0
+fi
+
+octo \
+  run-runbook \
+  --server 'http://octopus:8080' \
+  --apiKey 'API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' \
+  --space 'Default' \
+  --project '__ Create Client Space' \
+  --runbook 'Create Client Space' \
+  --environment 'Sync' \
+  --tenant '#{Octopus.Deployment.Tenant.Name}' \
+  --waitForRun
+EOT
+      }
+      environments          = []
+      excluded_environments = []
+      channels              = []
+      tenant_tags           = []
+      features              = []
+    }
+
+    properties   = {}
+    target_roles = []
+  }
+
+  step {
+    condition           = "Success"
+    name                = "Compose Specialized Resource"
+    package_requirement = "LetOctopusDecide"
+    start_trigger       = "StartAfterPrevious"
+
+    action {
+      action_type                        = "Octopus.Script"
+      name                               = "Compose Specialized Resource"
+      condition                          = "Success"
+      run_on_server                      = true
+      is_disabled                        = false
+      can_be_used_for_project_versioning = false
+      is_required                        = false
+      worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
+      properties                         = {
+        "Octopus.Action.Script.ScriptSource" = "Inline"
+        "Octopus.Action.Script.Syntax"       = "Bash"
+        "Octopus.Action.Script.ScriptBody"   = <<EOT
+if [[ -z "${var.compose_project}" ]]
+then
+  echo "No compose project to run"
+  exit 0
+fi
+
+octo \
+  run-runbook \
+  --server 'http://octopus:8080' \
+  --apiKey 'API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' \
+  --space 'Default' \
+  --project '${var.compose_project}' \
+  --runbook '${var.compose_runbook}' \
+  --environment 'Sync' \
+  --tenant '#{Octopus.Deployment.Tenant.Name}' \
+  --waitForRun
 EOT
       }
       environments          = []

@@ -30,6 +30,37 @@ variable "project_name" {
   description = "The name of the project to attach the runbooks to."
 }
 
+variable "compose_project" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "The name of the project containing the runbook required to compose in global resource"
+  default     = ""
+}
+
+variable "compose_runbook" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "The name of the runbook required to compose in global resource"
+  default     = ""
+}
+
+variable "create_space_project" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "The name of the project containing the runbook required to create the space"
+  default     = ""
+}
+
+variable "create_space_runbook" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "The name of the runbook required to create the space"
+  default     = ""
+}
 
 provider "octopusdeploy" {
   address  = "http://localhost:18080"
@@ -38,6 +69,10 @@ provider "octopusdeploy" {
 }
 
 module "octopus" {
-  source       = "../octopus"
-  project_name = var.project_name
+  source               = "../octopus"
+  project_name         = var.project_name
+  compose_project      = var.compose_project
+  compose_runbook      = var.compose_runbook
+  create_space_project = var.create_space_project
+  create_space_runbook = var.create_space_runbook
 }

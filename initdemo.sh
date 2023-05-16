@@ -329,19 +329,32 @@ execute_terraform () {
 }
 
 execute_terraform_with_project () {
-   PG_DATABASE="${1}"
-   TF_MODULE_PATH="${2}"
-   WORKSPACE="${3}"
-   PROJECT="${4}"
-   SPACE_ID="${5}"
+    PG_DATABASE="${1}"
+    TF_MODULE_PATH="${2}"
+    WORKSPACE="${3}"
+    PROJECT="${4}"
+    SPACE_ID="${5}"
+    CREATE_SPACE_PROJECT="${6}"
+    CREATE_SPACE_RUNBOOK="${7}"
+    COMPOSE_PROJECT="${8}"
+    COMPOSE_RUNBOOK="${9}"
 
-   docker-compose -f docker/compose.yml exec terraformdb sh -c "/usr/bin/psql -v ON_ERROR_STOP=1 --username \"\$POSTGRES_USER\" -c \"CREATE DATABASE $PG_DATABASE\""
-   pushd "${TF_MODULE_PATH}" || exit 1
-   terraform init -reconfigure -upgrade
-   # I've seen workspace creation fail, so we retry until it is created
-   terraform workspace select -or-create "${SPACE_ID}_${WORKSPACE}"
-   terraform apply -auto-approve "-var=octopus_space_id=${SPACE_ID}" "-var=project_name=${PROJECT}" || exit 1
-   popd || exit 1
+    docker-compose -f docker/compose.yml exec terraformdb sh -c "/usr/bin/psql -v ON_ERROR_STOP=1 --username \"\$POSTGRES_USER\" -c \"CREATE DATABASE $PG_DATABASE\""
+    pushd "${TF_MODULE_PATH}" || exit 1
+    terraform init -reconfigure -upgrade
+    # I've seen workspace creation fail, so we retry until it is created
+    terraform workspace select -or-create "${SPACE_ID}_${WORKSPACE}"
+
+    if [[ -z "${COMPOSE_PROJECT}" && -z "${CREATE_SPACE_PROJECT}"  ]]
+    then
+      terraform apply -auto-approve "-var=octopus_space_id=${SPACE_ID}" "-var=project_name=${PROJECT}" || exit 1
+    elif [[ -z "${COMPOSE_PROJECT}" ]]
+    then
+      terraform apply -auto-approve "-var=octopus_space_id=${SPACE_ID}" "-var=project_name=${PROJECT}" "-var=create_space_project=${CREATE_SPACE_PROJECT}" "-var=create_space_runbook=${CREATE_SPACE_RUNBOOK}" || exit 1
+    else
+      terraform apply -auto-approve "-var=octopus_space_id=${SPACE_ID}" "-var=project_name=${PROJECT}" "-var=create_space_project=${CREATE_SPACE_PROJECT}" "-var=create_space_runbook=${CREATE_SPACE_RUNBOOK}" "-var=compose_project=${COMPOSE_PROJECT}" "-var=compose_runbook=${COMPOSE_RUNBOOK}" || exit 1
+    fi
+    popd || exit 1
 }
 
 # This function allows the "project_name_override" variable to be set, which is exposed on the serialize and deploy runbook.
@@ -352,14 +365,27 @@ execute_terraform_with_project_and_override () {
    PROJECT="${4}"
    SPACE_ID="${5}"
    PROJECT_NAME_OVERRIDE="${6}"
+   CREATE_SPACE_PROJECT="${7}"
+   CREATE_SPACE_RUNBOOK="${8}"
+   COMPOSE_PROJECT="${9}"
+   COMPOSE_RUNBOOK="${10}"
 
    docker-compose -f docker/compose.yml exec terraformdb sh -c "/usr/bin/psql -v ON_ERROR_STOP=1 --username \"\$POSTGRES_USER\" -c \"CREATE DATABASE $PG_DATABASE\""
    pushd "${TF_MODULE_PATH}" || exit 1
    terraform init -reconfigure -upgrade
    # I've seen workspace creation fail, so we retry until it is created
    terraform workspace select -or-create "${SPACE_ID}_${WORKSPACE}"
-   terraform apply -auto-approve "-var=octopus_space_id=${SPACE_ID}" "-var=project_name=${PROJECT}" "-var=project_name_override=${PROJECT_NAME_OVERRIDE}" || exit 1
-   popd || exit 1
+
+    if [[ -z "${COMPOSE_PROJECT}" && -z "${CREATE_SPACE_PROJECT}"  ]]
+    then
+      terraform apply -auto-approve "-var=octopus_space_id=${SPACE_ID}" "-var=project_name=${PROJECT}" "-var=project_name_override=${PROJECT_NAME_OVERRIDE}" || exit 1
+    elif [[ -z "${COMPOSE_PROJECT}" ]]
+    then
+      terraform apply -auto-approve "-var=octopus_space_id=${SPACE_ID}" "-var=project_name=${PROJECT}" "-var=project_name_override=${PROJECT_NAME_OVERRIDE}" "-var=create_space_project=${CREATE_SPACE_PROJECT}" "-var=create_space_runbook=${CREATE_SPACE_RUNBOOK}" || exit 1
+    else
+      terraform apply -auto-approve "-var=octopus_space_id=${SPACE_ID}" "-var=project_name=${PROJECT}" "-var=project_name_override=${PROJECT_NAME_OVERRIDE}" "-var=create_space_project=${CREATE_SPACE_PROJECT}" "-var=create_space_runbook=${CREATE_SPACE_RUNBOOK}" "-var=compose_project=${COMPOSE_PROJECT}" "-var=compose_runbook=${COMPOSE_RUNBOOK}" || exit 1
+    fi
+    popd || exit 1
 }
 
 execute_terraform_with_spacename () {
@@ -374,6 +400,15 @@ execute_terraform_with_spacename () {
    terraform workspace select -or-create "${SPACENAME//[^[:alnum:]]/_}"
    terraform apply -auto-approve "-var=space_name=${SPACENAME}" || exit 1
    popd || exit 1
+}
+
+publish_runbook() {
+  PROJECT_NAME="${1}"
+  RUNBOOK_NAME="${2}"
+
+  PROJECT_ID=$(curl --silent --header 'X-Octopus-ApiKey: API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' http://localhost:18080/api/Spaces-1/Projects/all | jq -r ".[] | select(.Name == \"${PROJECT_NAME}\") | .Id")
+  RUNBOOK_ID=$(curl --silent --header 'X-Octopus-ApiKey: API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' http://localhost:18080/api/Spaces-1/Projects/${PROJECT_ID}/runbooks | jq -r ".Items[] | select(.Name == \"${RUNBOOK_NAME}\") | .Id")
+  PUBLISH=$(curl --request POST --silent --header 'X-Octopus-ApiKey: API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' --header 'Content-Type: application/json' http://localhost:18080/api/Spaces-1/runbookSnapshots?publish=true --data-raw "{\"ProjectId\":\"${PROJECT_ID}\",\"RunbookId\":\"${RUNBOOK_ID}\",\"Notes\":null,\"Name\":\"Initial Snapshot\",\"SelectedPackages\":[]}")
 }
 
 # This is the space used to represent a development Octopus instance. This instance is where teams
@@ -461,6 +496,7 @@ execute_terraform 'lib_var_slack' 'shared/variables/slack/pgbackend' 'Spaces-1'
 execute_terraform 'lib_var_export_options' 'shared/variables/export_options/pgbackend' 'Spaces-1'
 
 execute_terraform 'project_create_client_space' 'management_instance/projects/create_client_space/pgbackend' 'Spaces-1'
+publish_runbook "__ Create Client Space" "Create Client Space"
 
 execute_terraform 'project_hello_world' 'management_instance/projects/hello_world/pgbackend' 'Spaces-1'
 
@@ -471,8 +507,10 @@ execute_terraform 'project_azure_web_app_cac' 'management_instance/projects/azur
 execute_terraform 'project_k8s_microservice' 'management_instance/projects/k8s_microservice/pgbackend' 'Spaces-1'
 
 execute_terraform 'project_azure_space_initialization' 'management_instance/projects/azure_space_initialization/pgbackend' 'Spaces-1'
+publish_runbook "__ Compose Azure Resources" "Initialize Space"
 
 execute_terraform 'project_k8s_space_initialization' 'management_instance/projects/k8s_space_initialization/pgbackend' 'Spaces-1'
+publish_runbook "__ Compose K8S Resources" "Initialize Space"
 
 execute_terraform 'project_pr_checks' 'management_instance/projects/pr_checks/pgbackend' 'Spaces-1'
 
@@ -504,35 +542,37 @@ popd
 # Add serialize and deploy runbooks to sample projects.
 # These runbooks are common across these kinds of projects, but benefit from being able to reference the project they
 # are associated with. So they are linked up to each project individually, even though they all come from the same source.
-for project in "Hello World" "K8S Microservice Template"
+for project in "Hello World:__ Create Client Space:Create Client Space" "K8S Microservice Template:__ Create Client Space:Create Client Space:__ Compose K8S Resources:Initialize Space"
 do
-  execute_terraform_with_project 'serialize_and_deploy' 'management_instance/runbooks/serialize_and_deploy/pgbackend' "${project//[^[:alnum:]]/_}" "${project}" "Spaces-1"
-  execute_terraform_with_project 'runbooks_list' 'management_instance/runbooks/list/pgbackend' "${project//[^[:alnum:]]/_}" "${project}" "Spaces-1"
+  IFS=':'; split=($project); unset IFS;
 
-    PROJECT_ID=$(curl --silent --header 'X-Octopus-ApiKey: API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' http://localhost:18080/api/Spaces-1/Projects/all | jq -r ".[] | select(.Name == \"${project}\") | .Id")
+  echo "Adding runbooks to ${split[0]}"
 
-    for runbook in "__ 1. Serialize Project" "__ 2. Fork and Deploy Project" "__ 4. List Downstream Projects"
-    do
-      RUNBOOK_ID=$(curl --silent --header 'X-Octopus-ApiKey: API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' http://localhost:18080/api/Spaces-1/Projects/${PROJECT_ID}/runbooks | jq -r ".Items[] | select(.Name == \"${runbook}\") | .Id")
-      PUBLISH=$(curl --request POST --silent --header 'X-Octopus-ApiKey: API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' --header 'Content-Type: application/json' http://localhost:18080/api/Spaces-1/runbookSnapshots?publish=true --data-raw "{\"ProjectId\":\"${PROJECT_ID}\",\"RunbookId\":\"${RUNBOOK_ID}\",\"Notes\":null,\"Name\":\"Initial Snapshot\",\"SelectedPackages\":[]}")
-    done
+  execute_terraform_with_project 'serialize_and_deploy' 'management_instance/runbooks/serialize_and_deploy/pgbackend' "${project//[^[:alnum:]]/_}" "${split[0]}" "Spaces-1" "${split[1]}" "${split[2]}" "${split[3]}" "${split[4]}"
+  execute_terraform_with_project 'runbooks_list' 'management_instance/runbooks/list/pgbackend' "${project//[^[:alnum:]]/_}" "${split[0]}" "Spaces-1"
+
+  for runbook in "__ 1. Serialize Project" "__ 2. Fork and Deploy Project" "__ 4. List Downstream Projects"
+  do
+    publish_runbook "${split[0]}" "${runbook}"
+  done
 done
 
 # Link up the CaC selection of runbooks. Like above, these runbooks are copied into each CaC project that is to be
 # serialized and shared with other spaces.
-for project in "Hello World CaC" "Azure Web App CaC"
+for project in "Hello World CaC:__ Create Client Space:Create Client Space" "Azure Web App CaC:__ Create Client Space:Create Client Space:__ Compose Azure Resources:Initialize Space"
 do
-  execute_terraform_with_project 'runbooks_fork' 'management_instance/runbooks/fork/pgbackend' "${project//[^[:alnum:]]/_}" "${project}" "Spaces-1"
-  execute_terraform_with_project 'runbooks_merge' 'management_instance/runbooks/merge/pgbackend' "${project//[^[:alnum:]]/_}" "${project}" "Spaces-1"
-  execute_terraform_with_project 'runbooks_list' 'management_instance/runbooks/list/pgbackend' "${project//[^[:alnum:]]/_}" "${project}" "Spaces-1"
-  execute_terraform_with_project 'runbooks_updates' 'management_instance/runbooks/conflict/pgbackend' "${project//[^[:alnum:]]/_}" "${project}" "Spaces-1"
+  IFS=':'; split=($project); unset IFS;
 
-  PROJECT_ID=$(curl --silent --header 'X-Octopus-ApiKey: API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' http://localhost:18080/api/Spaces-1/Projects/all | jq -r ".[] | select(.Name == \"${project}\") | .Id")
+  echo "Adding runbooks to ${split[0]}"
+
+  execute_terraform_with_project 'runbooks_fork' 'management_instance/runbooks/fork/pgbackend' "${project//[^[:alnum:]]/_}" "${split[0]}" "Spaces-1" "${split[1]}" "${split[2]}" "${split[3]}" "${split[4]}"
+  execute_terraform_with_project 'runbooks_merge' 'management_instance/runbooks/merge/pgbackend' "${project//[^[:alnum:]]/_}" "${split[0]}" "Spaces-1"
+  execute_terraform_with_project 'runbooks_list' 'management_instance/runbooks/list/pgbackend' "${project//[^[:alnum:]]/_}" "${split[0]}" "Spaces-1"
+  execute_terraform_with_project 'runbooks_updates' 'management_instance/runbooks/conflict/pgbackend' "${project//[^[:alnum:]]/_}" "${split[0]}" "Spaces-1"
 
   for runbook in "__ 1. Serialize Project" "__ 2. Fork and Deploy Project" "__ 3. Merge with Downstream Project" "__ 4. List Downstream Projects" "__ 5. Find Updates"
   do
-    RUNBOOK_ID=$(curl --silent --header 'X-Octopus-ApiKey: API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' http://localhost:18080/api/Spaces-1/Projects/${PROJECT_ID}/runbooks | jq -r ".Items[] | select(.Name == \"${runbook}\") | .Id")
-    PUBLISH=$(curl --request POST --silent --header 'X-Octopus-ApiKey: API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' --header 'Content-Type: application/json' http://localhost:18080/api/Spaces-1/runbookSnapshots?publish=true --data-raw "{\"ProjectId\":\"${PROJECT_ID}\",\"RunbookId\":\"${RUNBOOK_ID}\",\"Notes\":null,\"Name\":\"Initial Snapshot\",\"SelectedPackages\":[]}")
+    publish_runbook "${split[0]}" "${runbook}"
   done
 done
 
@@ -558,6 +598,4 @@ do
 done
 
 # Publish the check PR runbook
-PROJECT_ID=$(curl --silent --header 'X-Octopus-ApiKey: API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' http://localhost:18080/api/Spaces-1/Projects/all | jq -r '.[] | select(.Name == "PR Checks") | .Id')
-RUNBOOK_ID=$(curl --silent --header 'X-Octopus-ApiKey: API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' http://localhost:18080/api/Spaces-1/Projects/${PROJECT_ID}/runbooks | jq -r '.Items[] | select(.Name == "PR Check") | .Id')
-PUBLISH=$(curl --request POST --silent --header 'X-Octopus-ApiKey: API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' --header 'Content-Type: application/json' http://localhost:18080/api/Spaces-1/runbookSnapshots?publish=true --data-raw "{\"ProjectId\":\"${PROJECT_ID}\",\"RunbookId\":\"${RUNBOOK_ID}\",\"Notes\":null,\"Name\":\"Initial Snapshot\",\"SelectedPackages\":[]}")
+publish_runbook "PR Checks" "PR Check"
