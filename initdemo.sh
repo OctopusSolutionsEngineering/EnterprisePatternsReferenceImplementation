@@ -345,47 +345,71 @@ execute_terraform_with_project () {
     # I've seen workspace creation fail, so we retry until it is created
     terraform workspace select -or-create "${SPACE_ID}_${WORKSPACE}"
 
-    if [[ -z "${COMPOSE_PROJECT}" && -z "${CREATE_SPACE_PROJECT}"  ]]
-    then
-      terraform apply -auto-approve "-var=octopus_space_id=${SPACE_ID}" "-var=project_name=${PROJECT}" || exit 1
-    elif [[ -z "${COMPOSE_PROJECT}" ]]
-    then
-      terraform apply -auto-approve "-var=octopus_space_id=${SPACE_ID}" "-var=project_name=${PROJECT}" "-var=create_space_project=${CREATE_SPACE_PROJECT}" "-var=create_space_runbook=${CREATE_SPACE_RUNBOOK}" || exit 1
-    else
-      terraform apply -auto-approve "-var=octopus_space_id=${SPACE_ID}" "-var=project_name=${PROJECT}" "-var=create_space_project=${CREATE_SPACE_PROJECT}" "-var=create_space_runbook=${CREATE_SPACE_RUNBOOK}" "-var=compose_project=${COMPOSE_PROJECT}" "-var=compose_runbook=${COMPOSE_RUNBOOK}" || exit 1
-    fi
+    max_retry=2
+    counter=0
+    exit_code=1
+    until $exit_code
+    do
+       [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
+       ((counter++))
+
+       if [[ -z "${COMPOSE_PROJECT}" && -z "${CREATE_SPACE_PROJECT}"  ]]
+       then
+         terraform apply -auto-approve "-var=octopus_space_id=${SPACE_ID}" "-var=project_name=${PROJECT}"
+       elif [[ -z "${COMPOSE_PROJECT}" ]]
+       then
+         terraform apply -auto-approve "-var=octopus_space_id=${SPACE_ID}" "-var=project_name=${PROJECT}" "-var=create_space_project=${CREATE_SPACE_PROJECT}" "-var=create_space_runbook=${CREATE_SPACE_RUNBOOK}"
+       else
+         terraform apply -auto-approve "-var=octopus_space_id=${SPACE_ID}" "-var=project_name=${PROJECT}" "-var=create_space_project=${CREATE_SPACE_PROJECT}" "-var=create_space_runbook=${CREATE_SPACE_RUNBOOK}" "-var=compose_project=${COMPOSE_PROJECT}" "-var=compose_runbook=${COMPOSE_RUNBOOK}"
+       fi
+
+       exit_code=$?
+    done
+
+
     popd || exit 1
 }
 
 # This function allows the "project_name_override" variable to be set, which is exposed on the serialize and deploy runbook.
 execute_terraform_with_project_and_override () {
-   PG_DATABASE="${1}"
-   TF_MODULE_PATH="${2}"
-   WORKSPACE="${3}"
-   PROJECT="${4}"
-   SPACE_ID="${5}"
-   PROJECT_NAME_OVERRIDE="${6}"
-   CREATE_SPACE_PROJECT="${7}"
-   CREATE_SPACE_RUNBOOK="${8}"
-   COMPOSE_PROJECT="${9}"
-   COMPOSE_RUNBOOK="${10}"
+  PG_DATABASE="${1}"
+  TF_MODULE_PATH="${2}"
+  WORKSPACE="${3}"
+  PROJECT="${4}"
+  SPACE_ID="${5}"
+  PROJECT_NAME_OVERRIDE="${6}"
+  CREATE_SPACE_PROJECT="${7}"
+  CREATE_SPACE_RUNBOOK="${8}"
+  COMPOSE_PROJECT="${9}"
+  COMPOSE_RUNBOOK="${10}"
 
-   docker-compose -f docker/compose.yml exec terraformdb sh -c "/usr/bin/psql -v ON_ERROR_STOP=1 --username \"\$POSTGRES_USER\" -c \"CREATE DATABASE $PG_DATABASE\""
-   pushd "${TF_MODULE_PATH}" || exit 1
-   terraform init -reconfigure -upgrade
-   # I've seen workspace creation fail, so we retry until it is created
-   terraform workspace select -or-create "${SPACE_ID}_${WORKSPACE}"
+  docker-compose -f docker/compose.yml exec terraformdb sh -c "/usr/bin/psql -v ON_ERROR_STOP=1 --username \"\$POSTGRES_USER\" -c \"CREATE DATABASE $PG_DATABASE\""
+  pushd "${TF_MODULE_PATH}" || exit 1
+  terraform init -reconfigure -upgrade
+  # I've seen workspace creation fail, so we retry until it is created
+  terraform workspace select -or-create "${SPACE_ID}_${WORKSPACE}"
+
+  max_retry=2
+  counter=0
+  exit_code=1
+  until $exit_code
+  do
+    [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
+    ((counter++))
 
     if [[ -z "${COMPOSE_PROJECT}" && -z "${CREATE_SPACE_PROJECT}"  ]]
     then
-      terraform apply -auto-approve "-var=octopus_space_id=${SPACE_ID}" "-var=project_name=${PROJECT}" "-var=project_name_override=${PROJECT_NAME_OVERRIDE}" || exit 1
+      terraform apply -auto-approve "-var=octopus_space_id=${SPACE_ID}" "-var=project_name=${PROJECT}" "-var=project_name_override=${PROJECT_NAME_OVERRIDE}"
     elif [[ -z "${COMPOSE_PROJECT}" ]]
     then
-      terraform apply -auto-approve "-var=octopus_space_id=${SPACE_ID}" "-var=project_name=${PROJECT}" "-var=project_name_override=${PROJECT_NAME_OVERRIDE}" "-var=create_space_project=${CREATE_SPACE_PROJECT}" "-var=create_space_runbook=${CREATE_SPACE_RUNBOOK}" || exit 1
+      terraform apply -auto-approve "-var=octopus_space_id=${SPACE_ID}" "-var=project_name=${PROJECT}" "-var=project_name_override=${PROJECT_NAME_OVERRIDE}" "-var=create_space_project=${CREATE_SPACE_PROJECT}" "-var=create_space_runbook=${CREATE_SPACE_RUNBOOK}"
     else
-      terraform apply -auto-approve "-var=octopus_space_id=${SPACE_ID}" "-var=project_name=${PROJECT}" "-var=project_name_override=${PROJECT_NAME_OVERRIDE}" "-var=create_space_project=${CREATE_SPACE_PROJECT}" "-var=create_space_runbook=${CREATE_SPACE_RUNBOOK}" "-var=compose_project=${COMPOSE_PROJECT}" "-var=compose_runbook=${COMPOSE_RUNBOOK}" || exit 1
+      terraform apply -auto-approve "-var=octopus_space_id=${SPACE_ID}" "-var=project_name=${PROJECT}" "-var=project_name_override=${PROJECT_NAME_OVERRIDE}" "-var=create_space_project=${CREATE_SPACE_PROJECT}" "-var=create_space_runbook=${CREATE_SPACE_RUNBOOK}" "-var=compose_project=${COMPOSE_PROJECT}" "-var=compose_runbook=${COMPOSE_RUNBOOK}"
     fi
-    popd || exit 1
+
+    exit_code=$?
+  done
+  popd || exit 1
 }
 
 execute_terraform_with_spacename () {
@@ -398,7 +422,18 @@ execute_terraform_with_spacename () {
    terraform init -reconfigure -upgrade
    # I've seen workspace creation fail, so we retry until it is created
    terraform workspace select -or-create "${SPACENAME//[^[:alnum:]]/_}"
-   terraform apply -auto-approve "-var=space_name=${SPACENAME}" || exit 1
+
+     max_retry=2
+     counter=0
+     exit_code=1
+     until $exit_code
+     do
+       [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
+       ((counter++))
+
+        terraform apply -auto-approve "-var=space_name=${SPACENAME}"
+        exit_code=$?
+      done
    popd || exit 1
 }
 
