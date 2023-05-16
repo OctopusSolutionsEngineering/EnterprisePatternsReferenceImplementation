@@ -13,53 +13,52 @@ Shut the Octopus and Git stack down with:
 ./cleanup.sh
 ```
 
-# Scenarios
-* Disable steps in downstream project [DONE]
-* Move project to new group [DONE]
-* Rename project [DONE]
-* Different tenants
-* Different variables (e.g. database creds) [DONE]
-* Different environments [DONE]
-  * With step/variable scoping [DONE]
-* 
+## Prerequisites
+Windows users should run this script in WSL.
 
-# Todo
+You must have [Docker](https://docs.docker.com/get-docker/) installed.
 
-* Create environment for synchronizing. [DONE]
-* Scope runbooks to sync environment. [DONE]
-* Add managed project deployment. [DONE]
-* Add unmanaged project deployment. [DONE]
-* Add self-service project deployment.
-  * Add management instance shared variables.
-  * deploy a "run a runbook" step
-* Add tenants for managed spaces. [DONE]
-* Link tenants to sample projects. [DONE]
-* Add tenant specific octopus variables. [DONE]
-* Test serialize and deploy. [DONE]
-* Add CaC enabled projects. [DONE]
-  * Allow CaC url to be overridden. [DONE]
-  * Ignore versioning strategy for CaC enabled projects.[DONE]
-* Add merge runbooks. [DONE]
-* Add ocl check during merge. [DONE]
-* Add one-to-many project deployments. [DONE]
-* Add merge all runbook
-* Deal with merging deleted projects
-* Deal with moved projects
-* Add list downstream projects runbook [DONE]
-* Add merge conflict check runbook [DONE]
-* Status runbook should show repos with upstream changes, behind downstream, equal, and merge conflict
-* Use sensible defines for ignoring changes and remove the prompts [DONE]
-* Run create space and compose resources before fork or clone [DONE]
-* Add get k8s logs runbook
-* Add delete k8s pods runbook
-* Add curl smoke test runbook
-* Add slack incident channel creation runbook [DONE]
-* Add team that allows variable editing, release creation, and deployment [DONE]
-* Add runbook variable scoping
-* Fix k8s template to work with octopub
+You must define the following environment variables:
 
-* Create development, test/production spaces. [DONE]
-* Add sample project to development. [DONE]
-* Use variable sets for database connection string. [DONE]
-  * Allow variables to be ignored. [DONE]
-* Add promotion runbook. [DONE]
+* `OCTOPUS_SERVER_BASE64_LICENSE` - set to a base 64 encoded Octopus license in the  environment variable. Octonauts create a test license in [preprod Octofront](https://preprod.octofront.com/).
+* `TF_VAR_docker_username` - set to you DockerHub username. Octonauts see `Docker local password` in password manager.
+* `TF_VAR_docker_password` - set to your DockerHub password. Octonauts see `Docker local password` in password manager.
+* `TF_VAR_azure_application_id` - set to your Azure application ID. Octonauts see `Sales Azure Account` in password manager.
+* `TF_VAR_azure_subscription_id` - set to your Azure subscription ID. Octonauts see `Sales Azure Account` in password manager.
+* `TF_VAR_azure_password` - set to your Azure password. Octonauts see `Sales Azure Account` in password manager.
+* `TF_VAR_azure_tenant_id` - set to your Azure tenant ID. Octonauts see `Sales Azure Account` in password manager.
+
+Typically, this is done by adding the following like to `~/.profile` (for Linux) or `~/.zshrc` (for macOS):
+
+```
+export OCTOPUS_SERVER_BASE64_LICENSE=PExpY2Vuc2UgU2lnbmF0dXJlPSJk...
+export TF_VAR_docker_username=your_dockerhub_username
+export TF_VAR_docker_password=your_dockerhub_password
+export TF_VAR_azure_application_id=your_azure_application_id
+export TF_VAR_azure_subscription_id=your_azure_subscription_id
+export TF_VAR_azure_password=your_azure_password
+export TF_VAR_azure_tenant_id=your_azure_tenant_is
+```
+
+You also require these additional dependencies:
+
+* Octopus CLI
+* curl
+* Terraform
+* Minikube
+* Openssl
+* jq
+
+These are install in Ubuntu with the following script (to be run as root):
+
+```
+apt-get update
+apt-get install -y openssl jq gnupg curl ca-certificates apt-transport-https wget
+curl -sSfL https://apt.octopus.com/public.key | apt-key add - && sh -c "echo deb https://apt.octopus.com/ stable main > /etc/apt/sources.list.d/octopus.com.list" && apt update && apt install -y octopuscli
+wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor > /usr/share/keyrings/hashicorp-archive-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" > /etc/apt/sources.list.d/hashicorp.list
+apt update && apt-get install -y terraform
+if [ ! -f /usr/local/bin/kubectl ]; then curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"; install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl; fi
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+install minikube-linux-amd64 /usr/local/bin/minikube
+```
