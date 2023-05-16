@@ -1,3 +1,9 @@
+# Welcome
+
+This repo contains the code required to start and configure a local Octopus installation demonstrating common
+enterprise deployment patterns. It is based around Docker Compose and Terraform, and has been designed to allow
+the Octopus stack to be created and destroyed with ease.
+
 # Getting Started
 
 Start the Octopus and Git stack with the following command. Any missing tools or undefined environment variables will
