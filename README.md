@@ -27,7 +27,7 @@ You also require these additional dependencies:
 * Openssl
 * jq
 
-These are install in Ubuntu with the following script (to be run as root):
+These are installed in Ubuntu with the following script (to be run as root):
 
 ```
 apt-get update
@@ -40,7 +40,7 @@ if [ ! -f /usr/local/bin/kubectl ]; then curl -LO "https://dl.k8s.io/release/$(c
 if [ ! -f /usr/local/bin/minikube ]; then curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64; install minikube-linux-amd64 /usr/local/bin/minikube; fi
 ```
 
-### Octonaught Prerequisites
+## Octonaught Prerequisites
 
 Copy the contents of the shared note called `Sample environment vars for EnterprisePatternsReferenceImplmenetation` in
 the password manager to `~/.profile` (for Linux) or `~/.zshrc` (for macOS).
