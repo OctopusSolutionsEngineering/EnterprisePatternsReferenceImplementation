@@ -66,5 +66,12 @@ export TF_VAR_docker_password=your_dockerhub_password
 export TF_VAR_azure_application_id=your_azure_application_id
 export TF_VAR_azure_subscription_id=your_azure_subscription_id
 export TF_VAR_azure_password=your_azure_password
-export TF_VAR_azure_tenant_id=your_azure_tenant_is
+export TF_VAR_azure_tenant_id=your_azure_tenant_id
 ```
+
+## Optional Settings
+
+Set these values if you want the Slack incident channel runbook to work:
+
+* `TF_VAR_slack_bot_token` - set to a [Slack bot token](https://api.slack.com/authentication/basics) (i.e. a token starting with `xoxb-`).
+* `TF_VAR_slack_support_users` - set to the comma separated list of Slack user IDs that will be pulled into the incident channels.
