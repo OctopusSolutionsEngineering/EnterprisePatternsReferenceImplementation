@@ -1,6 +1,8 @@
 import logging
 import os
 import re
+import sys
+
 # Import WebClient from Python SDK (github.com/slackapi/python-slack-sdk)
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
@@ -10,6 +12,10 @@ from slack_sdk.errors import SlackApiError
 
 client = WebClient(token=get_octopusvariable("Slack.Bot.Token"))
 logger = logging.getLogger(__name__)
+
+if not client.startswith('xoxb-'):
+    print('The Slack Bot Token is not valid. It must start with "xoxb-"')
+    sys.exit(1)
 
 name = "incident-" + re.sub('[^A-Za-z0-9]', '-',
                             get_octopusvariable("Octopus.Space.Name").lower() +
