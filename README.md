@@ -13,32 +13,10 @@ Shut the Octopus and Git stack down with:
 ./cleanup.sh
 ```
 
-## Prerequisites
+### Common Prerequisites
 Windows users should run this script in WSL.
 
 You must have [Docker](https://docs.docker.com/get-docker/) installed.
-
-You must define the following environment variables:
-
-* `OCTOPUS_SERVER_BASE64_LICENSE` - set to a base 64 encoded Octopus license in the  environment variable. Octonauts create a test license in [preprod Octofront](https://preprod.octofront.com/).
-* `TF_VAR_docker_username` - set to you DockerHub username. Octonauts see `Docker local password` in password manager.
-* `TF_VAR_docker_password` - set to your DockerHub password. Octonauts see `Docker local password` in password manager.
-* `TF_VAR_azure_application_id` - set to your Azure application ID. Octonauts see `Sales Azure Account` in password manager.
-* `TF_VAR_azure_subscription_id` - set to your Azure subscription ID. Octonauts see `Sales Azure Account` in password manager.
-* `TF_VAR_azure_password` - set to your Azure password. Octonauts see `Sales Azure Account` in password manager.
-* `TF_VAR_azure_tenant_id` - set to your Azure tenant ID. Octonauts see `Sales Azure Account` in password manager.
-
-Typically, this is done by adding the following like to `~/.profile` (for Linux) or `~/.zshrc` (for macOS):
-
-```
-export OCTOPUS_SERVER_BASE64_LICENSE=PExpY2Vuc2UgU2lnbmF0dXJlPSJk...
-export TF_VAR_docker_username=your_dockerhub_username
-export TF_VAR_docker_password=your_dockerhub_password
-export TF_VAR_azure_application_id=your_azure_application_id
-export TF_VAR_azure_subscription_id=your_azure_subscription_id
-export TF_VAR_azure_password=your_azure_password
-export TF_VAR_azure_tenant_id=your_azure_tenant_is
-```
 
 You also require these additional dependencies:
 
@@ -60,4 +38,33 @@ echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://
 apt update && apt-get install -y terraform
 if [ ! -f /usr/local/bin/kubectl ]; then curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"; install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl; fi
 if [ ! -f /usr/local/bin/minikube ]; then curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64; install minikube-linux-amd64 /usr/local/bin/minikube; fi
+```
+
+### Octonaught Prerequisites
+
+Copy the contents of the shared note called `Sample environment vars for EnterprisePatternsReferenceImplmenetation` in
+the password manager to `~/.profile` (for Linux) or `~/.zshrc` (for macOS).
+
+## External User's Prerequisites
+
+You must define the following environment variables:
+
+* `OCTOPUS_SERVER_BASE64_LICENSE` - set to a base 64 encoded Octopus license in the  environment variable.
+* `TF_VAR_docker_username` - set to you DockerHub username.
+* `TF_VAR_docker_password` - set to your DockerHub password.
+* `TF_VAR_azure_application_id` - set to your Azure application ID.
+* `TF_VAR_azure_subscription_id` - set to your Azure subscription ID.
+* `TF_VAR_azure_password` - set to your Azure password.
+* `TF_VAR_azure_tenant_id` - set to your Azure tenant ID.
+
+Typically, this is done by adding the following like to `~/.profile` (for Linux) or `~/.zshrc` (for macOS):
+
+```
+export OCTOPUS_SERVER_BASE64_LICENSE=PExpY2Vuc2UgU2lnbmF0dXJlPSJk...
+export TF_VAR_docker_username=your_dockerhub_username
+export TF_VAR_docker_password=your_dockerhub_password
+export TF_VAR_azure_application_id=your_azure_application_id
+export TF_VAR_azure_subscription_id=your_azure_subscription_id
+export TF_VAR_azure_password=your_azure_password
+export TF_VAR_azure_tenant_id=your_azure_tenant_is
 ```
