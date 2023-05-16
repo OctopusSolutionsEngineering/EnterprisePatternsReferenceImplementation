@@ -239,16 +239,16 @@ done
 
 for repo in hello_world_cac
 do
-  CHECK_JS=$(cat "ocl/check.js" | base64 -w0)
+  CHECK_JS=$(cat "pr_ocl_check/check.js" | base64 -w0)
   if [[ $? -ne 0 ]]; then
     # Assume we are on a mac, which doesn't have -w
-    CHECK_JS=$(cat "ocl/check.js" | base64)
+    CHECK_JS=$(cat "pr_ocl_check/check.js" | base64)
   fi
 
-  PACKAGE_JSON=$(cat "ocl/package.json" | base64 -w0)
+  PACKAGE_JSON=$(cat "pr_ocl_check/package.json" | base64 -w0)
   if [[ $? -ne 0 ]]; then
     # Assume we are on a mac, which doesn't have -w
-    PACKAGE_JSON=$(cat "ocl/package.json" | base64)
+    PACKAGE_JSON=$(cat "pr_ocl_check/package.json" | base64)
   fi
 
   curl \
