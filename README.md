@@ -22,7 +22,7 @@ Shut the Octopus and Git stack down with:
 ## Common Prerequisites
 Windows users should run this script in WSL.
 
-You must have [Docker](https://docs.docker.com/get-docker/) installed.
+You must have [Docker](https://docs.docker.com/get-docker/) and Docker Compose installed.
 
 You also require these additional dependencies:
 

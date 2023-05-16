@@ -6,6 +6,12 @@ then
   exit 1
 fi
 
+if ! which docker-compose
+then
+  echo "You must install Docker Compose: https://docs.docker.com/get-docker/"
+  exit 1
+fi
+
 if ! which curl
 then
   echo "You must install curl"
