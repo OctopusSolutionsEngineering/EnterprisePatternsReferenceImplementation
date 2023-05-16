@@ -26,7 +26,6 @@ You must have [Docker](https://docs.docker.com/get-docker/) installed.
 
 You also require these additional dependencies:
 
-* Octopus CLI
 * curl
 * Terraform
 * Minikube
@@ -38,7 +37,6 @@ These are installed in Ubuntu with the following script (to be run as root):
 ```
 apt-get update
 apt-get install -y openssl jq gnupg curl ca-certificates apt-transport-https wget
-curl -sSfL https://apt.octopus.com/public.key | apt-key add - && sh -c "echo deb https://apt.octopus.com/ stable main > /etc/apt/sources.list.d/octopus.com.list" && apt update && apt install -y octopuscli
 wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor > /usr/share/keyrings/hashicorp-archive-keyring.gpg
 echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" > /etc/apt/sources.list.d/hashicorp.list
 apt update && apt-get install -y terraform

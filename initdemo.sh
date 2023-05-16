@@ -6,12 +6,6 @@ then
   exit 1
 fi
 
-if ! which octo
-then
-  echo "You must install the Octopus client from https://octopus.com/downloads/octopuscli"
-  exit 1
-fi
-
 if ! which curl
 then
   echo "You must install curl"
