@@ -29,6 +29,20 @@ def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose
     return stdout, stderr, retcode
 
 
+def check_repo_exists(url, username, password):
+    try:
+        auth = base64.b64encode((username + ':' + password).encode('ascii'))
+        auth_header = "Basic " + auth.decode('ascii')
+        headers = {
+            "Authorization": auth_header
+        }
+        request = urllib.request.Request(url, headers=headers)
+        urllib.request.urlopen(request)
+        return True
+    except Exception as ex:
+        return False
+
+
 cac_proto = '${cac_proto}'
 cac_host = '${cac_host}'
 cac_org = '${cac_org}'
@@ -44,31 +58,12 @@ new_repo_url_wth_creds = cac_proto + '://' + cac_username + ':' + cac_password +
 template_repo_url = cac_proto + '://' + cac_host + '/' + cac_org + '/' + template_repo + '.git'
 template_repo_url_with_creds = cac_proto + '://' + cac_username + ':' + cac_password + '@' + cac_host + '/' + cac_org + '/' + template_repo + '.git'
 
-# Verify the repos are accessible
-try:
-    auth = base64.b64encode((cac_username + ':' + cac_password).encode('ascii'))
-    auth_header = "Basic " + auth.decode('ascii')
-    headers = {
-        "Authorization": auth_header
-    }
-    request = urllib.request.Request(new_repo_url, headers=headers)
-    urllib.request.urlopen(request)
-except Exception as ex:
-    print(ex)
+if not check_repo_exists(new_repo_url, cac_username, cac_password):
     print('Downstream repo ' + new_repo_url + ' is not available')
     sys.exit(1)
 
-try:
-    auth = base64.b64encode((cac_username + ':' + cac_password).encode('ascii'))
-    auth_header = "Basic " + auth.decode('ascii')
-    headers = {
-        "Authorization": auth_header
-    }
-    request = urllib.request.Request(template_repo_url, headers=headers)
-    urllib.request.urlopen(request)
-except Exception as ex:
-    print(ex)
-    print('Upstream repo ' + template_repo_url + ' is not available')
+if not check_repo_exists(template_repo_url, cac_username, cac_password):
+    print('Upstream repo ' + new_repo_url + ' is not available')
     sys.exit(1)
 
 # Set some default user details
