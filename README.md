@@ -56,10 +56,6 @@ You must define the following environment variables:
 * `OCTOPUS_SERVER_BASE64_LICENSE` - set to a base 64 encoded Octopus license in the  environment variable.
 * `TF_VAR_docker_username` - set to you DockerHub username.
 * `TF_VAR_docker_password` - set to your DockerHub password.
-* `TF_VAR_azure_application_id` - set to your Azure application ID.
-* `TF_VAR_azure_subscription_id` - set to your Azure subscription ID.
-* `TF_VAR_azure_password` - set to your Azure password.
-* `TF_VAR_azure_tenant_id` - set to your Azure tenant ID.
 
 Typically, this is done by adding the following like to `~/.profile` (for Linux) or `~/.zshrc` (for macOS):
 
@@ -67,10 +63,6 @@ Typically, this is done by adding the following like to `~/.profile` (for Linux)
 export OCTOPUS_SERVER_BASE64_LICENSE=PExpY2Vuc2UgU2lnbmF0dXJlPSJk...
 export TF_VAR_docker_username=your_dockerhub_username
 export TF_VAR_docker_password=your_dockerhub_password
-export TF_VAR_azure_application_id=your_azure_application_id
-export TF_VAR_azure_subscription_id=your_azure_subscription_id
-export TF_VAR_azure_password=your_azure_password
-export TF_VAR_azure_tenant_id=your_azure_tenant_id
 ```
 
 ## Optional Settings
@@ -79,3 +71,10 @@ Set these environment variables if you want the Slack incident channel runbook t
 
 * `TF_VAR_slack_bot_token` - set to a [Slack bot token](https://api.slack.com/authentication/basics) (i.e. a token starting with `xoxb-`).
 * `TF_VAR_slack_support_users` - set to the comma separated list of Slack user IDs that will be pulled into the incident channels.
+
+Set these variables to complete the deployment of the sample Azure application:
+
+* `TF_VAR_azure_application_id` - set to your Azure application ID.
+* `TF_VAR_azure_subscription_id` - set to your Azure subscription ID.
+* `TF_VAR_azure_password` - set to your Azure password.
+* `TF_VAR_azure_tenant_id` - set to your Azure tenant ID.

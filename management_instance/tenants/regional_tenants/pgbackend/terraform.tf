@@ -48,7 +48,7 @@ variable "america_azure_application_id" {
   nullable    = false
   sensitive   = false
   description = "The Azure application ID."
-  default     = ""
+  default     = "00000000-0000-0000-0000-000000000000"
 }
 
 variable "america_azure_subscription_id" {
@@ -56,7 +56,7 @@ variable "america_azure_subscription_id" {
   nullable    = false
   sensitive   = false
   description = "The Azure subscription ID."
-  default     = ""
+  default     = "00000000-0000-0000-0000-000000000000"
 }
 
 variable "america_azure_password" {
@@ -64,7 +64,7 @@ variable "america_azure_password" {
   nullable    = false
   sensitive   = true
   description = "The Azure password."
-  default     = ""
+  default     = "dummy"
 }
 
 variable "america_azure_tenant_id" {
@@ -72,7 +72,7 @@ variable "america_azure_tenant_id" {
   nullable    = false
   sensitive   = false
   description = "The Azure tenant ID."
-  default     = ""
+  default     = "00000000-0000-0000-0000-000000000000"
 }
 
 variable "america_k8s_cert" {
@@ -113,7 +113,7 @@ variable "europe_azure_application_id" {
   nullable    = false
   sensitive   = false
   description = "The Azure application ID."
-  default     = ""
+  default     = "00000000-0000-0000-0000-000000000000"
 }
 
 variable "europe_azure_subscription_id" {
@@ -121,7 +121,7 @@ variable "europe_azure_subscription_id" {
   nullable    = false
   sensitive   = false
   description = "The Azure subscription ID."
-  default     = ""
+  default     = "00000000-0000-0000-0000-000000000000"
 }
 
 variable "europe_azure_password" {
@@ -129,7 +129,7 @@ variable "europe_azure_password" {
   nullable    = false
   sensitive   = true
   description = "The Azure password."
-  default     = ""
+  default     = "dummy"
 }
 
 variable "europe_azure_tenant_id" {
@@ -137,7 +137,7 @@ variable "europe_azure_tenant_id" {
   nullable    = false
   sensitive   = false
   description = "The Azure tenant ID."
-  default     = ""
+  default     = "00000000-0000-0000-0000-000000000000"
 }
 
 variable "europe_k8s_cert" {
