@@ -152,7 +152,7 @@ variable "slack_support_users" {
   nullable    = false
   sensitive   = false
   description = "The Slack support users"
-  default     = ""
+  default     = "dummy"
 }
 
 

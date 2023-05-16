@@ -95,7 +95,7 @@ variable "america_docker_username" {
   type        = string
   nullable    = false
   sensitive   = true
-  description = "The DOcker username."
+  description = "The Docker username."
   default     = ""
 }
 
@@ -185,7 +185,7 @@ variable "slack_support_users" {
   nullable    = false
   sensitive   = false
   description = "The Slack support users"
-  default     = ""
+  default     = "dummy"
 }
 
 variable "azure_application_id" {
