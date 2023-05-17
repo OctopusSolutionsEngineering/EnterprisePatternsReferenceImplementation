@@ -112,7 +112,19 @@ echo "##octopus[stdout-verbose]"
 docker pull postgres
 echo "##octopus[stdout-default]"
 DATABASE=$(dig +short terraformdb)
-docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /bin/bash -c "echo \"SELECT 'CREATE DATABASE ${local.backend}' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '${local.backend}')\gexec\" | /usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform'"
+
+# Creating databases can lead to race conditions in Postrges. We use flock to try and reduce the chances, and then
+# a retry loop to ensure the command succeeds successfully.
+max_retry=2
+counter=0
+until docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /bin/bash -c "echo \"SELECT 'CREATE DATABASE ${local.backend}' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '${local.backend}')\gexec\" | /usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform'" 2>&1
+do
+   sleep 5
+   [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
+   echo "Trying again. Try #$counter"
+   ((counter++))
+done
+
 exit 0
 EOT
       }

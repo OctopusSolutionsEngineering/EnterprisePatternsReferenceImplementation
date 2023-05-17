@@ -144,15 +144,54 @@ docker pull postgres
 echo "##octopus[stdout-default]"
 DATABASE=$(dig +short terraformdb)
 
-# Create database if not exists:
-# https://stackoverflow.com/a/18389184
-# Also use flock to prevent concurrent database creation.
+# Creating databases can lead to race conditions in Postrges. We use flock to try and reduce the chances, and then
+# a retry loop to ensure the command succeeds successfully.
+max_retry=2
+counter=0
+until docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /bin/bash -c "echo \"SELECT 'CREATE DATABASE spaces' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'spaces')\gexec\" | /usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform'" 2>&1
+do
+   sleep 5
+   [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
+   echo "Trying again. Try #$counter"
+   ((counter++))
+done
 
-docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /bin/bash -c "echo \"SELECT 'CREATE DATABASE spaces' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'spaces')\gexec\" | /usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform'"
-docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /bin/bash -c "echo \"SELECT 'CREATE DATABASE tenant_variables' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'tenant_variables')\gexec\" | /usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform'"
-docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /bin/bash -c "echo \"SELECT 'CREATE DATABASE var_lib_slack' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'var_lib_slack')\gexec\" | /usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform'"
-docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /bin/bash -c "echo \"SELECT 'CREATE DATABASE scoped_user_role_deployer_variable_editor' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'scoped_user_role_deployer_variable_editor')\gexec\" | /usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform'"
-docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /bin/bash -c "echo \"SELECT 'CREATE DATABASE scoped_user_role_deployer' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'scoped_user_role_deployer')\gexec\" | /usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform'"
+counter=0
+until docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /bin/bash -c "echo \"SELECT 'CREATE DATABASE tenant_variables' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'tenant_variables')\gexec\" | /usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform'" 2>&1
+do
+   sleep 5
+   [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
+   echo "Trying again. Try #$counter"
+   ((counter++))
+done
+
+counter=0
+until docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /bin/bash -c "echo \"SELECT 'CREATE DATABASE var_lib_slack' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'var_lib_slack')\gexec\" | /usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform'" 2>&1
+do
+   sleep 5
+   [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
+   echo "Trying again. Try #$counter"
+   ((counter++))
+done
+
+counter=0
+until docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /bin/bash -c "echo \"SELECT 'CREATE DATABASE scoped_user_role_deployer_variable_editor' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'scoped_user_role_deployer_variable_editor')\gexec\" | /usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform'" 2>&1
+do
+   sleep 5
+   [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
+   echo "Trying again. Try #$counter"
+   ((counter++))
+done
+
+counter=0
+until docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /bin/bash -c "echo \"SELECT 'CREATE DATABASE scoped_user_role_deployer' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'scoped_user_role_deployer')\gexec\" | /usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform'" 2>&1
+do
+   sleep 5
+   [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
+   echo "Trying again. Try #$counter"
+   ((counter++))
+done
+
 exit 0
 EOT
       }
