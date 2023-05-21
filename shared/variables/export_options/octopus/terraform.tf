@@ -3,7 +3,7 @@ resource "octopusdeploy_library_variable_set" "octopus_library_variable_set" {
   description = "Variables related to serializing and deploying upstream projects"
 }
 
-resource "octopusdeploy_variable" "octopus_api_key" {
+resource "octopusdeploy_variable" "project_name" {
   name         = "Exported.Project.Name"
   type         = "String"
   description  = "The name of the new project. This is only used by the \"Deploy Project\" and \"Fork and Deploy Project\" runbooks."

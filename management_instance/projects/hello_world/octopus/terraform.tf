@@ -207,11 +207,11 @@ resource "octopusdeploy_deployment_process" "deployment_process_project_hello_wo
     name                = "Hello world"
     package_requirement = "LetOctopusDecide"
     start_trigger       = "StartAfterPrevious"
-    description         = "A simple script step printing the value of some variables."
 
     action {
       action_type                        = "Octopus.Script"
       name                               = "Hello world"
+      notes                              = "A simple script step printing the value of some variables."
       condition                          = "Success"
       run_on_server                      = true
       is_disabled                        = false
@@ -239,11 +239,11 @@ resource "octopusdeploy_deployment_process" "deployment_process_project_hello_wo
     name                = "Secret Scoped Variable Test"
     package_requirement = "LetOctopusDecide"
     start_trigger       = "StartAfterPrevious"
-    description         = "This step ensures that secret variables were correctly defined."
 
     action {
       action_type                        = "Octopus.Script"
       name                               = "Secret Scoped Variable Test"
+      notes                              = "This step ensures that secret variables were correctly defined."
       condition                          = "Success"
       run_on_server                      = true
       is_disabled                        = false
