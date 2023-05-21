@@ -169,6 +169,7 @@ resource "octopusdeploy_variable" "db_password_production" {
   }
 }
 
+# This is the Octopus project
 resource "octopusdeploy_project" "project_hello_world" {
   name                                 = "Hello World"
   description                          = "This project is initially created by Terraform and is then able to be updated in the Octopus UI, serialized to Terraform again with octoterra, and deployed to managed spaces."
@@ -183,6 +184,9 @@ resource "octopusdeploy_project" "project_hello_world" {
   included_library_variable_sets       = [
     data.octopusdeploy_library_variable_sets.variable.library_variable_sets[0].id,
     data.octopusdeploy_library_variable_sets.octopus_server.library_variable_sets[0].id,
+    # Note here that we only include a reference to the "Export Options" library variable set if it was found. This allows us
+    # to deploy this project to a space, like the "Development" space, that does not allow the name of the downstream project
+    # to be customized.
     length(data.octopusdeploy_library_variable_sets.export_options.library_variable_sets) != 0 ? data.octopusdeploy_library_variable_sets.export_options.library_variable_sets[0].id : "",
   ]
   tenanted_deployment_participation = "Untenanted"
@@ -194,6 +198,7 @@ resource "octopusdeploy_project" "project_hello_world" {
   }
 }
 
+# This is the deployment process.
 resource "octopusdeploy_deployment_process" "deployment_process_project_hello_world" {
   project_id = octopusdeploy_project.project_hello_world.id
 
@@ -202,6 +207,7 @@ resource "octopusdeploy_deployment_process" "deployment_process_project_hello_wo
     name                = "Hello world"
     package_requirement = "LetOctopusDecide"
     start_trigger       = "StartAfterPrevious"
+    description         = "A simple script step printing the value of some variables."
 
     action {
       action_type                        = "Octopus.Script"
@@ -233,6 +239,7 @@ resource "octopusdeploy_deployment_process" "deployment_process_project_hello_wo
     name                = "Secret Scoped Variable Test"
     package_requirement = "LetOctopusDecide"
     start_trigger       = "StartAfterPrevious"
+    description         = "This step ensures that secret variables were correctly defined."
 
     action {
       action_type                        = "Octopus.Script"
