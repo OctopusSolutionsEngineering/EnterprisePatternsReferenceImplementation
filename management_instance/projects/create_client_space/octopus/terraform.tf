@@ -428,7 +428,7 @@ EOF
       worker_pool_id                     = ""
       properties                         = {
         "Octopus.Action.Script.ScriptSource"             = "Inline"
-        "Octopus.Action.Terraform.Template"              = file("../embedded_terraform/tenant_space_id_variable.tf")
+        "Octopus.Action.Terraform.Template"              = "${file("../embedded_terraform/provider.tf")}\n${file("../embedded_terraform/tenant_space_id_variable.tf")}"
         "Octopus.Action.Terraform.AllowPluginDownloads"  = "True"
         "Octopus.Action.Terraform.GoogleCloudAccount"    = "False"
         "Octopus.Action.GoogleCloud.UseVMServiceAccount" = "True"
