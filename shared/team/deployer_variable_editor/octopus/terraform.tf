@@ -1,9 +1,3 @@
-terraform {
-  required_providers {
-    octopusdeploy = { source = "OctopusDeployLabs/octopusdeploy", version = "0.12.1" }
-  }
-}
-
 resource "octopusdeploy_user_role" "user_role" {
   can_be_deleted             = true
   description                = "Grants the ability to edit project variables."

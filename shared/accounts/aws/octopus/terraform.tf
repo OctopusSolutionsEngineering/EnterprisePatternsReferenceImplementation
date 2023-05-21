@@ -1,9 +1,3 @@
-terraform {
-  required_providers {
-    octopusdeploy = { source = "OctopusDeployLabs/octopusdeploy", version = "0.12.1" }
-  }
-}
-
 variable "aws_access_key" {
   type        = string
   nullable    = false

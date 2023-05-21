@@ -1,9 +1,3 @@
-terraform {
-  required_providers {
-    octopusdeploy = { source = "OctopusDeployLabs/octopusdeploy", version = "0.12.1" }
-  }
-}
-
 data "octopusdeploy_machine_policies" "default_machine_policy" {
   ids          = null
   partial_name = "Default Machine Policy"

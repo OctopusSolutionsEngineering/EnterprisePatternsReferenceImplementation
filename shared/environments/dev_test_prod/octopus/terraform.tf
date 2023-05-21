@@ -1,9 +1,3 @@
-terraform {
-  required_providers {
-    octopusdeploy = { source = "OctopusDeployLabs/octopusdeploy", version = "0.12.1" }
-  }
-}
-
 resource "octopusdeploy_environment" "environment_dev" {
   name                         = "Development"
   description                  = ""

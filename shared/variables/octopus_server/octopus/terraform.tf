@@ -1,9 +1,3 @@
-terraform {
-  required_providers {
-    octopusdeploy = { source = "OctopusDeployLabs/octopusdeploy", version = "0.12.1" }
-  }
-}
-
 resource "octopusdeploy_library_variable_set" "octopus_library_variable_set" {
   name        = "Octopus Server"
   description = "Exposes templates that tenants must populate to indicate how to reach the server and space they are hosted on."
