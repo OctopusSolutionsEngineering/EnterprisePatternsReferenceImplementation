@@ -56,40 +56,60 @@ stdout, _, _ = execute(['docker', 'run',
                         '--add-host=octopus:' + octopus.strip(),
                         '-v', os.getcwd() + "/export:/export",
                         'octopussamples/octoterra',
-                        '-url', get_octopusvariable('ThisInstance.Server.Url'),  # the url of the instance
-                        '-apiKey', get_octopusvariable('ThisInstance.Api.Key'),
+                        # the url of the instance
+                        '-url', get_octopusvariable('ThisInstance.Server.Url'),
                         # the api key used to access the instance
-                        '-terraformBackend', 'pg',  # add a postgres backend to the generated modules
-                        '-console',  # dump the generated HCL to the console
-                        '-space', get_octopusvariable('Octopus.Space.Id'),  # dump the project from the current space
-                        '-projectName', get_octopusvariable('Octopus.Project.Name'),
+                        '-apiKey', get_octopusvariable('ThisInstance.Api.Key'),
+                        # add a postgres backend to the generated modules
+                        '-terraformBackend', 'pg',
+                        # dump the generated HCL to the console
+                        '-console',
+                        # dump the project from the current space
+                        '-space', get_octopusvariable('Octopus.Space.Id'),
                         # the name of the project to serialize
+                        '-projectName', get_octopusvariable('Octopus.Project.Name'),
+                        # use data sources to lookup external dependencies (like environments, accounts etc) rather
+                        # than serialize those external resources
                         '-lookupProjectDependencies',
-                        # use data sources to lookup external dependencies (like environments, accounts etc) rather than serialize those external resources
+                        # for any secret variables, add a default value set to the octostache value of the variable
+                        # e.g. a secret variable called "database" has a default value of "#{database}"
                         '-defaultSecretVariableValues',
-                        # for any secret variables, add a default value set to the octostache value of the variable e.g. a secret variable called "database" has a default value of "#{database}"
-                        '-detachProjectTemplates',
                         # detach any step templates, allowing the exported project to be used in a new space
-                        '-ignoreProjectGroupChanges',  # allow the downstream project to move between project groups
-                        '-ignoreProjectNameChanges',  # allow the downstream project to change names
+                        '-detachProjectTemplates',
+                        # allow the downstream project to move between project groups
+                        '-ignoreProjectGroupChanges',
+                        # allow the downstream project to change names
+                        '-ignoreProjectNameChanges',
+                        # CaC enabled projects will not export the deployment process, non-secret variables, and other
+                        # CaC managed project settings
                         '-ignoreCacManagedValues=false',
-                        # CaC enabled projects will not export the deployment process, non-secret variables, and other CaC managed project settings
+                        # This value is always true. Either this is an unmanaged project, in which case we are never
+                        # reapplying it; or it is a variable configured project, in which case we need to ignore
+                        # variable changes, or it is a shared CaC project, in which case we don't use Terraform to
+                        # manage variables.
                         '-ignoreProjectVariableChanges',
-                        # This value is always true. Either this is an unmanaged project, in which case we are never reapplying it; or is is a variable configured project, in which case we need to ignore variable changes, or it is a shared CaC project, in which case we don't use Terraform to manage variables.
+                        # To have secret variables available when applying a downstream project, they must be scoped
+                        # to the Sync environment. But we do not need this scoping in the downstream project, so the
+                        # Sync environment is removed from any variable scopes when serializing it to Terraform.
                         '-excludeVariableEnvironmentScopes', 'Sync',
-                        # To have secret variables available when applying a downstream project, they must be scoped to the Sync environment. But we do not need this scoping in the downstream project, so the Sync environment is removed from any variable scopes when serializing it to Terraform.
-                        '-excludeProjectVariableRegex', 'Private\\..*',
                         # Exclude any variables starting with "Private."
-                        '-excludeRunbookRegex', '__ .*',  # This is a management runbook that we do not wish to export
+                        '-excludeProjectVariableRegex', 'Private\\..*',
+                        # This is a management runbook that we do not wish to export
+                        '-excludeRunbookRegex', '__ .*',
+                        # This is library variable set used by excluded runbooks, and so we don't want to link to it in
+                        # the export
                         '-excludeLibraryVariableSet', 'Octopus Server',
-                        # This is library variable set used by excluded runbooks, and so we don't want to link to it in the export
+                        # This is library variable set used by excluded runbooks, and so we don't want to link to it in
+                        # the export
                         '-excludeLibraryVariableSet', 'This Instance',
-                        # This is library variable set used by excluded runbooks, and so we don't want to link to it in the export
+                        # This is library variable set used by excluded runbooks, and so we don't want to link to it in
+                        # the export
                         '-excludeLibraryVariableSet', 'Azure',
-                        # This is library variable set used by excluded runbooks, and so we don't want to link to it in the export
+                        # This is library variable set used by excluded runbooks, and so we don't want to link to it in
+                        # the export
                         '-excludeLibraryVariableSet', 'Export Options',
-                        # This is library variable set used by excluded runbooks, and so we don't want to link to it in the export
-                        '-dest', '/export'])  # The directory where the exported files will be saved
+                        # The directory where the exported files will be saved
+                        '-dest', '/export'])
 
 print(stdout)
 
