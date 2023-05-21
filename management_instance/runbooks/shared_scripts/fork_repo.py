@@ -5,12 +5,31 @@ import os
 import urllib.request
 import base64
 
+# If this script is not being run as part of an Octopus step, return variables from environment variables.
 if "get_octopusvariable" not in globals():
-    print("Script must be run as an Octopus step")
-    sys.exit(1)
+    def get_octopusvariable(variable):
+        if variable == 'ThisInstance.Server.Url':
+            return os.environ['OCTOPUS_CLI_SERVER']
+        elif variable == 'ThisInstance.Api.Key':
+            return os.environ['OCTOPUS_CLI_API_KEY']
+        elif variable == 'Octopus.Space.Id':
+            return os.environ['OCTOPUS_SPACE_ID']
+        elif variable == 'Octopus.Project.Name':
+            return os.environ['OCTOPUS_PROJECT_NAME']
+
+        return ""
+
+# If this script is not being run as part of an Octopus step, print directly to std out.
+if "printverbose" not in globals():
+    def printverbose(msg):
+        print(msg)
 
 
 def execute(args, cwd=None, print_args=None, print_output=printverbose):
+    """
+        The execute method provides the ability to execute external processes while capturing and returning the
+        output to std err and std out and exit code.
+    """
     process = subprocess.Popen(args,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE,
@@ -27,7 +46,6 @@ def execute(args, cwd=None, print_args=None, print_output=printverbose):
         print_output(stderr)
 
     return stdout, stderr, retcode
-
 
 cac_proto = '${cac_proto}'
 cac_host = '${cac_host}'

@@ -4,9 +4,18 @@ import os
 import re
 import json
 
+# If this script is not being run as part of an Octopus step, return variables from environment variables.
 if "get_octopusvariable" not in globals():
-    print("Script must be run as an Octopus step")
-    sys.exit(1)
+    def get_octopusvariable(variable):
+        if variable == 'Octopus.Project.Name':
+            return os.environ['OCTOPUS_PROJECT_NAME']
+
+        return ""
+
+# If this script is not being run as part of an Octopus step, print directly to std out.
+if "printverbose" not in globals():
+    def printverbose(msg):
+        print(msg)
 
 
 def execute(args, cwd=None, print_args=None, print_output=printverbose):

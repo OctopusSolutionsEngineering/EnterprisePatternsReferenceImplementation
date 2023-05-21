@@ -4,11 +4,21 @@
 
 import json
 import urllib.request
+import os
+import sys
 
+# If this script is not being run as part of an Octopus step, return variables from environment variables.
 if "get_octopusvariable" not in globals():
-    print("Script must be run as an Octopus step")
-    sys.exit(1)
+    def get_octopusvariable(variable):
+        if variable == 'Octopus.Deployment.Tenant.Name':
+            return os.environ['OCTOPUS_TENANT_NAME']
 
+        return ""
+
+# If this script is not being run as part of an Octopus step, just print any set variable to std out.
+if "set_octopusvariable" not in globals():
+    def set_octopusvariable(variable):
+        print(variable)
 
 url = 'http://octopus:8080/api/Spaces'
 headers = {
