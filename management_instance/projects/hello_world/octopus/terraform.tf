@@ -1,3 +1,4 @@
+# Look up the "Simple" lifecycle that is expected to exist in the management space.
 data "octopusdeploy_lifecycles" "lifecycle_simple" {
   ids          = null
   partial_name = "Simple"
@@ -5,6 +6,7 @@ data "octopusdeploy_lifecycles" "lifecycle_simple" {
   take         = 1
 }
 
+# Look up the "Docker" feed that is expected to exist in the management space.
 data "octopusdeploy_feeds" "feed_docker" {
   feed_type    = "Docker"
   ids          = null
@@ -13,6 +15,7 @@ data "octopusdeploy_feeds" "feed_docker" {
   take         = 1
 }
 
+# Look up the built-in feed automatically created with every space.
 data "octopusdeploy_feeds" "feed_octopus_server__built_in_" {
   feed_type    = "BuiltIn"
   ids          = null
@@ -21,18 +24,21 @@ data "octopusdeploy_feeds" "feed_octopus_server__built_in_" {
   take         = 1
 }
 
+# Look up the "The Instance" library variable set that is expected to exist in the management space.
 data "octopusdeploy_library_variable_sets" "variable" {
   partial_name = "This Instance"
   skip         = 0
   take         = 1
 }
 
+# Look up the "Octopus Server" library variable set that is expected to exist in the management space.
 data "octopusdeploy_library_variable_sets" "octopus_server" {
   partial_name = "Octopus Server"
   skip         = 0
   take         = 1
 }
 
+# Look up the "Default Worker Pool" worker pool that is exists by default in every new space.
 data "octopusdeploy_worker_pools" "workerpool_default" {
   name = "Default Worker Pool"
   ids  = null
@@ -40,12 +46,19 @@ data "octopusdeploy_worker_pools" "workerpool_default" {
   take = 1
 }
 
+# Look up the "Export Options" library variable set. This variable set is excluded from the Terraform serialization,
+# but is used in some of the management runbooks when deploying the template projects. The "Export Options"
+# library variable set allows us to keep variables out of the downstream projects because it is trivial to exclude a
+# library variable set from serialization. In contrast, project variables for CaC enabled projects are very difficult
+# to exclude individual variables as they are automatically written to Git and any forked Git repo automatically
+# inherits them.
 data "octopusdeploy_library_variable_sets" "export_options" {
   partial_name = "Export Options"
   skip         = 0
   take         = 1
 }
 
+# Look up the "Development" environment that is expected to exist in the management space.
 data "octopusdeploy_environments" "development" {
   ids          = []
   partial_name = "Development"
@@ -53,6 +66,7 @@ data "octopusdeploy_environments" "development" {
   take         = 1
 }
 
+# Look up the "Test" environment that is expected to exist in the management space.
 data "octopusdeploy_environments" "test" {
   ids          = []
   partial_name = "Test"
@@ -60,6 +74,7 @@ data "octopusdeploy_environments" "test" {
   take         = 1
 }
 
+# Look up the "Production" environment that is expected to exist in the management space.
 data "octopusdeploy_environments" "production" {
   ids          = []
   partial_name = "Production"
@@ -67,7 +82,7 @@ data "octopusdeploy_environments" "production" {
   take         = 1
 }
 
-
+# Look up the "Sync" environment that is expected to exist in the management space.
 data "octopusdeploy_environments" "sync" {
   ids          = []
   partial_name = "Sync"
@@ -75,6 +90,15 @@ data "octopusdeploy_environments" "sync" {
   take         = 1
 }
 
+# Look up the "Hello World" project group that is expected to exist in the management space.
+data "octopusdeploy_project_groups" "project_group_hello_world" {
+  ids          = null
+  partial_name = "Hello World"
+  skip         = 0
+  take         = 1
+}
+
+# A variable used to change the output message.
 resource "octopusdeploy_variable" "world" {
   owner_id = octopusdeploy_project.project_hello_world.id
   type     = "String"
@@ -82,6 +106,11 @@ resource "octopusdeploy_variable" "world" {
   value    = "World"
 }
 
+# This variable uses the convention of prefixing managed space specific variables with "Private.".
+# We can then exclude these commonly named variables from the Terraform serialization process, which
+# means the managed space is responsible for creating and managing this variable. This is a common pattern
+# for dealing with managed space specific variables like database connection strings or other environmental
+# values.
 resource "octopusdeploy_variable" "from" {
   owner_id = octopusdeploy_project.project_hello_world.id
   type     = "String"
@@ -89,7 +118,10 @@ resource "octopusdeploy_variable" "from" {
   value    = "the Development space!"
 }
 
-# Secret variables can not be scoped if they are to be deployed to downstream environments
+# Secret variables must be unambiguous (i.e. only have a single value) and made available to the "Sync"
+# environment. This allows the project deployment process, run in the context of the Sync environment, to
+# have access to the secret variables.
+# The value of these secret variables is accessed via the syntax #{Database[#{Octopus.Environment.Name}].Password}
 resource "octopusdeploy_variable" "db_password_dev" {
   owner_id        = octopusdeploy_project.project_hello_world.id
   type            = "Sensitive"
@@ -105,6 +137,7 @@ resource "octopusdeploy_variable" "db_password_dev" {
   }
 }
 
+# Another unambiguous secret variable scoped to the "Sync" environment.
 resource "octopusdeploy_variable" "db_password_test" {
   owner_id        = octopusdeploy_project.project_hello_world.id
   type            = "Sensitive"
@@ -120,6 +153,7 @@ resource "octopusdeploy_variable" "db_password_test" {
   }
 }
 
+# Another unambiguous secret variable scoped to the "Sync" environment.
 resource "octopusdeploy_variable" "db_password_production" {
   owner_id        = octopusdeploy_project.project_hello_world.id
   type            = "Sensitive"
@@ -132,6 +166,31 @@ resource "octopusdeploy_variable" "db_password_production" {
       data.octopusdeploy_environments.production.environments[0].id,
       data.octopusdeploy_environments.sync.environments[0].id,
     ]
+  }
+}
+
+resource "octopusdeploy_project" "project_hello_world" {
+  name                                 = "Hello World"
+  description                          = "This project is initially created by Terraform and is then able to be updated in the Octopus UI, serialized to Terraform again with octoterra, and deployed to managed spaces."
+  auto_create_release                  = false
+  default_guided_failure_mode          = "EnvironmentDefault"
+  default_to_skip_if_already_installed = false
+  discrete_channel_release             = false
+  is_disabled                          = false
+  is_version_controlled                = false
+  lifecycle_id                         = data.octopusdeploy_lifecycles.lifecycle_simple.lifecycles[0].id
+  project_group_id                     = data.octopusdeploy_project_groups.project_group_hello_world.project_groups[0].id
+  included_library_variable_sets       = [
+    data.octopusdeploy_library_variable_sets.variable.library_variable_sets[0].id,
+    data.octopusdeploy_library_variable_sets.octopus_server.library_variable_sets[0].id,
+    length(data.octopusdeploy_library_variable_sets.export_options.library_variable_sets) != 0 ? data.octopusdeploy_library_variable_sets.export_options.library_variable_sets[0].id : "",
+  ]
+  tenanted_deployment_participation = "Untenanted"
+
+  connectivity_policy {
+    allow_deployments_to_no_targets = true
+    exclude_unhealthy_targets       = false
+    skip_machine_behavior           = "None"
   }
 }
 
@@ -207,37 +266,5 @@ EOT
 
     properties   = {}
     target_roles = []
-  }
-}
-
-data "octopusdeploy_project_groups" "project_group_hello_world" {
-  ids          = null
-  partial_name = "Hello World"
-  skip         = 0
-  take         = 1
-}
-
-resource "octopusdeploy_project" "project_hello_world" {
-  name                                 = "Hello World"
-  description                          = "This project is initially created by Terraform and is then able to be updated in the Octopus UI, serialized to Terraform again with octoterra, and deployed to managed spaces."
-  auto_create_release                  = false
-  default_guided_failure_mode          = "EnvironmentDefault"
-  default_to_skip_if_already_installed = false
-  discrete_channel_release             = false
-  is_disabled                          = false
-  is_version_controlled                = false
-  lifecycle_id                         = data.octopusdeploy_lifecycles.lifecycle_simple.lifecycles[0].id
-  project_group_id                     = data.octopusdeploy_project_groups.project_group_hello_world.project_groups[0].id
-  included_library_variable_sets       = [
-    data.octopusdeploy_library_variable_sets.variable.library_variable_sets[0].id,
-    data.octopusdeploy_library_variable_sets.octopus_server.library_variable_sets[0].id,
-    length(data.octopusdeploy_library_variable_sets.export_options.library_variable_sets) != 0 ? data.octopusdeploy_library_variable_sets.export_options.library_variable_sets[0].id : "",
-  ]
-  tenanted_deployment_participation = "Untenanted"
-
-  connectivity_policy {
-    allow_deployments_to_no_targets = true
-    exclude_unhealthy_targets       = false
-    skip_machine_behavior           = "None"
   }
 }
