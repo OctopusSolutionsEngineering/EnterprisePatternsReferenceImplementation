@@ -1,9 +1,3 @@
-terraform {
-  required_providers {
-    octopusdeploy = { source = "OctopusDeployLabs/octopusdeploy", version = "0.12.1" }
-  }
-}
-
 data "octopusdeploy_lifecycles" "lifecycle_simple" {
   ids          = null
   partial_name = "Simple"
