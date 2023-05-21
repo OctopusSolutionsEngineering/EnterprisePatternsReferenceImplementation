@@ -2,6 +2,7 @@ import subprocess
 import os
 import re
 from datetime import datetime
+from urllib.parse import urlparse
 
 # If this script is not being run as part of an Octopus step, return variables from environment variables.
 if "get_octopusvariable" not in globals():
@@ -43,11 +44,11 @@ def execute(args, cwd=None, print_args=None, print_output=printverbose):
 
 
 print("Pulling the octoterra image")
-print("##octopus[stdout-verbose]")
 execute(['docker', 'pull', 'octopussamples/octoterra'])
 
 # Find out the IP address of the Octopus container
-octopus, _, _ = execute(['dig', '+short', 'octopus'])
+parsed_url = urlparse(get_octopusvariable('ThisInstance.Server.Url'))
+octopus, _, _ = execute(['dig', '+short', parsed_url.netloc])
 
 print("Octopus container IP: " + octopus.strip())
 
