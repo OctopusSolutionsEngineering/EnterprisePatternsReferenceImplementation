@@ -117,6 +117,7 @@ if merge_result == 0:
     _, _, diff_result = execute(['git', 'diff', '--quiet', '--exit-code', '@{upstream}'], cwd=new_repo)
     if diff_result != 0:
         execute(['git', 'push', 'origin'], cwd=new_repo)
+        print('Changed merged successfully')
     else:
         print('No changes found.')
 else:
