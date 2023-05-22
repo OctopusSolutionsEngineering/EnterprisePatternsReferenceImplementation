@@ -47,6 +47,7 @@ def execute(args, cwd=None, print_args=None, print_output=printverbose):
 
     return stdout, stderr, retcode
 
+# The values for these variables are injected by Terraform as it reads the file with the templatefile() function
 cac_proto = '${cac_proto}'
 cac_host = '${cac_host}'
 cac_org = '${cac_org}'
