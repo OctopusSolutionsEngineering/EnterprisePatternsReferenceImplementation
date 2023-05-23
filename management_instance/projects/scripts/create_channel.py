@@ -9,13 +9,15 @@ from slack_sdk.errors import SlackApiError
 
 # WebClient instantiates a client that can call API methods
 # When using Bolt, you can use either `app.client` or the `client` passed to listeners.
+token = get_octopusvariable("Slack.Bot.Token")
 
-client = WebClient(token=get_octopusvariable("Slack.Bot.Token"))
-logger = logging.getLogger(__name__)
-
-if not client.startswith('xoxb-'):
+if not token.startswith('xoxb-'):
     print('The Slack Bot Token is not valid. It must start with "xoxb-"')
     sys.exit(1)
+
+
+client = WebClient(token=token)
+logger = logging.getLogger(__name__)
 
 name = "incident-" + re.sub('[^A-Za-z0-9]', '-',
                             get_octopusvariable("Octopus.Space.Name").lower() +
