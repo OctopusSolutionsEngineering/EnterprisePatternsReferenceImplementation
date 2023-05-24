@@ -26,16 +26,16 @@ function checkPr(ocl) {
             // These come from the @octopusdeploy/ocl dependency
             const lexer = new Lexer(data)
             const parser = new Parser(lexer)
-            const ast = parser.getAST()
+            const steps = parser.getAST()
 
             // Test that we have any steps at all
-            if (ast.length === 0) {
+            if (steps.length === 0) {
                 console.log("Deployment process can not be empty")
                 resolve(false)
                 return
             }
 
-            const firstStepName = getUnquotedPropertyValue(getProperty(ast[0], "name"))
+            const firstStepName = getUnquotedPropertyValue(getProperty(steps[0], "name"))
 
             if (!firstStepName) {
                 console.log("Failed to find the name of the first step")
@@ -49,7 +49,7 @@ function checkPr(ocl) {
                 return
             }
 
-            const action = getBlock(ast[0], "action")
+            const action = getBlock(steps[0], "action")
             const actionType = getUnquotedPropertyValue(getProperty(action, "action_type"))
 
             if (actionType !== ManualInterventionType) {
