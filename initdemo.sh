@@ -26,8 +26,7 @@ fi
 
 if ! which minikube
 then
-  echo "You must install minikube"
-  exit 1
+  echo "You must install minikube in order to automatically create the Kubernetes targets. The script will not attempt to create these targets."
 fi
 
 if ! which openssl
@@ -67,35 +66,37 @@ docker-compose up -d
 popd
 
 # Create a new cluster with a custom configuration that binds to all network addresses
-if [[ ! -f /tmp/octoconfig.yml ]]
-then
-  minikube delete
-fi
+if which minikube
+  if [[ ! -f /tmp/octoconfig.yml ]]
+  then
+    minikube delete
+  fi
 
-export KUBECONFIG=/tmp/octoconfig.yml
+  export KUBECONFIG=/tmp/octoconfig.yml
 
-minikube start --container-runtime=containerd --driver=docker
+  minikube start --container-runtime=containerd --driver=docker
 
-docker network connect minikube octopus
+  docker network connect minikube octopus
 
-# This returns the IP address of the minikube network
-DOCKER_HOST_IP=$(minikube ip)
+  # This returns the IP address of the minikube network
+  DOCKER_HOST_IP=$(minikube ip)
 
-# This is the internal port exposed by minikube
-CLUSTER_PORT="8443"
+  # This is the internal port exposed by minikube
+  CLUSTER_PORT="8443"
 
-# Extract the client certificate data
-CLIENT_CERTIFICATE=$(docker run --rm -v /tmp:/workdir mikefarah/yq '.users[0].user.client-certificate' octoconfig.yml)
-CLIENT_KEY=$(docker run --rm -v /tmp:/workdir mikefarah/yq '.users[0].user.client-key' octoconfig.yml)
+  # Extract the client certificate data
+  CLIENT_CERTIFICATE=$(docker run --rm -v /tmp:/workdir mikefarah/yq '.users[0].user.client-certificate' octoconfig.yml)
+  CLIENT_KEY=$(docker run --rm -v /tmp:/workdir mikefarah/yq '.users[0].user.client-key' octoconfig.yml)
 
-# Create a self contained PFX certificate
-openssl pkcs12 -export -name 'test.com' -password 'pass:Password01!' -out /tmp/kind.pfx -inkey "${CLIENT_KEY}" -in "${CLIENT_CERTIFICATE}"
+  # Create a self contained PFX certificate
+  openssl pkcs12 -export -name 'test.com' -password 'pass:Password01!' -out /tmp/kind.pfx -inkey "${CLIENT_KEY}" -in "${CLIENT_CERTIFICATE}"
 
-# Base64 encode the PFX file
-COMBINED_CERT=$(cat /tmp/kind.pfx | base64 -w0)
-if [[ $? -ne 0 ]]; then
-  # Assume we are on a mac, which doesn't have -w
-  COMBINED_CERT=$(cat /tmp/kind.pfx | base64)
+  # Base64 encode the PFX file
+  COMBINED_CERT=$(cat /tmp/kind.pfx | base64 -w0)
+  if [[ $? -ne 0 ]]; then
+    # Assume we are on a mac, which doesn't have -w
+    COMBINED_CERT=$(cat /tmp/kind.pfx | base64)
+  fi
 fi
 
 # Set the initial admin Gitea user
