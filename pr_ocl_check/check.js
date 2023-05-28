@@ -7,6 +7,11 @@ const path =require("path")
 const FirstStepName = "Manual Intervention"
 const ManualInterventionType = "Octopus.Manual"
 
+/**
+ * This function performs the validation of the Octopus CaC OCL file
+ * @param ocl The OCL file to parse
+ * @returns {Promise<unknown>} A promise with true if the validation succeeded, and false otherwise
+ */
 function checkPr(ocl) {
     return new Promise((resolve, reject) => {
         // Read the deployment process OCL file
@@ -15,37 +20,42 @@ function checkPr(ocl) {
             if (err) {
                 console.error(err)
                 resolve(false)
+                return
             }
 
             // These come from the @octopusdeploy/ocl dependency
             const lexer = new Lexer(data)
             const parser = new Parser(lexer)
-            const ast = parser.getAST()
+            const steps = parser.getAST()
 
             // Test that we have any steps at all
-            if (ast.length === 0) {
+            if (steps.length === 0) {
                 console.log("Deployment process can not be empty")
                 resolve(false)
+                return
             }
 
-            const firstStepName = getUnquotedPropertyValue(getProperty(ast[0], "name"))
+            const firstStepName = getUnquotedPropertyValue(getProperty(steps[0], "name"))
 
             if (!firstStepName) {
                 console.log("Failed to find the name of the first step")
                 resolve(false)
+                return
             }
 
             if (firstStepName !== FirstStepName) {
                 console.log("First step must be called " + FirstStepName + " (was " + firstStepName + ")")
                 resolve(false)
+                return
             }
 
-            const action = getBlock(ast[0], "action")
+            const action = getBlock(steps[0], "action")
             const actionType = getUnquotedPropertyValue(getProperty(action, "action_type"))
 
             if (actionType !== ManualInterventionType) {
                 console.log("First step must be a manual intervention step (was " + actionType + ")")
                 resolve(false)
+                return
             }
 
             console.log("All tests passed!")
@@ -54,6 +64,7 @@ function checkPr(ocl) {
     })
 }
 
+// This is the entry point when the file is run by Node.js
 if (require.main === module) {
     /*
         Ensure the path to the directory holding the deployment_process.ocl file was passed as an argument (with the
