@@ -67,6 +67,7 @@ popd
 
 # Create a new cluster with a custom configuration that binds to all network addresses
 if which minikube
+then
   if [[ ! -f /tmp/octoconfig.yml ]]
   then
     minikube delete
