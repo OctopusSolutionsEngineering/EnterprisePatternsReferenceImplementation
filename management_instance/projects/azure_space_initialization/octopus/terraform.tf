@@ -83,7 +83,7 @@ resource "octopusdeploy_project" "project_hello_world" {
     data.octopusdeploy_library_variable_sets.azure.library_variable_sets[0].id,
     data.octopusdeploy_library_variable_sets.this_instance.library_variable_sets[0].id,
   ]
-  tenanted_deployment_participation    = "Untenanted"
+  tenanted_deployment_participation = "Untenanted"
 
   connectivity_policy {
     allow_deployments_to_no_targets = true
@@ -184,6 +184,7 @@ EOT
       is_required                        = false
       worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
       properties                         = {
+        "Octopus.Action.AutoRetry.MaximumCount"       = "3"
         "Octopus.Action.Terraform.Template"           = file("../terrform_scripts/azure.tf")
         "Octopus.Action.Terraform.TemplateParameters" = jsonencode({
           "azure_application_id"  = "#{Tenant.Azure.ApplicationId}"
@@ -238,6 +239,7 @@ EOT
       is_required                        = false
       worker_pool_id                     = ""
       properties                         = {
+        "Octopus.Action.AutoRetry.MaximumCount"          = "3"
         "Octopus.Action.Script.ScriptSource"             = "Inline"
         "Octopus.Action.Terraform.Template"              = <<EOF
 terraform {
