@@ -6,7 +6,8 @@ the Octopus stack to be created and destroyed with ease.
 
 ## Support Levels
 
-The process presented in this blog post is part of a pilot programme to support platform engineering teams. It incorporates tools with varying levels of official support. 
+The process implemented by the scripts in this repo are part of a pilot programme to support platform engineering teams. It incorporates tools with varying levels of official support.
+
 The Octopus support teams will make reasonable endeavours to support teams that wish to use this process. However, existing support Service Level Agreements (SLAs) do not apply to the tools used by this repo, 
 and should not be relied on for production deployments.
 
