@@ -222,6 +222,7 @@ EOT
       is_required                        = false
       worker_pool_id                     = ""
       properties                         = {
+        "Octopus.Action.AutoRetry.MaximumCount"          = "3"
         "Octopus.Action.Script.ScriptSource"             = "Inline"
         "Octopus.Action.Terraform.Template"              = <<EOF
 terraform {
@@ -293,6 +294,7 @@ EOF
       is_required                        = false
       worker_pool_id                     = ""
       properties                         = {
+        "Octopus.Action.AutoRetry.MaximumCount"          = "3"
         "Octopus.Action.Script.ScriptSource"             = "Inline"
         "Octopus.Action.Terraform.Template"              = <<EOF
 terraform {
@@ -360,6 +362,7 @@ EOF
       is_required                        = false
       worker_pool_id                     = ""
       properties                         = {
+        "Octopus.Action.AutoRetry.MaximumCount"          = "3"
         "Octopus.Action.Script.ScriptSource"             = "Inline"
         "Octopus.Action.Terraform.Template"              = <<EOF
 terraform {
@@ -427,6 +430,7 @@ EOF
       is_required                        = false
       worker_pool_id                     = ""
       properties                         = {
+        "Octopus.Action.AutoRetry.MaximumCount"          = "3"
         "Octopus.Action.Script.ScriptSource"             = "Inline"
         "Octopus.Action.Terraform.Template"              = "${file("../embedded_terraform/provider.tf")}\n${file("../embedded_terraform/tenant_space_id_variable.tf")}"
         "Octopus.Action.Terraform.AllowPluginDownloads"  = "True"
@@ -473,6 +477,7 @@ EOF
       is_required                        = false
       worker_pool_id                     = ""
       properties                         = {
+        "Octopus.Action.AutoRetry.MaximumCount"          = "3"
         "Octopus.Action.Script.ScriptSource"             = "Inline"
         "Octopus.Action.Terraform.Template"              = <<EOF
 terraform {
@@ -549,6 +554,7 @@ EOF
       is_required                        = false
       worker_pool_id                     = ""
       properties                         = {
+        "Octopus.Action.AutoRetry.MaximumCount"          = "3"
         "Octopus.Action.Script.ScriptSource"             = "Inline"
         "Octopus.Action.Terraform.Template"              = <<EOF
 terraform {
@@ -626,6 +632,7 @@ EOF
       is_required                        = false
       worker_pool_id                     = ""
       properties                         = {
+        "Octopus.Action.AutoRetry.MaximumCount"          = "3"
         "Octopus.Action.Script.ScriptSource"             = "Inline"
         "Octopus.Action.Terraform.Template"              = <<EOF
 terraform {
@@ -704,6 +711,7 @@ EOF
       is_required                        = false
       worker_pool_id                     = ""
       properties                         = {
+        "Octopus.Action.AutoRetry.MaximumCount"          = "3"
         "Octopus.Action.Script.ScriptSource"             = "Inline"
         "Octopus.Action.Terraform.Template"              = <<EOF
 terraform {
@@ -780,6 +788,7 @@ EOF
       is_required                        = false
       worker_pool_id                     = ""
       properties                         = {
+        "Octopus.Action.AutoRetry.MaximumCount"          = "3"
         "Octopus.Action.Script.ScriptSource"             = "Inline"
         "Octopus.Action.Terraform.Template"              = <<EOF
 terraform {
@@ -858,6 +867,7 @@ EOF
       is_required                        = false
       worker_pool_id                     = ""
       properties                         = {
+        "Octopus.Action.AutoRetry.MaximumCount"          = "3"
         "Octopus.Action.Script.ScriptSource"             = "Inline"
         "Octopus.Action.Terraform.Template"              = <<EOF
 terraform {
@@ -934,6 +944,7 @@ EOF
       is_required                        = false
       worker_pool_id                     = ""
       properties                         = {
+        "Octopus.Action.AutoRetry.MaximumCount"          = "3"
         "Octopus.Action.Script.ScriptSource"             = "Inline"
         "Octopus.Action.Terraform.Template"              = <<EOF
 terraform {
@@ -1012,6 +1023,7 @@ EOF
       is_required                        = false
       worker_pool_id                     = ""
       properties                         = {
+        "Octopus.Action.AutoRetry.MaximumCount"          = "3"
         "Octopus.Action.Script.ScriptSource"             = "Inline"
         "Octopus.Action.Terraform.Template"              = <<EOF
 terraform {

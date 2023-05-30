@@ -184,6 +184,7 @@ EOT
       is_required                        = false
       worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
       properties                         = {
+        "Octopus.Action.AutoRetry.MaximumCount"       = "3"
         "Octopus.Action.Terraform.Template"           = file("../terrform_scripts/k8s.tf")
         "Octopus.Action.Terraform.TemplateParameters" = jsonencode({
           "k8s_cluster_url"  = "#{Tenant.K8S.Url}"
@@ -236,6 +237,7 @@ EOT
       is_required                        = false
       worker_pool_id                     = ""
       properties                         = {
+        "Octopus.Action.AutoRetry.MaximumCount"          = "3"
         "Octopus.Action.Script.ScriptSource"             = "Inline"
         "Octopus.Action.Terraform.Template"              = <<EOF
 terraform {

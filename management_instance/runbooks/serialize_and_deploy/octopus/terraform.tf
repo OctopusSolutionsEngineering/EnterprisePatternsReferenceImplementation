@@ -358,8 +358,8 @@ EOT
       is_required                        = false
       worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
       properties                         = {
-        "Octopus.Action.Script.Syntax"     = "Python"
-        "Octopus.Action.Script.ScriptBody" = file("../../shared_scripts/space_lookup.py")
+        "Octopus.Action.Script.Syntax"       = "Python"
+        "Octopus.Action.Script.ScriptBody"   = file("../../shared_scripts/space_lookup.py")
         "Octopus.Action.Script.ScriptSource" = "Inline"
       }
       environments          = []
@@ -389,6 +389,7 @@ EOT
       is_required                        = false
       worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
       properties                         = {
+        "Octopus.Action.AutoRetry.MaximumCount"                 = "3"
         "Octopus.Action.Terraform.GoogleCloudAccount"           = "False"
         "Octopus.Action.Terraform.TemplateDirectory"            = "space_population"
         "Octopus.Action.Terraform.AdditionalActionParams"       = "-var=\"octopus_server=#{ManagedTenant.Octopus.Url}\" -var=\"octopus_space_id=#{Octopus.Action[Lookup New Space].Output.SpaceID}\" -var=\"octopus_apikey=#{ManagedTenant.Octopus.ApiKey}\" ${var.project_name_override ? "-var=\"${local.project_name_variable}=#{Exported.Project.Name}\"" : ""}"
