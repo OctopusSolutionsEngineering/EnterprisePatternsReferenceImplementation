@@ -47,6 +47,12 @@ def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose
 
     return stdout, stderr, retcode
 
+print("""===================================================================================================
+Octoterra is an open source tool that serializes an Octopus project to a Terraform module.
+Please note that, as part of the pilot program, octoterra is not covered by existing Octopus support SLAs.
+This tool is also not recommended for production deployments.
+============================================================================================================
+""")
 
 print("Pulling the octoterra image")
 execute(['docker', 'pull', 'octopussamples/octoterra'])
