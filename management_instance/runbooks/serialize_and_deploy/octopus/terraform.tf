@@ -18,14 +18,6 @@ variable "project_name" {
   description = "The name of the project to attach the runbooks to."
 }
 
-variable "project_name_override" {
-  type        = bool
-  nullable    = false
-  sensitive   = false
-  default     = true
-  description = "Whether the downstream project name can be customized. If false, the downstream project has the same name as the upstream project."
-}
-
 data "octopusdeploy_worker_pools" "workerpool_default" {
   name = "Default Worker Pool"
   ids  = null
@@ -393,7 +385,7 @@ EOT
         "Octopus.Action.AutoRetry.MaximumCount"                 = "3"
         "Octopus.Action.Terraform.GoogleCloudAccount"           = "False"
         "Octopus.Action.Terraform.TemplateDirectory"            = "space_population"
-        "Octopus.Action.Terraform.AdditionalActionParams"       = "-var=\"octopus_server=#{ManagedTenant.Octopus.Url}\" -var=\"octopus_space_id=#{Octopus.Action[Lookup New Space].Output.SpaceID}\" -var=\"octopus_apikey=#{ManagedTenant.Octopus.ApiKey}\" ${var.project_name_override ? "-var=\"${local.project_name_variable}=#{if Exported.Project.Name}#{Exported.Project.Name}#{/if}#{unless Exported.Project.Name}#{Octopus.Project.Name}#{/unless}\"" : ""}"
+        "Octopus.Action.Terraform.AdditionalActionParams"       = "-var=\"octopus_server=#{ManagedTenant.Octopus.Url}\" -var=\"octopus_space_id=#{Octopus.Action[Lookup New Space].Output.SpaceID}\" -var=\"octopus_apikey=#{ManagedTenant.Octopus.ApiKey}\" -var=\"${local.project_name_variable}=#{if Exported.Project.Name}#{Exported.Project.Name}#{/if}#{unless Exported.Project.Name}#{Octopus.Project.Name}#{/unless}\"}"
         "Octopus.Action.Aws.AssumeRole"                         = "False"
         "Octopus.Action.Aws.Region"                             = ""
         "Octopus.Action.Terraform.AllowPluginDownloads"         = "True"

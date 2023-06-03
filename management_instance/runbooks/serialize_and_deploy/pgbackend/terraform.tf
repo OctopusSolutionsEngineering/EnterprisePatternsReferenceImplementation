@@ -36,14 +36,6 @@ variable "project_name" {
   description = "The name of the project to attach the runbooks to."
 }
 
-variable "project_name_override" {
-  type        = bool
-  nullable    = false
-  sensitive   = false
-  default     = true
-  description = "Whether the downstream project name can be customized."
-}
-
 variable "compose_project" {
   type        = string
   nullable    = false
@@ -79,7 +71,6 @@ variable "create_space_runbook" {
 module "octopus" {
   source                = "../octopus"
   project_name          = var.project_name
-  project_name_override = var.project_name_override
   compose_project       = var.compose_project
   compose_runbook       = var.compose_runbook
   create_space_project  = var.create_space_project
