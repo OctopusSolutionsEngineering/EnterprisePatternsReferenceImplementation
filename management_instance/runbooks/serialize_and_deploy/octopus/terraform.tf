@@ -392,7 +392,7 @@ EOT
         "Octopus.Action.AutoRetry.MaximumCount"                 = "3"
         "Octopus.Action.Terraform.GoogleCloudAccount"           = "False"
         "Octopus.Action.Terraform.TemplateDirectory"            = "space_population"
-        "Octopus.Action.Terraform.AdditionalActionParams"       = "-var=\"octopus_server=#{ManagedTenant.Octopus.Url}\" -var=\"octopus_space_id=#{Octopus.Action[Lookup New Space].Output.SpaceID}\" -var=\"octopus_apikey=#{ManagedTenant.Octopus.ApiKey}\" ${var.project_name_override ? "-var=\"${local.project_name_variable}=#{Exported.Project.Name}\"" : ""}"
+        "Octopus.Action.Terraform.AdditionalActionParams"       = "-var=\"octopus_server=#{ManagedTenant.Octopus.Url}\" -var=\"octopus_space_id=#{Octopus.Action[Lookup New Space].Output.SpaceID}\" -var=\"octopus_apikey=#{ManagedTenant.Octopus.ApiKey}\" ${var.project_name_override ? "-var=\"${local.project_name_variable}=#{if Exported.Project.Name}#{Exported.Project.Name}#{/if}#{unless Exported.Project.Name}#{Octopus.Project.Name}#{/unless}\"" : ""}"
         "Octopus.Action.Aws.AssumeRole"                         = "False"
         "Octopus.Action.Aws.Region"                             = ""
         "Octopus.Action.Terraform.AllowPluginDownloads"         = "True"
