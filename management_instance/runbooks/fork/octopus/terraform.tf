@@ -5,18 +5,22 @@ terraform {
 }
 
 locals {
-  backend               = "#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
-  workspace             = "#{Octopus.Deployment.Tenant.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_#{Exported.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
-  new_repo              = "#{Octopus.Deployment.Tenant.Name | ToLower}_#{Exported.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
-  project_name_variable = "project_#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_name"
-  cac_org               = "octopuscac"
-  cac_password          = "Password01!"
-  cac_username          = "octopus"
-  cac_host              = "gitea:3000"
-  cac_proto             = "http"
-  package               = "#{Octopus.Project.Name | Replace \"[^a-zA-Z0-9]\" \"_\"}"
-  git_url_var_name      = "project_#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_git_url"
-  template_repo         = "#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
+  # Exported.Project.Name is set if the library variable set is attached to the project.
+  # Otherwise default to the project name.
+  project_name           = "#{if Exported.Project.Name}#{Exported.Project.Name}#{/if}#{unless Exported.Project.Name}#{Octopus.Project.Name}#{/unless}"
+  project_name_sanitized = "#{if Exported.Project.Name}#{Exported.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}#{/if}#{unless Exported.Project.Name}#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}#{/unless}"
+  backend                = local.project_name_sanitized
+  workspace              = "#{Octopus.Deployment.Tenant.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_${local.project_name_sanitized}"
+  new_repo               = "#{Octopus.Deployment.Tenant.Name | ToLower}_${local.project_name_sanitized}"
+  project_name_variable  = "project_${local.project_name_sanitized}_name"
+  cac_org                = "octopuscac"
+  cac_password           = "Password01!"
+  cac_username           = "octopus"
+  cac_host               = "gitea:3000"
+  cac_proto              = "http"
+  package                = "#{Octopus.Project.Name | Replace \"[^a-zA-Z0-9]\" \"_\"}"
+  git_url_var_name       = "project_${local.project_name_sanitized}_git_url"
+  template_repo          = local.project_name_sanitized
 }
 
 variable "project_name" {
@@ -432,7 +436,7 @@ EOT
         "Octopus.Action.AutoRetry.MaximumCount"                 = "3"
         "Octopus.Action.Terraform.GoogleCloudAccount"           = "False"
         "Octopus.Action.Terraform.TemplateDirectory"            = "space_population"
-        "Octopus.Action.Terraform.AdditionalActionParams"       = "-var=\"octopus_server=#{ManagedTenant.Octopus.Url}\" -var=\"octopus_space_id=#{Octopus.Action[Lookup New Space].Output.SpaceID}\" -var=\"octopus_apikey=#{ManagedTenant.Octopus.ApiKey}\" -var=\"${local.git_url_var_name}=${local.cac_proto}://${local.cac_host}/${local.cac_org}/${local.new_repo}.git\" -var=\"${local.project_name_variable}=#{Exported.Project.Name}\""
+        "Octopus.Action.Terraform.AdditionalActionParams"       = "-var=\"octopus_server=#{ManagedTenant.Octopus.Url}\" -var=\"octopus_space_id=#{Octopus.Action[Lookup New Space].Output.SpaceID}\" -var=\"octopus_apikey=#{ManagedTenant.Octopus.ApiKey}\" -var=\"${local.git_url_var_name}=${local.cac_proto}://${local.cac_host}/${local.cac_org}/${local.new_repo}.git\" -var=\"${local.project_name_variable}=${local.project_name}\""
         "Octopus.Action.Aws.AssumeRole"                         = "False"
         "Octopus.Action.Aws.Region"                             = ""
         "Octopus.Action.Terraform.AllowPluginDownloads"         = "True"
