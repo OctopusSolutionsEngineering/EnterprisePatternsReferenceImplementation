@@ -39,7 +39,7 @@ services:
       - CONNSTRING=Server=mssql,1433;Database=Octopus;User Id=SA;Password=Password01!;ConnectRetryCount=6
       - MASTER_KEY=6EdU6IWsCtMEwk0kPKflQQ==
       - OCTOPUS_SERVER_BASE64_LICENSE
-    image: octopusdeploy/octopusdeploy:2022.4
+    image: octopusdeploy/octopusdeploy:2023.1
     networks:
       - octopus
     depends_on:
