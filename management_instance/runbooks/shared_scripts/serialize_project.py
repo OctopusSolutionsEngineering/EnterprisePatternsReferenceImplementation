@@ -59,8 +59,9 @@ execute(['docker', 'pull', 'octopussamples/octoterra'])
 
 # Find out the IP address of the Octopus container
 parsed_url = urlparse(get_octopusvariable('ThisInstance.Server.Url'))
-octopus, _, _ = execute(['dig', '+short', parsed_url.netloc])
+octopus, _, _ = execute(['dig', '+short', parsed_url.hostname])
 
+print("Octopus container hostname: " + parsed_url.hostname)
 print("Octopus container IP: " + octopus.strip())
 
 stdout, _, _ = execute(['docker', 'run',
