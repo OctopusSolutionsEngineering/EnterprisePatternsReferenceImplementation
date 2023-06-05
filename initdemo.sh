@@ -44,18 +44,24 @@ fi
 if [[ -z "${OCTOPUS_SERVER_BASE64_LICENSE}" ]]
 then
   echo "You must set the OCTOPUS_SERVER_BASE64_LICENSE environment variable to the base 64 encoded representation of an Octopus license."
+  echo "See https://help.ubuntu.com/community/EnvironmentVariables for setting environment variables in Linux (this also applied to WSL)."
+  echo "See https://apple.stackexchange.com/a/421171 for setting environment variables in macOS."
   exit 1
 fi
 
 if [[ -z "${TF_VAR_docker_username}" ]]
 then
   echo "You must set the TF_VAR_docker_username environment variable to the DockerHub username."
+  echo "See https://help.ubuntu.com/community/EnvironmentVariables for setting environment variables in Linux (this also applied to WSL)."
+  echo "See https://apple.stackexchange.com/a/421171 for setting environment variables in macOS."
   exit 1
 fi
 
 if [[ -z "${TF_VAR_docker_password}" ]]
 then
   echo "You must set the TF_VAR_docker_password environment variable to the DockerHub password."
+  echo "See https://help.ubuntu.com/community/EnvironmentVariables for setting environment variables in Linux (this also applied to WSL)."
+  echo "See https://apple.stackexchange.com/a/421171 for setting environment variables in macOS."
   exit 1
 fi
 
@@ -407,10 +413,11 @@ execute_terraform_with_spacename () {
 publish_runbook() {
   PROJECT_NAME="${1}"
   RUNBOOK_NAME="${2}"
+  DATE=$(date '+%Y-%m-%d %H:%M:%S')
 
   PROJECT_ID=$(curl --silent --header 'X-Octopus-ApiKey: API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' http://localhost:18080/api/Spaces-1/Projects/all | jq -r ".[] | select(.Name == \"${PROJECT_NAME}\") | .Id")
   RUNBOOK_ID=$(curl --silent --header 'X-Octopus-ApiKey: API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' http://localhost:18080/api/Spaces-1/Projects/${PROJECT_ID}/runbooks | jq -r ".Items[] | select(.Name == \"${RUNBOOK_NAME}\") | .Id")
-  PUBLISH=$(curl --request POST --silent --header 'X-Octopus-ApiKey: API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' --header 'Content-Type: application/json' http://localhost:18080/api/Spaces-1/runbookSnapshots?publish=true --data-raw "{\"ProjectId\":\"${PROJECT_ID}\",\"RunbookId\":\"${RUNBOOK_ID}\",\"Notes\":null,\"Name\":\"Initial Snapshot\",\"SelectedPackages\":[]}")
+  PUBLISH=$(curl --request POST --silent --header 'X-Octopus-ApiKey: API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' --header 'Content-Type: application/json' http://localhost:18080/api/Spaces-1/runbookSnapshots?publish=true --data-raw "{\"ProjectId\":\"${PROJECT_ID}\",\"RunbookId\":\"${RUNBOOK_ID}\",\"Notes\":null,\"Name\":\"${RUNBOOK_NAME} ${DATE}\",\"SelectedPackages\":[]}")
 }
 
 # This is the space used to represent a development Octopus instance. This instance is where teams
