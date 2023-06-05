@@ -75,7 +75,16 @@ then
 
   export KUBECONFIG=/tmp/octoconfig.yml
 
-  minikube start --container-runtime=containerd --driver=docker
+  max_retry=3
+  counter=0
+  until minikube start --container-runtime=containerd --driver=docker
+  do
+     minikube delete
+     sleep 10
+     [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
+     echo "Trying again. Try #$counter"
+     ((counter++))
+  done
 
   docker network connect minikube octopus
 
