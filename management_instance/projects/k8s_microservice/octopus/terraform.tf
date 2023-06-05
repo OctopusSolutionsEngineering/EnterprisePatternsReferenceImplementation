@@ -74,7 +74,7 @@ variable "octopusprintvariables_1" {
 
 resource "octopusdeploy_variable" "namespace" {
   owner_id     = octopusdeploy_project.project_ad_service.id
-  value        = "#{Octopus.Space.Name | Replace \"[^A-Za-z0-9]\" \"-\" | ToLower}-#{Kubernetes.Application.Group}-#{Octopus.Environment.Name | Replace \" .*\" \"\" | ToLower}"
+  value        = "#{Octopus.Space.Name | Replace \"[^A-Za-z0-9]\" \"-\" | ToLower}-#{Kubernetes.Application.Group}-#{Octopus.Environment.Name | Replace \" .*\" \"\" | ToLower}#{if Octopus.Deployment.Tenant.Name}-#{Octopus.Deployment.Tenant.Name | Replace \"[^A-Za-z0-9]\" \"-\" | ToLower}#{/if}"
   name         = "Kubernetes.Deployment.Namespace"
   type         = "String"
   description  = "The namespace is generated from the name of the space, the application group name, and the environment"
@@ -96,7 +96,7 @@ resource "octopusdeploy_variable" "base_name" {
 
 resource "octopusdeploy_variable" "deployment_name" {
   owner_id     = octopusdeploy_project.project_ad_service.id
-  value        = "#{Kubernetes.Deployment.BaseName}#{unless Octopus.Release.Channel.Name == \"Mainline\"}-#{Octopus.Release.Channel.Name | Replace \"[^A-Za-z0-9]\" \"-\" | ToLower}#{/unless}#{unless Octopus.Deployment.Tenant.Name}-#{Octopus.Deployment.Tenant.Name | Replace \"[^A-Za-z0-9]\" \"-\" | ToLower}{#/unless}"
+  value        = "#{Kubernetes.Deployment.BaseName}#{unless Octopus.Release.Channel.Name == \"Mainline\"}-#{Octopus.Release.Channel.Name | Replace \"[^A-Za-z0-9]\" \"-\" | ToLower}#{/unless}"
   name         = "Kubernetes.Deployment.Name"
   type         = "String"
   description  = "The deployment name appends the channel and tenant names to the base name. This creates a value that is unique per application, channel, and tenant."
@@ -195,7 +195,7 @@ metadata:
   name: "#{Kubernetes.Deployment.Name}"
   namespace: "#{Kubernetes.Deployment.Namespace}"
 data:
-#{Kubernetes.Application.EnvVars | Indent 2}
+#{Kubernetes.Application.EnvVars | Indent 1}
 EOT
         "Octopus.Action.Script.ScriptSource"                     = "Inline"
         "Octopus.Action.KubernetesContainers.Namespace"          = "#{Kubernetes.Deployment.Namespace}"
