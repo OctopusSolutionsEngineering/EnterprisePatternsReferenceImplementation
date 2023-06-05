@@ -109,7 +109,15 @@ resource "octopusdeploy_runbook_process" "runbook_process_merge_git" {
         "Octopus.Action.Script.ScriptBody"   = <<EOT
 echo "Pulling postgres image"
 echo "##octopus[stdout-verbose]"
-docker pull postgres
+max_retry=12
+counter=0
+until docker pull postgres 2>&1
+do
+   sleep 5
+   [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
+   echo "Trying again. Try #$counter"
+   ((counter++))
+done
 echo "##octopus[stdout-default]"
 DATABASE=$(dig +short terraformdb)
 

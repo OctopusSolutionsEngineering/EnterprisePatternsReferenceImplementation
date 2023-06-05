@@ -138,7 +138,15 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_serial
         "Octopus.Action.Script.ScriptBody"   = <<EOT
 echo "Pulling postgres image"
 echo "##octopus[stdout-verbose]"
-docker pull postgres
+max_retry=12
+counter=0
+until docker pull postgres 2>&1
+do
+   sleep 5
+   [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
+   echo "Trying again. Try #$counter"
+   ((counter++))
+done
 echo "##octopus[stdout-default]"
 DATABASE=$(dig +short terraformdb)
 
@@ -263,6 +271,7 @@ provider "octopusdeploy" {
   space_id = var.space_id
 }
 
+${file("../../../../shared/project_group/azure/octopus/provider.tf")}
 ${file("../../../../shared/project_group/azure/octopus/terraform.tf")}
 EOF
         "Octopus.Action.Terraform.AllowPluginDownloads"  = "True"
