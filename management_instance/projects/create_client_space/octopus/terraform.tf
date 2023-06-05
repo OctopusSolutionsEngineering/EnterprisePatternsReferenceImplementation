@@ -249,6 +249,7 @@ output "space_id" {
   value = octopusdeploy_space.space.id
 }
 
+${file("../../../../shared/spaces/octopus/provider.tf")}
 ${file("../../../../shared/spaces/octopus/terraform.tf")}
 EOF
         "Octopus.Action.Terraform.AllowPluginDownloads"  = "True"
@@ -317,6 +318,7 @@ provider "octopusdeploy" {
   space_id = var.octopus_space_id
 }
 
+${file("../../../../shared/scoped_user_role/deployer_variable_editor/octopus/provider.tf")}
 ${file("../../../../shared/scoped_user_role/deployer_variable_editor/octopus/terraform.tf")}
 EOF
         "Octopus.Action.Terraform.AllowPluginDownloads"  = "True"
@@ -385,6 +387,7 @@ provider "octopusdeploy" {
   space_id = var.octopus_space_id
 }
 
+${file("../../../../shared/scoped_user_role/deployer/octopus/provider.tf")}
 ${file("../../../../shared/scoped_user_role/deployer/octopus/terraform.tf")}
 EOF
         "Octopus.Action.Terraform.AllowPluginDownloads"  = "True"
@@ -509,6 +512,7 @@ provider "octopusdeploy" {
   space_id = var.space_id
 }
 
+${file("../../../../shared/environments/dev_test_prod/octopus/provider.tf")}
 ${file("../../../../shared/environments/dev_test_prod/octopus/terraform.tf")}
 EOF
         "Octopus.Action.Terraform.AllowPluginDownloads"  = "True"
@@ -587,6 +591,7 @@ provider "octopusdeploy" {
 }
 
 
+${file("../../../../shared/environments/sync/octopus/provider.tf")}
 ${file("../../../../shared/environments/sync/octopus/terraform.tf")}
 EOF
         "Octopus.Action.Terraform.AllowPluginDownloads"  = "True"
@@ -664,6 +669,7 @@ provider "octopusdeploy" {
   space_id = var.space_id
 }
 
+${file("../../../../shared/gitcreds/gitea/octopus/provider.tf")}
 ${file("../../../../shared/gitcreds/gitea/octopus/terraform.tf")}
 EOF
         "Octopus.Action.Terraform.AllowPluginDownloads"  = "True"
@@ -743,6 +749,7 @@ provider "octopusdeploy" {
   space_id = var.space_id
 }
 
+${file("../../../../shared/feeds/maven/octopus/provider.tf")}
 ${file("../../../../shared/feeds/maven/octopus/terraform.tf")}
 EOF
         "Octopus.Action.Terraform.AllowPluginDownloads"  = "True"
@@ -820,6 +827,7 @@ provider "octopusdeploy" {
   space_id = var.space_id
 }
 
+${file("../../../../shared/feeds/dockerhub/octopus/provider.tf")}
 ${file("../../../../shared/feeds/dockerhub/octopus/terraform.tf")}
 EOF
         "Octopus.Action.Terraform.AllowPluginDownloads"  = "True"
@@ -899,6 +907,7 @@ provider "octopusdeploy" {
   space_id = var.space_id
 }
 
+${file("../../../../shared/project_group/hello_world/octopus/provider.tf")}
 ${file("../../../../shared/project_group/hello_world/octopus/terraform.tf")}
 EOF
         "Octopus.Action.Terraform.AllowPluginDownloads"  = "True"
@@ -976,6 +985,7 @@ provider "octopusdeploy" {
   space_id = var.space_id
 }
 
+${file("../../../../shared/variables/slack/octopus/provider.tf")}
 ${file("../../../../shared/variables/slack/octopus/terraform.tf")}
 EOF
         "Octopus.Action.Terraform.AllowPluginDownloads"  = "True"
@@ -1055,6 +1065,7 @@ provider "octopusdeploy" {
   space_id = var.space_id
 }
 
+${file("../../../../shared/lifecycles/simple_dev_test_prod/octopus/provider.tf")}
 ${file("../../../../shared/lifecycles/simple_dev_test_prod/octopus/terraform.tf")}
 EOF
         "Octopus.Action.Terraform.AllowPluginDownloads"  = "True"
