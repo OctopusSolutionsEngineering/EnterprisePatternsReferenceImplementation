@@ -51,6 +51,13 @@ if [ ! -f /usr/local/bin/kubectl ]; then curl -LO "https://dl.k8s.io/release/$(c
 if [ ! -f /usr/local/bin/minikube ]; then curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64; install minikube-linux-amd64 /usr/local/bin/minikube; fi
 ```
 
+## ARM macOS Prerequisites
+
+Newer macOS users must enable the `Use Rosetta for x86/amd64 emulation on Apple Silicon` option in Docker:
+
+![image](https://user-images.githubusercontent.com/160104/243250059-53764386-cd92-4046-a69d-57d67bb9fd09.png)
+
+
 ## Octonaught Prerequisites
 
 Copy the contents of the shared note called `Sample environment vars for EnterprisePatternsReferenceImplmenetation` in
