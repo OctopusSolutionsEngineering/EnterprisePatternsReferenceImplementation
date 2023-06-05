@@ -4,12 +4,6 @@ terraform {
   }
 }
 
-locals {
-  # This value is used in a few places, like the deployment name. It is the name of the Docker image, minus the repo, lowercase, and with
-  # special chars removed.
-  app_name = "#{Octopus.Action[Deploy App].Package[service].PackageId | Replace \"^.*/\" \"\" | Replace \"[^A-Za-z0-9]\" \"-\" | ToLower}"
-}
-
 data "octopusdeploy_project_groups" "project_group_google_microservice_demo" {
   ids          = null
   partial_name = "${var.project_group_google_microservice_demo_name}"
@@ -76,6 +70,37 @@ variable "octopusprintvariables_1" {
   sensitive   = false
   description = "The value associated with the variable OctopusPrintVariables"
   default     = "False"
+}
+
+resource "octopusdeploy_variable" "namespace" {
+  owner_id     = octopusdeploy_project.project_ad_service.id
+  value        = "#{Octopus.Space.Name | Replace \"[^A-Za-z0-9]\" \"-\" | ToLower}-#{Kubernetes.Application.Group}-#{Octopus.Environment.Name | Replace \" .*\" \"\" | ToLower}"
+  name         = "Kubernetes.Deployment.Namespace"
+  type         = "String"
+  description  = "The namespace is generated from the name of the space, the application group name, and the environment"
+  is_sensitive = false
+}
+
+resource "octopusdeploy_variable" "base_name" {
+  owner_id     = octopusdeploy_project.project_ad_service.id
+  value        = "#{Octopus.Action[Deploy App].Package[service].PackageId | Replace \"^.*/\" \"\" | Replace \"[^A-Za-z0-9]\" \"-\" | ToLower}"
+  name         = "Kubernetes.Deployment.BaseName"
+  type         = "String"
+  description  = join("", [
+    "The base name is based on the name of the package. ",
+    "Octostache filters are used to sanitize the package name. ",
+    "`Replace \"^.*/\" \"\"`` strips everything up to the first forward slash, for example removing `octopussamples/` from the image name `octopussamples/imagename`. ",
+    "`Replace \"[^A-Za-z0-9]\" \"-\"` replaces any non alpha-numeric character with a dash."])
+  is_sensitive = false
+}
+
+resource "octopusdeploy_variable" "deployment_name" {
+  owner_id     = octopusdeploy_project.project_ad_service.id
+  value        = "#{Kubernetes.Deployment.BaseName}#{unless Octopus.Release.Channel.Name == \"Mainline\"}-#{Octopus.Release.Channel.Name | Replace \"[^A-Za-z0-9]\" \"-\" | ToLower}#{/unless}#{unless Octopus.Deployment.Tenant.Name}-#{Octopus.Deployment.Tenant.Name | Replace \"[^A-Za-z0-9]\" \"-\" | ToLower}{#/unless}"
+  name         = "Kubernetes.Deployment.Name"
+  type         = "String"
+  description  = "The deployment name appends the channel and tenant names to the base name. This creates a value that is unique per application, channel, and tenant."
+  is_sensitive = false
 }
 
 resource "octopusdeploy_variable" "k8s_application_group" {
@@ -167,13 +192,13 @@ resource "octopusdeploy_deployment_process" "deployment_process_project_ad_servi
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: "${local.app_name}#{unless Octopus.Release.Channel.Name == \"Mainline\"}-#{Octopus.Release.Channel.Name}#{/unless}"
-  namespace: "#{Octopus.Space.Name | Replace \"[^A-Za-z0-9]\" \"-\" | ToLower}-#{Kubernetes.Application.Group}-#{Octopus.Environment.Name | Replace \" .*\" \"\" | ToLower}"
+  name: "#{Kubernetes.Deployment.Name}"
+  namespace: "#{Kubernetes.Deployment.Namespace}"
 data:
 #{Kubernetes.Application.EnvVars | Indent 2}
 EOT
         "Octopus.Action.Script.ScriptSource"                     = "Inline"
-        "Octopus.Action.KubernetesContainers.Namespace"          = "#{Octopus.Space.Name | Replace \"[^A-Za-z0-9]\" \"-\" | ToLower}-#{Kubernetes.Application.Group}-#{Octopus.Environment.Name | Replace \" .*\" \"\" | ToLower}"
+        "Octopus.Action.KubernetesContainers.Namespace"          = "#{Kubernetes.Deployment.Namespace}"
       }
       environments          = []
       excluded_environments = []
@@ -214,14 +239,14 @@ EOT
         "Octopus.Action.KubernetesContainers.PodSecurityRunAsGroup"         = "1000"
         "Octopus.Action.KubernetesContainers.DeploymentWait"                = "Wait"
         "Octopus.Action.KubernetesContainers.DeploymentStyle"               = "RollingUpdate"
-        "Octopus.Action.KubernetesContainers.Namespace"                     = "#{Octopus.Space.Name | Replace \"[^A-Za-z0-9]\" \"-\" | ToLower}-#{Kubernetes.Application.Group}-#{Octopus.Environment.Name | Replace \" .*\" \"\" | ToLower}"
+        "Octopus.Action.KubernetesContainers.Namespace"                     = "#{Kubernetes.Deployment.Namespace}"
         "Octopus.Action.KubernetesContainers.PodAntiAffinity"               = jsonencode([])
         "OctopusUseBundledTooling"                                          = "False"
         "Octopus.Action.KubernetesContainers.CombinedVolumes"               = jsonencode([])
         "Octopus.Action.KubernetesContainers.NodeAffinity"                  = jsonencode([])
         "Octopus.Action.KubernetesContainers.Tolerations"                   = jsonencode([])
         "Octopus.Action.KubernetesContainers.PodAnnotations"                = jsonencode([])
-        "Octopus.Action.KubernetesContainers.DeploymentName"                = "${local.app_name}#{unless Octopus.Release.Channel.Name == \"Mainline\"}-#{Octopus.Release.Channel.Name}#{/unless}"
+        "Octopus.Action.KubernetesContainers.DeploymentName"                = "#{Kubernetes.Deployment.Name}"
         "Octopus.Action.KubernetesContainers.PodAffinity"                   = jsonencode([])
         "Octopus.Action.KubernetesContainers.IngressAnnotations"            = jsonencode([])
         "Octopus.Action.KubernetesContainers.Containers"                    = jsonencode([
@@ -230,7 +255,7 @@ EOT
             "Args"                   = []
             "ConfigMapEnvFromSource" = [
               {
-                "key" = "${local.app_name}#{unless Octopus.Release.Channel.Name == \"Mainline\"}-#{Octopus.Release.Channel.Name}#{/unless}"
+                "key" = "#{Kubernetes.Deployment.Name}"
               },
             ]
             "ConfigMapEnvironmentVariables" = []
@@ -268,10 +293,7 @@ EOT
             "LivenessProbe" = {
               "timeoutSeconds" = ""
               "exec"           = {
-                "command" = [
-                  "/bin/grpc_health_probe",
-                  "-addr=:#{Kubernetes.Application.Port}",
-                ]
+                "command" = []
               }
               "successThreshold"    = ""
               "initialDelaySeconds" = "20"
@@ -280,14 +302,14 @@ EOT
                 "host" = ""
                 "port" = ""
               }
-              "type"             = "Command"
+              "type"             = "HttpGet"
               "failureThreshold" = ""
               "httpGet"          = {
-                "port"        = ""
-                "scheme"      = ""
+                "port"        = "#{Kubernetes.Application.Port}"
+                "scheme"      = "HTTP"
                 "host"        = ""
                 "httpHeaders" = []
-                "path"        = ""
+                "path"        = "/"
               }
             }
             "Properties" = {}
@@ -295,14 +317,14 @@ EOT
               "limits" = {
                 "nvidiaGpu"        = ""
                 "amdGpu"           = ""
-                "cpu"              = "300m"
+                "cpu"              = "500m"
                 "ephemeralStorage" = ""
-                "memory"           = "300Mi"
+                "memory"           = "512Mi"
               }
               "requests" = {
                 "ephemeralStorage" = ""
-                "memory"           = "180Mi"
-                "cpu"              = "200m"
+                "memory"           = "256Mi"
+                "cpu"              = "250m"
               }
             }
             "SecretEnvironmentVariables" = []
@@ -343,14 +365,14 @@ EOT
               "timeoutSeconds"   = ""
               "failureThreshold" = ""
               "httpGet"          = {
-                "port"        = ""
-                "scheme"      = ""
+                "port"        = "#{Kubernetes.Application.Port}"
+                "scheme"      = "HTTP"
                 "host"        = ""
                 "httpHeaders" = []
-                "path"        = ""
+                "path"        = "/"
               }
               "periodSeconds" = "15"
-              "type"          = "Command"
+              "type"          = "HttpGet"
             }
             "Command"                      = []
             "FieldRefEnvironmentVariables" = []
@@ -359,6 +381,7 @@ EOT
             "PackageId"                    = "#{Kubernetes.Application.Image}"
             "Ports"                        = [
               {
+                "name" = "Port"
                 "value" = "#{Kubernetes.Application.Port}"
               },
             ]
@@ -370,16 +393,16 @@ EOT
           {
             "port"       = "#{Kubernetes.Application.Port}"
             "targetPort" = "#{Kubernetes.Application.Port}"
-            "name"       = "grpc"
+            "name"       = "http"
           },
         ])
         "Octopus.Action.KubernetesContainers.DeploymentLabels" = jsonencode({
-          "app" = "${local.app_name}"
+          "app" = "#{Kubernetes.Deployment.BaseName}"
         })
         "Octopus.Action.KubernetesContainers.PodSecurityRunAsUser"    = "1000"
         "Octopus.Action.KubernetesContainers.PodSecurityFsGroup"      = "1000"
         "Octopus.Action.KubernetesContainers.Replicas"                = "1"
-        "Octopus.Action.KubernetesContainers.ServiceName"             = "${local.app_name}#{unless Octopus.Release.Channel.Name == \"Mainline\"}-#{Octopus.Release.Channel.Name}#{/unless}"
+        "Octopus.Action.KubernetesContainers.ServiceName"             = "#{Kubernetes.Deployment.Name}"
         "Octopus.Action.KubernetesContainers.LoadBalancerAnnotations" = jsonencode([])
       }
 
@@ -393,7 +416,7 @@ EOT
         package_id                = "#{Kubernetes.Application.Image}"
         acquisition_location      = "NotAcquired"
         extract_during_deployment = false
-        feed_id                   = "${data.octopusdeploy_feeds.feed_docker_hub.feeds[0].id}"
+        feed_id                   = data.octopusdeploy_feeds.feed_docker_hub.feeds[0].id
         properties                = { Extract = "False" }
       }
       features = ["Octopus.Features.KubernetesService"]
@@ -421,8 +444,8 @@ variable "octopusprintevaluatedvariables_1" {
 }
 
 resource "octopusdeploy_variable" "octopusprintevaluatedvariables_1" {
-  owner_id     = "${octopusdeploy_project.project_ad_service.id}"
-  value        = "${var.octopusprintevaluatedvariables_1}"
+  owner_id     = octopusdeploy_project.project_ad_service.id
+  value        = var.octopusprintevaluatedvariables_1
   name         = "OctopusPrintEvaluatedVariables"
   type         = "String"
   description  = "A debug variable used to print all variables to the logs. See [here](https://octopus.com/docs/support/debug-problems-with-octopus-variables) for more information."
@@ -439,7 +462,7 @@ variable "project_k8s_microservice_template_name" {
 }
 
 resource "octopusdeploy_project" "project_ad_service" {
-  name                                 = "${var.project_k8s_microservice_template_name}"
+  name                                 = var.project_k8s_microservice_template_name
   auto_create_release                  = false
   default_guided_failure_mode          = "EnvironmentDefault"
   default_to_skip_if_already_installed = false
@@ -447,8 +470,8 @@ resource "octopusdeploy_project" "project_ad_service" {
   discrete_channel_release             = false
   is_disabled                          = false
   is_version_controlled                = false
-  lifecycle_id                         = "${data.octopusdeploy_lifecycles.lifecycle_application.lifecycles[0].id}"
-  project_group_id                     = "${data.octopusdeploy_project_groups.project_group_google_microservice_demo.project_groups[0].id}"
+  lifecycle_id                         = data.octopusdeploy_lifecycles.lifecycle_application.lifecycles[0].id
+  project_group_id                     = data.octopusdeploy_project_groups.project_group_google_microservice_demo.project_groups[0].id
   included_library_variable_sets       = [
     data.octopusdeploy_library_variable_sets.variable.library_variable_sets[0].id,
     data.octopusdeploy_library_variable_sets.octopus_server.library_variable_sets[0].id,
@@ -468,7 +491,7 @@ resource "octopusdeploy_project" "project_ad_service" {
 }
 
 resource "octopusdeploy_runbook_process" "runbook_process_k8s_describe_pod" {
-  runbook_id = "${octopusdeploy_runbook.runbook_k8s_describe_pod.id}"
+  runbook_id = octopusdeploy_runbook.runbook_k8s_describe_pod.id
 
   step {
     condition           = "Success"
@@ -490,11 +513,11 @@ resource "octopusdeploy_runbook_process" "runbook_process_k8s_describe_pod" {
         "Octopus.Action.Script.ScriptSource" = "Inline"
         "Octopus.Action.Script.Syntax" = "PowerShell"
         "Octopus.Action.Script.ScriptBody" = "\u003c#\n    This script provides a general purpose method for querying Kubernetes resources. It supports common operations\n    like get, describe, logs and output formats like yaml and json. Output can be captured as artifacts.\n#\u003e\n\n\u003c#\n.Description\nExecute an application, capturing the output. Based on https://stackoverflow.com/a/33652732/157605\n#\u003e\nFunction Execute-Command ($commandPath, $commandArguments)\n{\n  Write-Host \"Executing: $commandPath $($commandArguments -join \" \")\"\n  \n  Try {\n    $pinfo = New-Object System.Diagnostics.ProcessStartInfo\n    $pinfo.FileName = $commandPath\n    $pinfo.RedirectStandardError = $true\n    $pinfo.RedirectStandardOutput = $true\n    $pinfo.UseShellExecute = $false\n    $pinfo.Arguments = $commandArguments\n    $p = New-Object System.Diagnostics.Process\n    $p.StartInfo = $pinfo\n    $p.Start() | Out-Null\n    [pscustomobject]@{\n        stdout = $p.StandardOutput.ReadToEnd()\n        stderr = $p.StandardError.ReadToEnd()\n        ExitCode = $p.ExitCode\n    }\n    $p.WaitForExit()\n  }\n  Catch {\n     exit\n  }\n}\n\n\u003c#\n.Description\nFind any resource names that match a wildcard input if one was specified\n#\u003e\nfunction Get-Resources() \n{\n    $names = $OctopusParameters[\"K8SInspectNames\"] -Split \"`n\" | % {$_.Trim()}\n    \n    if ($OctopusParameters[\"K8SInspectNames\"] -match '\\*' )\n    {\n        return Execute-Command kubectl (@(\"-o\", \"json\", \"get\", $OctopusParameters[\"K8SInspectResource\"])) |\n            # Select the stdout property from the execution\n            Select-Object -ExpandProperty stdout |\n            # Convert the output from JSON\n            ConvertFrom-JSON | \n            # Get the items object from the kubectl response\n            % {if ((Get-Member -InputObject $_ -Name items).Count -ne 0) {Select-Object -InputObject $_ -ExpandProperty items} else {$_}} |\n            # Extract the name\n            % {$_.metadata.name} |\n            # Find any matching resources\n            ? {$k8sName = $_; ($names | ? {$k8sName -like $_}).Count -ne 0}\n    }\n    else\n    {\n        return $names\n    }\n}\n\n\u003c#\n.Description\nGet the kubectl arguments for a given action\n#\u003e\nfunction Get-KubectlVerb() \n{\n    switch($OctopusParameters[\"K8SInspectKubectlVerb\"])\n    {\n        \"get json\" {return ,@(\"-o\", \"json\", \"get\")}\n        \"get yaml\" {return ,@(\"-o\", \"yaml\", \"get\")}\n        \"describe\" {return ,@(\"describe\")}\n        \"logs\" {return ,@(\"logs\")}\n        \"logs tail\" {return ,@(\"logs\", \"--tail\", \"100\")}\n        \"previous logs\" {return ,@(\"logs\", \"--previous\")}\n        \"previous logs tail\" {return ,@(\"logs\", \"--previous\", \"--tail\", \"100\")}\n        default {return ,@(\"get\")}\n    }\n}\n\n\u003c#\n.Description\nGet an appropiate file extension based on the selected action\n#\u003e\nfunction Get-ArtifactExtension() \n{\n   switch($OctopusParameters[\"K8SInspectKubectlVerb\"])\n    {\n        \"get json\" {\"json\"}\n        \"get yaml\" {\"yaml\"}\n        default {\"txt\"}\n    }\n}\n\nif ($OctopusParameters[\"K8SInspectKubectlVerb\"] -like \"*logs*\") \n{\n    if ( -not @($OctopusParameters[\"K8SInspectResource\"]) -like \"pod*\")\n    {\n        Write-Error \"Logs can only be returned for pods, not $($OctopusParameters[\"K8SInspectResource\"])\"\n    }\n    else\n    {\n        Execute-Command kubectl (@(\"-o\", \"json\", \"get\", \"pods\") + (Get-Resources)) |\n            # Select the stdout property from the execution\n            Select-Object -ExpandProperty stdout |\n            # Convert the output from JSON\n            ConvertFrom-JSON | \n            # Get the items object from the kubectl response\n            % {if ((Get-Member -InputObject $_ -Name items).Count -ne 0) {Select-Object -InputObject $_ -ExpandProperty items} else {$_}} |\n            # Get the pod logs for each container\n            % {\n                $podDetails = $_\n                @{\n                    logs=$podDetails.spec.containers | % {$logs=\"\"} {$logs += (Select-Object -InputObject (Execute-Command kubectl ((Get-KubectlVerb) + @($podDetails.metadata.name, \"-c\", $_.name))) -ExpandProperty stdout)} {$logs}; \n                    name=$podDetails.metadata.name\n                }                \n            } |\n            # Write the output\n            % {Write-Host $_.logs; $_} |\n            # Optionally capture the artifact\n            % {\n                if ($OctopusParameters[\"K8SInspectCreateArtifact\"] -ieq \"true\") \n                {\n                    Set-Content -Path \"$($_.name).$(Get-ArtifactExtension)\" -Value $_.logs\n                    New-OctopusArtifact \"$($_.name).$(Get-ArtifactExtension)\"\n                }\n            }\n    }      \n}\nelse\n{\n    Execute-Command kubectl ((Get-KubectlVerb) + @($OctopusParameters[\"K8SInspectResource\"]) + (Get-Resources)) |\n        % {Select-Object -InputObject $_ -ExpandProperty stdout} |\n        % {Write-Host $_; $_} |\n        % {\n            if ($OctopusParameters[\"K8SInspectCreateArtifact\"] -ieq \"true\") \n            {\n                Set-Content -Path \"output.$(Get-ArtifactExtension)\" -Value $_\n                New-OctopusArtifact \"output.$(Get-ArtifactExtension)\"\n            }\n        }\n}\n"
-        "K8SInspectNames" = "${local.app_name}#{unless Octopus.Release.Channel.Name == \"Mainline\"}-#{Octopus.Release.Channel.Name}#{/unless}*"
+        "K8SInspectNames" = "#{Kubernetes.Deployment.Name}*"
         "K8SInspectKubectlVerb" = "describe"
         "K8SInspectCreateArtifact" = "False"
         "K8SInspectResource" = "pod"
-        "Octopus.Action.KubernetesContainers.Namespace" = "#{Octopus.Space.Name | Replace \"[^A-Za-z0-9]\" \"-\" | ToLower}-#{Kubernetes.Application.Group}-#{Octopus.Environment.Name | Replace \" .*\" \"\" | ToLower}"
+        "Octopus.Action.KubernetesContainers.Namespace" = "#{Kubernetes.Deployment.Namespace}"
       }
       environments                       = []
       excluded_environments              = []
@@ -510,7 +533,7 @@ resource "octopusdeploy_runbook_process" "runbook_process_k8s_describe_pod" {
 
 resource "octopusdeploy_runbook" "runbook_k8s_describe_pod" {
   name                        = "Describe Pod"
-  project_id                  = "${octopusdeploy_project.project_ad_service.id}"
+  project_id                  = octopusdeploy_project.project_ad_service.id
   environment_scope           = "All"
   environments                = []
   force_package_download      = false
@@ -553,11 +576,11 @@ resource "octopusdeploy_runbook_process" "runbook_process_k8s_pod_logs" {
         "Octopus.Action.Script.ScriptSource" = "Inline"
         "Octopus.Action.Script.Syntax" = "PowerShell"
         "Octopus.Action.Script.ScriptBody" = "\u003c#\n    This script provides a general purpose method for querying Kubernetes resources. It supports common operations\n    like get, describe, logs and output formats like yaml and json. Output can be captured as artifacts.\n#\u003e\n\n\u003c#\n.Description\nExecute an application, capturing the output. Based on https://stackoverflow.com/a/33652732/157605\n#\u003e\nFunction Execute-Command ($commandPath, $commandArguments)\n{\n  Write-Host \"Executing: $commandPath $($commandArguments -join \" \")\"\n  \n  Try {\n    $pinfo = New-Object System.Diagnostics.ProcessStartInfo\n    $pinfo.FileName = $commandPath\n    $pinfo.RedirectStandardError = $true\n    $pinfo.RedirectStandardOutput = $true\n    $pinfo.UseShellExecute = $false\n    $pinfo.Arguments = $commandArguments\n    $p = New-Object System.Diagnostics.Process\n    $p.StartInfo = $pinfo\n    $p.Start() | Out-Null\n    [pscustomobject]@{\n        stdout = $p.StandardOutput.ReadToEnd()\n        stderr = $p.StandardError.ReadToEnd()\n        ExitCode = $p.ExitCode\n    }\n    $p.WaitForExit()\n  }\n  Catch {\n     exit\n  }\n}\n\n\u003c#\n.Description\nFind any resource names that match a wildcard input if one was specified\n#\u003e\nfunction Get-Resources() \n{\n    $names = $OctopusParameters[\"K8SInspectNames\"] -Split \"`n\" | % {$_.Trim()}\n    \n    if ($OctopusParameters[\"K8SInspectNames\"] -match '\\*' )\n    {\n        return Execute-Command kubectl (@(\"-o\", \"json\", \"get\", $OctopusParameters[\"K8SInspectResource\"])) |\n            # Select the stdout property from the execution\n            Select-Object -ExpandProperty stdout |\n            # Convert the output from JSON\n            ConvertFrom-JSON | \n            # Get the items object from the kubectl response\n            % {if ((Get-Member -InputObject $_ -Name items).Count -ne 0) {Select-Object -InputObject $_ -ExpandProperty items} else {$_}} |\n            # Extract the name\n            % {$_.metadata.name} |\n            # Find any matching resources\n            ? {$k8sName = $_; ($names | ? {$k8sName -like $_}).Count -ne 0}\n    }\n    else\n    {\n        return $names\n    }\n}\n\n\u003c#\n.Description\nGet the kubectl arguments for a given action\n#\u003e\nfunction Get-KubectlVerb() \n{\n    switch($OctopusParameters[\"K8SInspectKubectlVerb\"])\n    {\n        \"get json\" {return ,@(\"-o\", \"json\", \"get\")}\n        \"get yaml\" {return ,@(\"-o\", \"yaml\", \"get\")}\n        \"describe\" {return ,@(\"describe\")}\n        \"logs\" {return ,@(\"logs\")}\n        \"logs tail\" {return ,@(\"logs\", \"--tail\", \"100\")}\n        \"previous logs\" {return ,@(\"logs\", \"--previous\")}\n        \"previous logs tail\" {return ,@(\"logs\", \"--previous\", \"--tail\", \"100\")}\n        default {return ,@(\"get\")}\n    }\n}\n\n\u003c#\n.Description\nGet an appropiate file extension based on the selected action\n#\u003e\nfunction Get-ArtifactExtension() \n{\n   switch($OctopusParameters[\"K8SInspectKubectlVerb\"])\n    {\n        \"get json\" {\"json\"}\n        \"get yaml\" {\"yaml\"}\n        default {\"txt\"}\n    }\n}\n\nif ($OctopusParameters[\"K8SInspectKubectlVerb\"] -like \"*logs*\") \n{\n    if ( -not @($OctopusParameters[\"K8SInspectResource\"]) -like \"pod*\")\n    {\n        Write-Error \"Logs can only be returned for pods, not $($OctopusParameters[\"K8SInspectResource\"])\"\n    }\n    else\n    {\n        Execute-Command kubectl (@(\"-o\", \"json\", \"get\", \"pods\") + (Get-Resources)) |\n            # Select the stdout property from the execution\n            Select-Object -ExpandProperty stdout |\n            # Convert the output from JSON\n            ConvertFrom-JSON | \n            # Get the items object from the kubectl response\n            % {if ((Get-Member -InputObject $_ -Name items).Count -ne 0) {Select-Object -InputObject $_ -ExpandProperty items} else {$_}} |\n            # Get the pod logs for each container\n            % {\n                $podDetails = $_\n                @{\n                    logs=$podDetails.spec.containers | % {$logs=\"\"} {$logs += (Select-Object -InputObject (Execute-Command kubectl ((Get-KubectlVerb) + @($podDetails.metadata.name, \"-c\", $_.name))) -ExpandProperty stdout)} {$logs}; \n                    name=$podDetails.metadata.name\n                }                \n            } |\n            # Write the output\n            % {Write-Host $_.logs; $_} |\n            # Optionally capture the artifact\n            % {\n                if ($OctopusParameters[\"K8SInspectCreateArtifact\"] -ieq \"true\") \n                {\n                    Set-Content -Path \"$($_.name).$(Get-ArtifactExtension)\" -Value $_.logs\n                    New-OctopusArtifact \"$($_.name).$(Get-ArtifactExtension)\"\n                }\n            }\n    }      \n}\nelse\n{\n    Execute-Command kubectl ((Get-KubectlVerb) + @($OctopusParameters[\"K8SInspectResource\"]) + (Get-Resources)) |\n        % {Select-Object -InputObject $_ -ExpandProperty stdout} |\n        % {Write-Host $_; $_} |\n        % {\n            if ($OctopusParameters[\"K8SInspectCreateArtifact\"] -ieq \"true\") \n            {\n                Set-Content -Path \"output.$(Get-ArtifactExtension)\" -Value $_\n                New-OctopusArtifact \"output.$(Get-ArtifactExtension)\"\n            }\n        }\n}\n"
-        "K8SInspectNames" = "${local.app_name}#{unless Octopus.Release.Channel.Name == \"Mainline\"}-#{Octopus.Release.Channel.Name}#{/unless}*"
+        "K8SInspectNames" = "#{Kubernetes.Deployment.Name}*"
         "K8SInspectKubectlVerb" = "logs"
         "K8SInspectCreateArtifact" = "False"
         "K8SInspectResource" = "pod"
-        "Octopus.Action.KubernetesContainers.Namespace" = "#{Octopus.Space.Name | Replace \"[^A-Za-z0-9]\" \"-\" | ToLower}-#{Kubernetes.Application.Group}-#{Octopus.Environment.Name | Replace \" .*\" \"\" | ToLower}"
+        "Octopus.Action.KubernetesContainers.Namespace" = "#{Kubernetes.Deployment.Namespace}"
       }
       environments                       = []
       excluded_environments              = []
@@ -573,7 +596,7 @@ resource "octopusdeploy_runbook_process" "runbook_process_k8s_pod_logs" {
 
 resource "octopusdeploy_runbook" "runbook_k8s_pod_logs" {
   name                        = "Pod Logs"
-  project_id                  = "${octopusdeploy_project.project_ad_service.id}"
+  project_id                  = octopusdeploy_project.project_ad_service.id
   environment_scope           = "All"
   environments                = []
   force_package_download      = false
