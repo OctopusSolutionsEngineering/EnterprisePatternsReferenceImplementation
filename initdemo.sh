@@ -603,5 +603,7 @@ done
 publish_runbook "PR Checks" "PR Check"
 
 # All done
+echo "##############################################################################################"
 echo "Open Octopus at http://localhost:18080 - username is \"admin\" and password is \"Password01!\""
 echo "Open Gitea at http://localhost:3000 - username is \"octopus\" and password is \"Password01!\""
+echo "##############################################################################################"
