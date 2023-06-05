@@ -553,7 +553,7 @@ do
   execute_terraform_with_project 'serialize_and_deploy' 'management_instance/runbooks/serialize_and_deploy/pgbackend' "${project//[^[:alnum:]]/_}" "${split[0]}" "Spaces-1" "${split[1]}" "${split[2]}" "${split[3]}" "${split[4]}"
   execute_terraform_with_project 'runbooks_list' 'management_instance/runbooks/list/pgbackend' "${project//[^[:alnum:]]/_}" "${split[0]}" "Spaces-1"
 
-  for runbook in "__ 1. Serialize Project" "__ 2. Fork and Deploy Project" "__ 4. List Downstream Projects"
+  for runbook in "__ 1. Serialize Project" "__ 4. List Downstream Projects"
   do
     publish_runbook "${split[0]}" "${runbook}"
   done
@@ -572,7 +572,7 @@ do
   execute_terraform_with_project 'runbooks_list' 'management_instance/runbooks/list/pgbackend' "${project//[^[:alnum:]]/_}" "${split[0]}" "Spaces-1"
   execute_terraform_with_project 'runbooks_updates' 'management_instance/runbooks/conflict/pgbackend' "${project//[^[:alnum:]]/_}" "${split[0]}" "Spaces-1"
 
-  for runbook in "__ 1. Serialize Project" "__ 2. Fork and Deploy Project" "__ 3. Merge with Downstream Project" "__ 4. List Downstream Projects" "__ 5. Find Updates"
+  for runbook in "__ 1. Serialize Project" "__ 3. Merge with Downstream Project" "__ 4. List Downstream Projects" "__ 5. Find Updates"
   do
     publish_runbook "${split[0]}" "${runbook}"
   done
