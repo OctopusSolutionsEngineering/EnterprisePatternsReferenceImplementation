@@ -44,18 +44,24 @@ fi
 if [[ -z "${OCTOPUS_SERVER_BASE64_LICENSE}" ]]
 then
   echo "You must set the OCTOPUS_SERVER_BASE64_LICENSE environment variable to the base 64 encoded representation of an Octopus license."
+  echo "See https://help.ubuntu.com/community/EnvironmentVariables for setting environment variables in Linux (this also applied to WSL)."
+  echo "See https://apple.stackexchange.com/a/421171 for setting environment variables in macOS."
   exit 1
 fi
 
 if [[ -z "${TF_VAR_docker_username}" ]]
 then
   echo "You must set the TF_VAR_docker_username environment variable to the DockerHub username."
+  echo "See https://help.ubuntu.com/community/EnvironmentVariables for setting environment variables in Linux (this also applied to WSL)."
+  echo "See https://apple.stackexchange.com/a/421171 for setting environment variables in macOS."
   exit 1
 fi
 
 if [[ -z "${TF_VAR_docker_password}" ]]
 then
   echo "You must set the TF_VAR_docker_password environment variable to the DockerHub password."
+  echo "See https://help.ubuntu.com/community/EnvironmentVariables for setting environment variables in Linux (this also applied to WSL)."
+  echo "See https://apple.stackexchange.com/a/421171 for setting environment variables in macOS."
   exit 1
 fi
 
