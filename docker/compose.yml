@@ -39,6 +39,7 @@ services:
       - CONNSTRING=Server=mssql,1433;Database=Octopus;User Id=SA;Password=Password01!;ConnectRetryCount=6
       - MASTER_KEY=6EdU6IWsCtMEwk0kPKflQQ==
       - OCTOPUS_SERVER_BASE64_LICENSE
+    platform: linux/x86_64
     image: octopusdeploy/octopusdeploy:2023.1
     networks:
       - octopus
@@ -56,12 +57,14 @@ services:
       ACCEPT_EULA: Y
       SA_PASSWORD: Password01!
       MSSQL_PID: Express
+    platform: linux/x86_64
     image: mcr.microsoft.com/mssql/server:2022-latest
     networks:
       - octopus
     volumes:
       - sqlvolume:/var/opt/mssql
   gitea:
+    platform: linux/x86_64
     image: gitea/gitea:1.19.0
     container_name: gitea
     environment:
@@ -88,6 +91,7 @@ services:
       - "host.docker.internal:host-gateway"
   giteadb:
     image: postgres:14
+    platform: linux/x86_64
     restart: always
     environment:
       - POSTGRES_USER=gitea
@@ -99,6 +103,7 @@ services:
       - giteadb:/var/lib/postgresql/data
   terraformdb:
     image: postgres:14
+    platform: linux/x86_64
     container_name: terraformdb
     ports:
       - "127.0.0.1:15432:5432"
@@ -112,6 +117,7 @@ services:
       - terraformdb:/var/lib/postgresql/data
   giteaproxy:
     image: octopussamples/giteaproxy
+    platform: linux/x86_64
     container_name: giteaproxy
     ports:
       - "127.0.0.1:14000:4000"
