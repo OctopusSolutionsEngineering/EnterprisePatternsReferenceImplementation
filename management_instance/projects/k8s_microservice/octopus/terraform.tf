@@ -4,6 +4,18 @@ terraform {
   }
 }
 
+# Look up the "Export Options" library variable set. This variable set is excluded from the Terraform serialization,
+# but is used in some of the management runbooks when deploying the template projects. The "Export Options"
+# library variable set allows us to keep variables out of the downstream projects because it is trivial to exclude a
+# library variable set from serialization. In contrast, project variables for CaC enabled projects are very difficult
+# to exclude individual variables as they are automatically written to Git and any forked Git repo automatically
+# inherits them.
+data "octopusdeploy_library_variable_sets" "export_options" {
+  partial_name = "Export Options"
+  skip         = 0
+  take         = 1
+}
+
 data "octopusdeploy_project_groups" "project_group_google_microservice_demo" {
   ids          = null
   partial_name = "${var.project_group_google_microservice_demo_name}"
@@ -209,7 +221,7 @@ resource "octopusdeploy_channel" "channel__mainline" {
 }
 
 resource "octopusdeploy_deployment_process" "deployment_process_project_k8s_microservice" {
-  project_id = "${octopusdeploy_project.project_k8s_microservice.id}"
+  project_id = octopusdeploy_project.project_k8s_microservice.id
 
   step {
     condition            = "Variable"
@@ -275,7 +287,7 @@ EOT
         "Octopus.Action.KubernetesContainers.PodSecuritySysctls"            = jsonencode([])
         "Octopus.Action.KubernetesContainers.PodServiceAccountName"         = "default"
         "Octopus.Action.KubernetesContainers.PodSecurityRunAsNonRoot"       = "true"
-        "Octopus.Action.KubernetesContainers.ServiceType"                   = "ClusterIP"
+        "Octopus.Action.KubernetesContainers.ServiceType"                   = "LoadBalancer"
         "Octopus.Action.KubernetesContainers.DeploymentResourceType"        = "Deployment"
         "Octopus.Action.KubernetesContainers.PodSecurityRunAsGroup"         = "#{Kubernetes.Security.PodSecurityRunAsGroup}"
         "Octopus.Action.KubernetesContainers.PodSecurityRunAsUser"          = "#{Kubernetes.Security.PodSecurityRunAsUser}"
@@ -307,7 +319,7 @@ EOT
                 "value" = "#{Kubernetes.Application.Port}"
               }
             ]
-            "FeedId"       = "${data.octopusdeploy_feeds.feed_docker_hub.feeds[0].id}"
+            "FeedId"       = data.octopusdeploy_feeds.feed_docker_hub.feeds[0].id
             "IsNew"        = "true"
             "StartupProbe" = {
               "failureThreshold"    = ""
@@ -517,6 +529,7 @@ resource "octopusdeploy_project" "project_k8s_microservice" {
     data.octopusdeploy_library_variable_sets.variable.library_variable_sets[0].id,
     data.octopusdeploy_library_variable_sets.octopus_server.library_variable_sets[0].id,
     data.octopusdeploy_library_variable_sets.slack.library_variable_sets[0].id,
+    data.octopusdeploy_library_variable_sets.export_options.library_variable_sets[0].id
   ]
   tenanted_deployment_participation = "Untenanted"
 

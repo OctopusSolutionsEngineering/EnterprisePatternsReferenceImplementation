@@ -419,7 +419,7 @@ EOT
       tenant_tags           = []
 
       primary_package {
-        package_id           = "Hello_World"
+        package_id           = replace(var.project_name, "/[^A-Za-z0-9]/", "_")
         acquisition_location = "Server"
         feed_id              = data.octopusdeploy_feeds.feed_octopus_server__built_in_.feeds[0].id
         properties           = { SelectionMode = "immediate" }
