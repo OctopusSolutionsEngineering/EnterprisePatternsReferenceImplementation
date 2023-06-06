@@ -323,6 +323,7 @@ resource "octopusdeploy_deployment_process" "deployment_process" {
     action {
       action_type                        = "Octopus.Script"
       name                               = "Check for Vulnerabilities"
+      notes                              = "Scan the SBOM associated with the release."
       condition                          = "Success"
       run_on_server                      = true
       is_disabled                        = false
