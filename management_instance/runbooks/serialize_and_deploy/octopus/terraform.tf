@@ -121,7 +121,7 @@ resource "octopusdeploy_runbook" "runbook_backend_service_deploy_project" {
 }
 
 resource "octopusdeploy_runbook_process" "runbook_process_backend_service_serialize_project" {
-  runbook_id = "${octopusdeploy_runbook.runbook_backend_service_serialize_project.id}"
+  runbook_id = octopusdeploy_runbook.runbook_backend_service_serialize_project.id
 
   step {
     condition           = "Success"
@@ -137,7 +137,7 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_serial
       is_disabled                        = false
       can_be_used_for_project_versioning = true
       is_required                        = false
-      worker_pool_id                     = "${data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id}"
+      worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
       properties                         = {
         "Octopus.Action.Script.Syntax"       = "Python"
         "Octopus.Action.Script.ScriptBody"   = templatefile("../../shared_scripts/serialize_project.py", {})
@@ -393,7 +393,7 @@ EOT
         "Octopus.Action.AutoRetry.MaximumCount"                 = "3"
         "Octopus.Action.Terraform.GoogleCloudAccount"           = "False"
         "Octopus.Action.Terraform.TemplateDirectory"            = "space_population"
-        "Octopus.Action.Terraform.AdditionalActionParams"       = "-var=\"octopus_server=#{ManagedTenant.Octopus.Url}\" -var=\"octopus_space_id=#{Octopus.Action[Lookup New Space].Output.SpaceID}\" -var=\"octopus_apikey=#{ManagedTenant.Octopus.ApiKey}\" -var=\"${local.project_name_variable}=#{if Exported.Project.Name}#{Exported.Project.Name}#{/if}#{unless Exported.Project.Name}#{Octopus.Project.Name}#{/unless}\"}"
+        "Octopus.Action.Terraform.AdditionalActionParams"       = "-var=\"octopus_server=#{ManagedTenant.Octopus.Url}\" -var=\"octopus_space_id=#{Octopus.Action[Lookup New Space].Output.SpaceID}\" -var=\"octopus_apikey=#{ManagedTenant.Octopus.ApiKey}\" -var=\"${local.project_name_variable}=#{if Exported.Project.Name}#{Exported.Project.Name}#{/if}#{unless Exported.Project.Name}#{Octopus.Project.Name}#{/unless}\""
         "Octopus.Action.Aws.AssumeRole"                         = "False"
         "Octopus.Action.Aws.Region"                             = ""
         "Octopus.Action.Terraform.AllowPluginDownloads"         = "True"

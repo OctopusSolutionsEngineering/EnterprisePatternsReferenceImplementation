@@ -510,7 +510,7 @@ variable "project_k8s_microservice_template_name" {
   type        = string
   nullable    = false
   sensitive   = false
-  description = "The name of the project exported from Ad Service"
+  description = "The name of the microservice project"
   default     = "K8S Microservice Template"
 }
 
