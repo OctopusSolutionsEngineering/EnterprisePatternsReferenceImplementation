@@ -16,6 +16,12 @@ data "octopusdeploy_user_roles" "viewer" {
   take         = 1
 }
 
+data "octopusdeploy_user_roles" "task_cancel" {
+  partial_name = "Task Cancel"
+  skip         = 0
+  take         = 1
+}
+
 variable "octopus_space_id" {
   type        = string
   nullable    = false
@@ -38,6 +44,12 @@ resource "octopusdeploy_scoped_user_role" "viewer" {
   space_id     = var.octopus_space_id
   team_id      = data.octopusdeploy_teams.editors.teams[0].id
   user_role_id = data.octopusdeploy_user_roles.viewer.user_roles[0].id
+}
+
+resource "octopusdeploy_scoped_user_role" "task_cancel" {
+  space_id     = var.octopus_space_id
+  team_id      = data.octopusdeploy_teams.editors.teams[0].id
+  user_role_id = data.octopusdeploy_user_roles.task_cancel.user_roles[0].id
 }
 
 resource "octopusdeploy_scoped_user_role" "release" {

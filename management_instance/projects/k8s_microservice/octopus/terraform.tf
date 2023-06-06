@@ -398,7 +398,7 @@ EOT
                 ]
               }
               "privileged"             = "false"
-              "readOnlyRootFilesystem" = "#{if Kubernetes.Application.ReadOnlyFileSystem}#{Kubernetes.Application.ReadOnlyFileSystem}#{/if}#{unless Kubernetes.Application.ReadOnlyFileSystem}True#{/unless}"
+              "readOnlyRootFilesystem" = "#{if Kubernetes.Application.ReadOnlyFileSystem != \"\"}#{Kubernetes.Application.ReadOnlyFileSystem}#{/if}#{unless Kubernetes.Application.ReadOnlyFileSystem}True#{/unless}"
               "runAsGroup"             = ""
               "runAsNonRoot"           = ""
             }
