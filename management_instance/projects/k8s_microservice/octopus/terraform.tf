@@ -920,7 +920,7 @@ resource "octopusdeploy_runbook_process" "runbook_process_k8s_microservice_templ
         "Octopus.Action.Script.ScriptSource"            = "Inline"
         "Octopus.Action.Script.Syntax"                  = "Bash"
         "Octopus.Action.KubernetesContainers.Namespace" = "#{Kubernetes.Deployment.Namespace}"
-        "Octopus.Action.Script.ScriptBody"              = "cd octopub-log-scanner\nPODS=$(kubectl get pods -o json | jq -r '.items[] | .metadata.name')\n\nif [[ -z \"$PODS\" ]]\nthen\n\techo \"No pods found\"\n    exit 0\nfi\n\nfor pod in $PODS\ndo\n\tkubectl logs $pod \u003e $pod.txt\n\tpython3 octopub-log-scanner.py $pod.txt\ndone"
+        "Octopus.Action.Script.ScriptBody"              = "cd octopub-log-scanner\nPODS=$(kubectl get pods -o json | jq -r '.items[] | .metadata.name')\n\nif [[ -z \"$PODS\" ]]\nthen\n\techo \"No pods found\"\n    exit 0\nfi\n\nfor pod in $PODS\ndo\n\tkubectl logs $pod \u003e $pod.txt\n\techo \"--------------\"\n\tpython3 octopub-log-scanner.py $pod.txt\ndone"
       }
       environments          = []
       excluded_environments = []
