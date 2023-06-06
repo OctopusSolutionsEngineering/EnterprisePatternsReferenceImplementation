@@ -289,8 +289,8 @@ EOT
         "Octopus.Action.KubernetesContainers.PodSecurityRunAsNonRoot"       = "true"
         "Octopus.Action.KubernetesContainers.ServiceType"                   = "LoadBalancer"
         "Octopus.Action.KubernetesContainers.DeploymentResourceType"        = "Deployment"
-        "Octopus.Action.KubernetesContainers.PodSecurityRunAsGroup"         = "#{Kubernetes.Security.PodSecurityRunAsGroup}"
-        "Octopus.Action.KubernetesContainers.PodSecurityRunAsUser"          = "#{Kubernetes.Security.PodSecurityRunAsUser}"
+        "Octopus.Action.KubernetesContainers.PodSecurityRunAsGroup"         = "#{if Kubernetes.Security.PodSecurityRunAsGroup}#{Kubernetes.Security.PodSecurityRunAsGroup}#{/if}"
+        "Octopus.Action.KubernetesContainers.PodSecurityRunAsUser"          = "#{if Kubernetes.Security.PodSecurityRunAsUser}#{Kubernetes.Security.PodSecurityRunAsUser}#{/if}"
         "Octopus.Action.KubernetesContainers.DeploymentWait"                = "Wait"
         "Octopus.Action.KubernetesContainers.DeploymentStyle"               = "RollingUpdate"
         "Octopus.Action.KubernetesContainers.Namespace"                     = "#{Kubernetes.Deployment.Namespace}"
@@ -398,7 +398,7 @@ EOT
                 ]
               }
               "privileged"             = "false"
-              "readOnlyRootFilesystem" = "#{Kubernetes.Application.ReadOnlyFileSystem}"
+              "readOnlyRootFilesystem" = "#{if Kubernetes.Application.ReadOnlyFileSystem}#{Kubernetes.Application.ReadOnlyFileSystem}#{/if}#{unless Kubernetes.Application.ReadOnlyFileSystem}True#{/unless}"
               "runAsGroup"             = ""
               "runAsNonRoot"           = ""
             }
@@ -460,7 +460,7 @@ EOT
       }
 
       environments          = []
-      excluded_environments = ["Environments-1064", "Environments-1065"]
+      excluded_environments = []
       channels              = []
       tenant_tags           = []
 
