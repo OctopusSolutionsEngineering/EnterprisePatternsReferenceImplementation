@@ -169,7 +169,7 @@ resource "octopusdeploy_variable" "read_only_fs" {
   value        = "False"
   name         = "Kubernetes.Application.ReadOnlyFileSystem"
   type         = "String"
-  description  = "Set to True to enable a read-only file system for the container, and false otherwise."
+  description  = "Set to True to enable a read-only file system for the container, and false otherwise. Is assumed to be True if no value is set."
   is_sensitive = false
 }
 
@@ -398,7 +398,7 @@ EOT
                 ]
               }
               "privileged"             = "false"
-              "readOnlyRootFilesystem" = "#{if Kubernetes.Application.ReadOnlyFileSystem != \"\"}#{Kubernetes.Application.ReadOnlyFileSystem}#{/if}#{unless Kubernetes.Application.ReadOnlyFileSystem}True#{/unless}"
+              "readOnlyRootFilesystem" = "#{if Kubernetes.Application.ReadOnlyFileSystem != \"\"}#{Kubernetes.Application.ReadOnlyFileSystem}#{/if}#{if Kubernetes.Application.ReadOnlyFileSystem == \"\"}True#{/if}"
               "runAsGroup"             = ""
               "runAsNonRoot"           = ""
             }
