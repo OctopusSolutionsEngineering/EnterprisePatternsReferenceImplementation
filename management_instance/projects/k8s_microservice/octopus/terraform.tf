@@ -883,7 +883,7 @@ resource "octopusdeploy_runbook" "runbook_k8s_microservice_template_scan_pod_log
   ]
   force_package_download      = false
   default_guided_failure_mode = "EnvironmentDefault"
-  description                 = "Downloads the pod logs and runs them through a script that scans for known issues."
+  description                 = "Downloads the pod logs and runs them through a script that scans for known issues. This runbook is safe to run at any time."
   multi_tenancy_mode          = "Untenanted"
 
   retention_policy {
