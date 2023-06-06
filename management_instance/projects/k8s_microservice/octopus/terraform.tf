@@ -98,19 +98,19 @@ variable "octopusprintvariables_1" {
 
 resource "octopusdeploy_variable" "run_as_group" {
   owner_id     = octopusdeploy_project.project_k8s_microservice.id
-  value        = "101"
+  value        = ""
   name         = "Kubernetes.Security.PodSecurityRunAsGroup"
   type         = "String"
-  description  = "The non-root group to run the container as."
+  description  = "The non-root group to run the container as. Leave blank to assume the user defined in the Docker image."
   is_sensitive = false
 }
 
 resource "octopusdeploy_variable" "run_as_user" {
   owner_id     = octopusdeploy_project.project_k8s_microservice.id
-  value        = "101"
+  value        = ""
   name         = "Kubernetes.Security.PodSecurityRunAsUser"
   type         = "String"
-  description  = "The non-root user to run the container as."
+  description  = "The non-root user to run the container as. Leave blank to assume the user defined in the Docker image."
   is_sensitive = false
 }
 
