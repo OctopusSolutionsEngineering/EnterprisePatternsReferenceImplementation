@@ -871,3 +871,70 @@ resource "octopusdeploy_runbook_process" "create_incident_channel" {
     target_roles = []
   }
 }
+
+resource "octopusdeploy_runbook" "runbook_k8s_microservice_template_scan_pod_logs_for_errors" {
+  name                        = "Scan Pod Logs for Errors"
+  project_id                  = octopusdeploy_project.project_k8s_microservice.id
+  environment_scope           = "All"
+  environments                = []
+  force_package_download      = false
+  default_guided_failure_mode = "EnvironmentDefault"
+  description                 = "Downloads the pod logs and runs them through a script that scans for known issues."
+  multi_tenancy_mode          = "Untenanted"
+
+  retention_policy {
+    quantity_to_keep    = 100
+    should_keep_forever = false
+  }
+
+  connectivity_policy {
+    allow_deployments_to_no_targets = true
+    exclude_unhealthy_targets       = false
+    skip_machine_behavior           = "None"
+  }
+}
+
+resource "octopusdeploy_runbook_process" "runbook_process_k8s_microservice_template_scan_pod_logs_for_errors" {
+  runbook_id = octopusdeploy_runbook.runbook_k8s_microservice_template_scan_pod_logs_for_errors.id
+
+  step {
+    condition           = "Success"
+    name                = "Scan Log Files"
+    package_requirement = "LetOctopusDecide"
+    start_trigger       = "StartAfterPrevious"
+
+    action {
+      action_type                        = "Octopus.KubernetesRunScript"
+      name                               = "Scan Log Files"
+      condition                          = "Success"
+      run_on_server                      = true
+      is_disabled                        = false
+      can_be_used_for_project_versioning = true
+      is_required                        = false
+      worker_pool_id                     = ""
+      properties                         = {
+        "Octopus.Action.Script.ScriptSource"            = "Inline"
+        "Octopus.Action.Script.Syntax"                  = "Bash"
+        "Octopus.Action.KubernetesContainers.Namespace" = "#{Kubernetes.Deployment.Namespace}"
+        "Octopus.Action.Script.ScriptBody"              = "cd octopub-log-scanner\nPODS=$(kubectl get pods -o json | jq -r '.items[] | .metadata.name')\n\nif [[ -z \"$PODS\" ]]\nthen\n\techo \"No pods found\"\n    exit 0\nfi\n\nfor pod in $PODS\ndo\n\tkubectl logs $pod \u003e $pod.txt\n\tpython3 octopub-log-scanner.py $pod.txt\ndone"
+      }
+      environments          = []
+      excluded_environments = []
+      channels              = []
+      tenant_tags           = []
+
+      package {
+        name                      = "octopub-log-scanner"
+        package_id                = "com.octopus:octopub-log-scanner"
+        acquisition_location      = "Server"
+        extract_during_deployment = false
+        feed_id                   = data.octopusdeploy_feeds.maven.feeds[0].id
+        properties                = { Extract = "True", Purpose = "", SelectionMode = "immediate" }
+      }
+      features = []
+    }
+
+    properties   = {}
+    target_roles = ["k8s"]
+  }
+}
