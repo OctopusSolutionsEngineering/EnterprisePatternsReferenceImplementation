@@ -875,8 +875,12 @@ resource "octopusdeploy_runbook_process" "create_incident_channel" {
 resource "octopusdeploy_runbook" "runbook_k8s_microservice_template_scan_pod_logs_for_errors" {
   name                        = "Scan Pod Logs for Errors"
   project_id                  = octopusdeploy_project.project_k8s_microservice.id
-  environment_scope           = "All"
-  environments                = []
+  environment_scope           = "Specified"
+  environments      = [
+    data.octopusdeploy_environments.development.environments[0].id,
+    data.octopusdeploy_environments.test.environments[0].id,
+    data.octopusdeploy_environments.production.environments[0].id
+  ]
   force_package_download      = false
   default_guided_failure_mode = "EnvironmentDefault"
   description                 = "Downloads the pod logs and runs them through a script that scans for known issues."
