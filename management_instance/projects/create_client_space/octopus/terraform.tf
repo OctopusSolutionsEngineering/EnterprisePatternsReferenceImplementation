@@ -337,7 +337,7 @@ EOF
           "octopus_apikey"   = "#{ManagedTenant.Octopus.ApiKey}"
           "octopus_space_id" = "#{Octopus.Action[Create Client Space].Output.TerraformValueOutputs[space_id]}"
         })
-        "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name}"
+        "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name | Replace \"[^A-Za-z0-9]\" \"_\"}"
         "Octopus.Action.Terraform.PlanJsonOutput"               = "False"
         "Octopus.Action.Terraform.AzureAccount"                 = "False"
         "Octopus.Action.Terraform.ManagedAccount"               = "None"
@@ -406,7 +406,7 @@ EOF
           "octopus_apikey"   = "#{ManagedTenant.Octopus.ApiKey}"
           "octopus_space_id" = "#{Octopus.Action[Create Client Space].Output.TerraformValueOutputs[space_id]}"
         })
-        "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name}"
+        "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name | Replace \"[^A-Za-z0-9]\" \"_\"}"
         "Octopus.Action.Terraform.PlanJsonOutput"               = "False"
         "Octopus.Action.Terraform.AzureAccount"                 = "False"
         "Octopus.Action.Terraform.ManagedAccount"               = "None"
@@ -453,7 +453,7 @@ EOF
           "octopus_server" = "#{ThisInstance.Server.Url}"
           "octopus_apikey" = "#{ThisInstance.Api.Key}"
         })
-        "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name}"
+        "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name | Replace \"[^A-Za-z0-9]\" \"_\"}"
         "Octopus.Action.Terraform.PlanJsonOutput"               = "False"
         "Octopus.Action.Terraform.AzureAccount"                 = "False"
         "Octopus.Action.Terraform.ManagedAccount"               = "None"
@@ -531,7 +531,7 @@ EOF
           "octopus_server" = "#{ManagedTenant.Octopus.Url}"
           "octopus_apikey" = "#{ManagedTenant.Octopus.ApiKey}"
         })
-        "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name}"
+        "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name | Replace \"[^A-Za-z0-9]\" \"_\"}"
         "Octopus.Action.Terraform.PlanJsonOutput"               = "False"
         "Octopus.Action.Terraform.AzureAccount"                 = "False"
         "Octopus.Action.Terraform.ManagedAccount"               = "None"
@@ -610,7 +610,7 @@ EOF
           "octopus_server" = "#{ManagedTenant.Octopus.Url}"
           "octopus_apikey" = "#{ManagedTenant.Octopus.ApiKey}"
         })
-        "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name}"
+        "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name | Replace \"[^A-Za-z0-9]\" \"_\"}"
         "Octopus.Action.Terraform.PlanJsonOutput"               = "False"
         "Octopus.Action.Terraform.AzureAccount"                 = "False"
         "Octopus.Action.Terraform.ManagedAccount"               = "None"
@@ -690,7 +690,7 @@ EOF
           "cac_password"   = "Password01!"
           "cac_username"   = "octopus"
         })
-        "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name}"
+        "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name | Replace \"[^A-Za-z0-9]\" \"_\"}"
         "Octopus.Action.Terraform.PlanJsonOutput"               = "False"
         "Octopus.Action.Terraform.AzureAccount"                 = "False"
         "Octopus.Action.Terraform.ManagedAccount"               = "None"
@@ -768,7 +768,7 @@ EOF
           "octopus_server" = "#{ManagedTenant.Octopus.Url}"
           "octopus_apikey" = "#{ManagedTenant.Octopus.ApiKey}"
         })
-        "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name}"
+        "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name | Replace \"[^A-Za-z0-9]\" \"_\"}"
         "Octopus.Action.Terraform.PlanJsonOutput"               = "False"
         "Octopus.Action.Terraform.AzureAccount"                 = "False"
         "Octopus.Action.Terraform.ManagedAccount"               = "None"
@@ -848,7 +848,7 @@ EOF
           "docker_password" = "#{Tenant.Docker.Password}"
           "docker_username" = "#{Tenant.Docker.Username}"
         })
-        "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name}"
+        "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name | Replace \"[^A-Za-z0-9]\" \"_\"}"
         "Octopus.Action.Terraform.PlanJsonOutput"               = "False"
         "Octopus.Action.Terraform.AzureAccount"                 = "False"
         "Octopus.Action.Terraform.ManagedAccount"               = "None"
@@ -926,7 +926,7 @@ EOF
           "octopus_server" = "#{ManagedTenant.Octopus.Url}"
           "octopus_apikey" = "#{ManagedTenant.Octopus.ApiKey}"
         })
-        "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name}"
+        "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name | Replace \"[^A-Za-z0-9]\" \"_\"}"
         "Octopus.Action.Terraform.PlanJsonOutput"               = "False"
         "Octopus.Action.Terraform.AzureAccount"                 = "False"
         "Octopus.Action.Terraform.ManagedAccount"               = "None"
@@ -1006,7 +1006,7 @@ EOF
           "slack_bot_token"     = "#{Slack.Bot.Token}"
           "slack_support_users" = "#{Slack.Support.Users}"
         })
-        "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name}"
+        "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name | Replace \"[^A-Za-z0-9]\" \"_\"}"
         "Octopus.Action.Terraform.PlanJsonOutput"               = "False"
         "Octopus.Action.Terraform.AzureAccount"                 = "False"
         "Octopus.Action.Terraform.ManagedAccount"               = "None"
@@ -1084,7 +1084,7 @@ EOF
           "octopus_server" = "#{ManagedTenant.Octopus.Url}"
           "octopus_apikey" = "#{ManagedTenant.Octopus.ApiKey}"
         })
-        "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name}"
+        "Octopus.Action.Terraform.Workspace"                    = "#{Octopus.Deployment.Tenant.Name | Replace \"[^A-Za-z0-9]\" \"_\"}"
         "Octopus.Action.Terraform.PlanJsonOutput"               = "False"
         "Octopus.Action.Terraform.AzureAccount"                 = "False"
         "Octopus.Action.Terraform.ManagedAccount"               = "None"
