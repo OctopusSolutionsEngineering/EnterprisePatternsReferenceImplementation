@@ -5,6 +5,9 @@ resource "octopusdeploy_user_role" "user_role" {
   granted_system_permissions    = []
   name                          = "Variable editor"
   space_permission_descriptions = []
+  lifecycle {
+    ignore_changes = all
+  }
 }
 
 resource "octopusdeploy_user_role" "viewer" {
@@ -20,6 +23,9 @@ resource "octopusdeploy_user_role" "viewer" {
   granted_system_permissions    = []
   name                          = "Read-Only"
   space_permission_descriptions = []
+  lifecycle {
+    ignore_changes = all
+  }
 }
 
 resource "octopusdeploy_user_role" "task_canceller" {
@@ -31,6 +37,9 @@ resource "octopusdeploy_user_role" "task_canceller" {
   granted_system_permissions    = []
   name                          = "Task Cancel"
   space_permission_descriptions = []
+  lifecycle {
+    ignore_changes = all
+  }
 }
 
 resource "octopusdeploy_user" "user" {
