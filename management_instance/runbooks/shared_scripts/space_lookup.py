@@ -6,6 +6,7 @@ import json
 import urllib.request
 import os
 import sys
+import time
 
 # If this script is not being run as part of an Octopus step, return variables from environment variables.
 if "get_octopusvariable" not in globals():
@@ -26,7 +27,14 @@ headers = {
     'Accept': 'application/json'
 }
 request = urllib.request.Request(url, headers=headers)
-response = urllib.request.urlopen(request)
+
+# Retry the request for up to a minute. This is because under heavy load Octopus may not respond correctly.
+for x in range(12):
+    response = urllib.request.urlopen(request)
+    if response.getcode() == 200:
+        break
+    time.sleep(5)
+
 data = json.loads(response.read().decode("utf-8"))
 
 space = [x for x in data['Items'] if x['Name'] == get_octopusvariable('Octopus.Deployment.Tenant.Name')]
