@@ -113,8 +113,8 @@ for workspace in workspaces:
                                          cwd=trimmed_workspace)
 
             if merge_base == merge_source_current_commit:
-                print(space_id + ' "' + name + '" ' + url + " ✓")
+                print(str(space_id or '') + ' "' + str(name or '') + '" ' + str(url or '') + " ✓")
             elif merge_result != 0:
-                print(space_id + ' "' + name + '" ' + url + " ×")
+                print(str(space_id or '') + ' "' + str(name or '') + '" ' + str(url or '') + " ×")
             else:
-                print(space_id + ' "' + name + '" ' + url + " ▶")
+                print(str(space_id or '') + ' "' + str(name or '') + '" ' + str(url or '') + " ▶")

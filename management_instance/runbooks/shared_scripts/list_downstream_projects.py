@@ -67,4 +67,4 @@ for workspace in workspaces:
         space_id = resource.get('values', {}).get('space_id', None)
         name = resource.get('values', {}).get('name', None)
 
-        print(space_id + ' "' + name + '" ' + url)
+        print(str(space_id or '') + ' "' + str(name or '') + '" ' + str(url or ''))
