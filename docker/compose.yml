@@ -35,8 +35,8 @@ services:
       - ADMIN_EMAIL=octopusguides@gmail.com
       - ADMIN_PASSWORD=Password01!
       - ACCEPT_EULA=Y
-      - DB_CONNECTION_STRING=Server=mssql,1433;Database=Octopus;User Id=SA;Password=Password01!;ConnectRetryCount=6
-      - CONNSTRING=Server=mssql,1433;Database=Octopus;User Id=SA;Password=Password01!;ConnectRetryCount=6
+      - DB_CONNECTION_STRING=Server=mssql,1433;Database=Octopus;User Id=SA;Password=Password01!;ConnectRetryCount=6;Max Pool Size=5000
+      - CONNSTRING=Server=mssql,1433;Database=Octopus;User Id=SA;Password=Password01!;ConnectRetryCount=6;Max Pool Size=5000
       - MASTER_KEY=6EdU6IWsCtMEwk0kPKflQQ==
       - OCTOPUS_SERVER_BASE64_LICENSE
     platform: linux/x86_64
