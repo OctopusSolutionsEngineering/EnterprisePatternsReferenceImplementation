@@ -4,6 +4,7 @@
 
 import json
 import urllib.request
+import urllib.parse
 import os
 import sys
 import time
@@ -21,7 +22,8 @@ if "set_octopusvariable" not in globals():
     def set_octopusvariable(variable):
         print(variable)
 
-url = 'http://octopus:8080/api/Spaces'
+url = 'http://octopus:8080/api/Spaces?partialName=' + \
+      urllib.parse.quote(get_octopusvariable('Octopus.Deployment.Tenant.Name'))
 headers = {
     "X-Octopus-ApiKey": "API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
     'Accept': 'application/json'
