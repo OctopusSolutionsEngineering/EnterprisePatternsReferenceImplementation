@@ -156,7 +156,7 @@ DATABASE=$(dig +short terraformdb)
 # a retry loop to ensure the command succeeds successfully.
 max_retry=2
 counter=0
-until /usr/bin/flock /tmp/createdb.lock docker run --rm -e "PGPASSWORD=terraform" --entrypoint '/bin/bash' postgres -c "echo \"SELECT 'CREATE DATABASE spaces' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'spaces')\gexec\" | /usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform'" 2>&1
+until /usr/bin/flock /tmp/spaces.lock docker run --rm -e "PGPASSWORD=terraform" --entrypoint '/bin/bash' postgres -c "echo \"SELECT 'CREATE DATABASE spaces' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'spaces')\gexec\" | /usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform'" 2>&1
 do
    sleep 5
    [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
@@ -165,7 +165,7 @@ do
 done
 
 counter=0
-until /usr/bin/flock /tmp/createdb.lock docker run --rm -e "PGPASSWORD=terraform" --entrypoint '/bin/bash' postgres -c "echo \"SELECT 'CREATE DATABASE tenant_variables' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'tenant_variables')\gexec\" | /usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform'" 2>&1
+until /usr/bin/flock /tmp/tenant_variables.lock docker run --rm -e "PGPASSWORD=terraform" --entrypoint '/bin/bash' postgres -c "echo \"SELECT 'CREATE DATABASE tenant_variables' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'tenant_variables')\gexec\" | /usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform'" 2>&1
 do
    sleep 5
    [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
@@ -174,7 +174,7 @@ do
 done
 
 counter=0
-until /usr/bin/flock /tmp/createdb.lock docker run --rm -e "PGPASSWORD=terraform" --entrypoint '/bin/bash' postgres -c "echo \"SELECT 'CREATE DATABASE var_lib_slack' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'var_lib_slack')\gexec\" | /usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform'" 2>&1
+until /usr/bin/flock /tmp/var_lib_slack.lock docker run --rm -e "PGPASSWORD=terraform" --entrypoint '/bin/bash' postgres -c "echo \"SELECT 'CREATE DATABASE var_lib_slack' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'var_lib_slack')\gexec\" | /usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform'" 2>&1
 do
    sleep 5
    [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
@@ -183,7 +183,7 @@ do
 done
 
 counter=0
-until /usr/bin/flock /tmp/createdb.lock docker run --rm -e "PGPASSWORD=terraform" --entrypoint '/bin/bash' postgres -c "echo \"SELECT 'CREATE DATABASE scoped_user_role_deployer_variable_editor' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'scoped_user_role_deployer_variable_editor')\gexec\" | /usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform'" 2>&1
+until /usr/bin/flock /tmp/scoped_user_role_deployer_variable_editor.lock docker run --rm -e "PGPASSWORD=terraform" --entrypoint '/bin/bash' postgres -c "echo \"SELECT 'CREATE DATABASE scoped_user_role_deployer_variable_editor' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'scoped_user_role_deployer_variable_editor')\gexec\" | /usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform'" 2>&1
 do
    sleep 5
    [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
@@ -192,7 +192,7 @@ do
 done
 
 counter=0
-until /usr/bin/flock /tmp/createdb.lock docker run --rm -e "PGPASSWORD=terraform" --entrypoint '/bin/bash' postgres -c "echo \"SELECT 'CREATE DATABASE scoped_user_role_deployer' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'scoped_user_role_deployer')\gexec\" | /usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform'" 2>&1
+until /usr/bin/flock /tmp/scoped_user_role_deployer.lock docker run --rm -e "PGPASSWORD=terraform" --entrypoint '/bin/bash' postgres -c "echo \"SELECT 'CREATE DATABASE scoped_user_role_deployer' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'scoped_user_role_deployer')\gexec\" | /usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform'" 2>&1
 do
    sleep 5
    [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
