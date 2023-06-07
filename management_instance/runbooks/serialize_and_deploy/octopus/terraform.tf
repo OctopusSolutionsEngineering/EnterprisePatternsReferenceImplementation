@@ -211,7 +211,7 @@ echo "Pulling postgres image"
 echo "##octopus[stdout-verbose]"
 max_retry=12
 counter=0
-until docker pull postgres 2>&1
+until /usr/bin/flock /tmp/dockerpull.lock docker pull postgres 2>&1
 do
    sleep 5
    [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
