@@ -154,7 +154,7 @@ DATABASE=$(dig +short terraformdb)
 # a retry loop to ensure the command succeeds successfully.
 max_retry=2
 counter=0
-until docker run -e "PGPASSWORD=terraform" --entrypoint '/usr/bin/flock' postgres /root/createdb.lock /bin/bash -c "echo \"SELECT 'CREATE DATABASE project_initialize_azure_space' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'project_initialize_azure_space')\gexec\" | /usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform'" 2>&1
+until /usr/bin/flock /tmp/createdb.lock docker run --rm -e "PGPASSWORD=terraform" --entrypoint '/bin/bash' postgres -c "echo \"SELECT 'CREATE DATABASE project_initialize_azure_space' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'project_initialize_azure_space')\gexec\" | /usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform'" 2>&1
 do
    sleep 5
    [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
