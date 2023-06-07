@@ -65,6 +65,7 @@ print("Octopus container hostname: " + parsed_url.hostname)
 print("Octopus container IP: " + octopus.strip())
 
 stdout, _, _ = execute(['docker', 'run',
+                        '--rm',
                         '--add-host=octopus:' + octopus.strip(),
                         '-v', os.getcwd() + "/export:/export",
                         'octopussamples/octoterra',
