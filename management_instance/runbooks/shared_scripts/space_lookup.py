@@ -30,7 +30,7 @@ headers = {
 }
 request = urllib.request.Request(url, headers=headers)
 
-# Retry the request for up to a minute. This is because under heavy load Octopus may not respond correctly.
+# Retry the request for up to a minute.
 for x in range(12):
     response = urllib.request.urlopen(request)
     if response.getcode() == 200:
