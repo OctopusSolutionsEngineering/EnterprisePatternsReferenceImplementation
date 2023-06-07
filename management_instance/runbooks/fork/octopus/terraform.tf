@@ -293,7 +293,8 @@ octo \
   --runbook 'Create Client Space' \
   --environment 'Sync' \
   --tenant '#{Octopus.Deployment.Tenant.Name}' \
-  --waitForRun
+  --waitForRun \
+  --runTimeout '01:00:00'
 EOT
       }
       environments          = []
@@ -341,7 +342,8 @@ octo \
   --runbook '${var.compose_runbook}' \
   --environment 'Sync' \
   --tenant '#{Octopus.Deployment.Tenant.Name}' \
-  --waitForRun
+  --waitForRun \
+  --runTimeout '01:00:00'
 EOT
       }
       environments          = []
