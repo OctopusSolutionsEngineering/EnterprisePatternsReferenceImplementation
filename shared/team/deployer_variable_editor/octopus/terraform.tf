@@ -1,7 +1,7 @@
 resource "octopusdeploy_user_role" "user_role" {
   can_be_deleted                = true
   description                   = "Grants the ability to edit project variables."
-  granted_space_permissions     = ["VariableEdit", "VariableView"]
+  granted_space_permissions     = ["VariableView", "VariableEdit"]
   granted_system_permissions    = []
   name                          = "Variable editor"
   space_permission_descriptions = []
