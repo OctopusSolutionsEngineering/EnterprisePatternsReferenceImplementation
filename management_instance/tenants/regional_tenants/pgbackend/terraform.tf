@@ -220,6 +220,14 @@ variable "azure_tenant_id" {
   default     = "00000000-0000-0000-0000-000000000000"
 }
 
+variable "generic_tenant_count" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "How many generic tenants to create."
+  default     = "0"
+}
+
 module "octopus" {
   source                        = "../octopus"
   america_azure_application_id  = var.america_azure_application_id
@@ -246,4 +254,5 @@ module "octopus" {
   azure_subscription_id         = var.azure_subscription_id
   azure_password                = var.azure_password
   azure_tenant_id               = var.azure_tenant_id
+  generic_tenant_count          = var.generic_tenant_count
 }
