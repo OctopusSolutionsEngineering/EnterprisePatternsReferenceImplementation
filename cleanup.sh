@@ -1,3 +1,5 @@
+#!/bin/bash
+
 pushd docker || exit
 docker-compose down
 for volume in $(docker volume ls -q)
