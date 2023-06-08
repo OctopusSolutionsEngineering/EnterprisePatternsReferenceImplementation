@@ -11,7 +11,7 @@ locals {
   project_name_sanitized = "#{if Exported.Project.Name}#{Exported.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}#{/if}#{unless Exported.Project.Name}#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}#{/unless}"
   backend                = local.project_name_sanitized
   workspace              = "#{Octopus.Deployment.Tenant.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_${local.project_name_sanitized}"
-  new_repo               = "#{Octopus.Deployment.Tenant.Name | ToLower}_${local.project_name_sanitized}"
+  new_repo               = "#{Octopus.Deployment.Tenant.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_${local.project_name_sanitized}"
   project_name_variable  = "project_${local.project_name_sanitized}_name"
   cac_org                = "octopuscac"
   cac_password           = "Password01!"
