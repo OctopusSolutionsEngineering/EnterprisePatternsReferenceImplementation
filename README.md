@@ -31,6 +31,9 @@ Windows users should run this script in WSL.
 
 You must have [Docker](https://docs.docker.com/get-docker/) and Docker Compose installed.
 
+Linux users must download the Compose plugin. [This page](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-compose-on-ubuntu-22-04)
+has instructions.
+
 You also require these additional dependencies:
 
 * curl
