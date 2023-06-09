@@ -65,7 +65,7 @@ for workspace in workspaces:
                  x.get('type', '') == 'octopusdeploy_project']
 
     # The outputs allow us to contact the downstream instance)
-    api_key, _, api_key_retcode = execute(['terraform', 'output', '-raw', 'octopus_apikey'])
+    api_key, _, api_key_retcode = execute(['terraform', 'output', '-raw', 'octopus_apikey'], print_output=None)
     server, _, server_retcode = execute(['terraform', 'output', '-raw', 'octopus_server'])
     space_id, _, space_id_retcode = execute(['terraform', 'output', '-raw', 'octopus_space_id'])
     space_name = None
