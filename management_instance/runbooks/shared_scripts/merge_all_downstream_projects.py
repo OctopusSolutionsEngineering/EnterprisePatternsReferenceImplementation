@@ -142,9 +142,21 @@ def find_downstream_projects(merge_repo_callback):
                     elif merge_result != 0:
                         print('Project ' + str(name or '') + ' in space ' + str(space_id or '') +
                               ' has merge conflicts and has not been processed')
+                        print('To resolve the conflicts, run the following commands:')
+                        print('git clone ' + url)
+                        print('git remote add upstream ' + template_repo_url)
+                        print('git fetch --all')
+                        print('git checkout -b upstream-' + branch + ' upstream/' + branch)
+                        if branch != 'master' and branch != 'main':
+                            print('git checkout -b ' + branch + ' origin/' + branch)
+                        else:
+                            print('git checkout ' + branch)
+                        print('git merge-base ' + branch + ' upstream-' + branch)
+                        print('git merge --no-commit --no-ff upstream-' + branch)
                     else:
                         print('Project ' + str(name or '') + ' in space ' + str(space_id or '') +
                               ' is being merged with the upstream repo')
+
                         merge_repo_callback(trimmed_workspace)
                 finally:
                     shutil.rmtree(trimmed_workspace)
