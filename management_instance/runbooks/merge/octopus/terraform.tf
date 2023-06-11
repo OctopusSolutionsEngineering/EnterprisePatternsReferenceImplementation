@@ -5,17 +5,18 @@ terraform {
 }
 
 locals {
-  project_name = "#{if Exported.Project.Name}#{Exported.Project.Name}#{/if}#{unless Exported.Project.Name}#{Octopus.Project.Name}#{/unless}"
+  project_name           = "#{if Exported.Project.Name}#{Exported.Project.Name}#{/if}#{unless Exported.Project.Name}#{Octopus.Project.Name}#{/unless}"
   project_name_sanitized = "#{if Exported.Project.Name}#{Exported.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}#{/if}#{unless Exported.Project.Name}#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}#{/unless}"
-  workspace     = "#{Octopus.Deployment.Tenant.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_${local.project_name_sanitized}"
-  new_repo      = "#{Octopus.Deployment.Tenant.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_${local.project_name_sanitized}"
-  cac_org       = "octopuscac"
-  cac_password  = "Password01!"
-  cac_username  = "octopus"
-  cac_host      = "gitea:3000"
-  cac_proto     = "http"
-  template_repo = "#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
-  project_dir   = ".octopus/project"
+  workspace              = "#{Octopus.Deployment.Tenant.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_${local.project_name_sanitized}"
+  new_repo               = "#{Octopus.Deployment.Tenant.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_${local.project_name_sanitized}"
+  cac_org                = "octopuscac"
+  cac_password           = "Password01!"
+  cac_username           = "octopus"
+  cac_host               = "gitea:3000"
+  cac_proto              = "http"
+  template_repo          = "#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
+  project_dir            = ".octopus/project"
+  backend                = "#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
 }
 
 variable "project_name" {
@@ -65,16 +66,8 @@ data "octopusdeploy_environments" "sync" {
   take         = 1
 }
 
-variable "runbook_backend_service_deploy_project_name" {
-  type        = string
-  nullable    = false
-  sensitive   = false
-  description = "The name of the project exported from Deploy Project"
-  default     = "__ 3. Merge with Downstream Project"
-}
-
 resource "octopusdeploy_runbook" "runbook_merge_git" {
-  name                        = var.runbook_backend_service_deploy_project_name
+  name                        = "__ 5. Merge with Downstream Project"
   project_id                  = data.octopusdeploy_projects.project.projects[0].id
   environment_scope           = "Specified"
   environments                = [data.octopusdeploy_environments.sync.environments[0].id]
@@ -124,7 +117,7 @@ resource "octopusdeploy_runbook_process" "runbook_process_merge_git" {
           cac_password  = local.cac_password,
           new_repo      = local.new_repo,
           template_repo = local.template_repo,
-          project_dir   = local.project_dir,
+          project_dir   = local.project_dir
         })
         "OctopusUseBundledTooling" = "False"
       }
@@ -141,3 +134,71 @@ resource "octopusdeploy_runbook_process" "runbook_process_merge_git" {
   }
 }
 
+
+resource "octopusdeploy_runbook" "runbook_merge_all_git" {
+  name                        = "__ 6. Merge All Downstream Projects"
+  project_id                  = data.octopusdeploy_projects.project.projects[0].id
+  environment_scope           = "Specified"
+  environments                = [data.octopusdeploy_environments.sync.environments[0].id]
+  force_package_download      = false
+  default_guided_failure_mode = "EnvironmentDefault"
+  description                 = "This project merges the changes from an upstream CaC repo into all non-conflicting downstream CaC repos."
+  multi_tenancy_mode          = "Untenanted"
+
+  retention_policy {
+    quantity_to_keep    = 100
+    should_keep_forever = false
+  }
+
+  connectivity_policy {
+    allow_deployments_to_no_targets = true
+    exclude_unhealthy_targets       = false
+    skip_machine_behavior           = "None"
+  }
+}
+
+resource "octopusdeploy_runbook_process" "runbook_process_merge_all_git" {
+  runbook_id = octopusdeploy_runbook.runbook_merge_all_git.id
+
+  step {
+    condition           = "Success"
+    name                = "Merge Deployment Process"
+    package_requirement = "LetOctopusDecide"
+    start_trigger       = "StartAfterPrevious"
+
+    action {
+      action_type                        = "Octopus.Script"
+      name                               = "Merge Deployment Process"
+      condition                          = "Success"
+      run_on_server                      = true
+      is_disabled                        = false
+      can_be_used_for_project_versioning = true
+      is_required                        = false
+      worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
+      properties                         = {
+        "Octopus.Action.Script.ScriptSource" = "Inline"
+        "Octopus.Action.Script.Syntax"       = "Python"
+        "Octopus.Action.Script.ScriptBody"   = templatefile("../../shared_scripts/merge_all_downstream_projects.py", {
+          cac_host      = local.cac_host,
+          cac_proto     = local.cac_proto,
+          cac_username  = local.cac_username,
+          cac_org       = local.cac_org,
+          cac_password  = local.cac_password,
+          template_repo = local.template_repo,
+          project_dir   = local.project_dir,
+          backend       = local.backend
+        })
+        "OctopusUseBundledTooling" = "False"
+      }
+
+      environments          = []
+      excluded_environments = []
+      channels              = []
+      tenant_tags           = []
+      features              = []
+    }
+
+    properties   = {}
+    target_roles = []
+  }
+}

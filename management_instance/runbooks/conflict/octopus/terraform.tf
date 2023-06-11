@@ -60,7 +60,7 @@ variable "runbook_backend_service_deploy_project_name" {
   nullable    = false
   sensitive   = false
   description = "The name of the project exported from Deploy Project"
-  default     = "__ 5. Find Updates"
+  default     = "__ 4. Find Updates"
 }
 
 resource "octopusdeploy_runbook" "runbook_merge_git" {
