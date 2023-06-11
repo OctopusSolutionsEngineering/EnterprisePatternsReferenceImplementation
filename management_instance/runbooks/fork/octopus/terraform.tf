@@ -12,7 +12,7 @@ locals {
   backend                = local.project_name_sanitized
   workspace              = "#{Octopus.Deployment.Tenant.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_${local.project_name_sanitized}"
   new_repo               = "#{Octopus.Deployment.Tenant.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_${local.project_name_sanitized}"
-  project_name_variable  = "project_${local.project_name_sanitized}_name"
+  project_name_variable  = "project_#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_name"
   cac_org                = "octopuscac"
   cac_password           = "Password01!"
   cac_username           = "octopus"
