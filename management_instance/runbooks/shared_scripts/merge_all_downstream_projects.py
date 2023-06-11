@@ -143,7 +143,9 @@ def find_downstream_projects(merge_repo_callback):
                         print('Project ' + str(name or '') + ' in space ' + str(space_id or '') +
                               ' has merge conflicts and has not been processed')
                         print('To resolve the conflicts, run the following commands:')
-                        print('git clone ' + url)
+                        print('mkdir cac')
+                        print('cd cac')
+                        print('git clone ' + url + ' .')
                         print('git remote add upstream ' + template_repo_url)
                         print('git fetch --all')
                         print('git checkout -b upstream-' + branch + ' upstream/' + branch)
