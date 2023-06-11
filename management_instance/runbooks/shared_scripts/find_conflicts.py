@@ -1,8 +1,10 @@
 import subprocess
-import sys
+import time
 import os
 import re
 import json
+import urllib.request
+import urllib.parse
 
 # If this script is not being run as part of an Octopus step, return variables from environment variables.
 if "get_octopusvariable" not in globals():
@@ -87,6 +89,31 @@ for workspace in workspaces:
     resources = [x for x in state.get('values', {}).get('root_module', {}).get('resources', {}) if
                  x.get('type', '') == 'octopusdeploy_project']
 
+    # The outputs allow us to contact the downstream instance)
+    api_key, _, api_key_retcode = execute(['terraform', 'output', '-raw', 'octopus_apikey'], print_output=None)
+    server, _, server_retcode = execute(['terraform', 'output', '-raw', 'octopus_server'])
+    space_id, _, space_id_retcode = execute(['terraform', 'output', '-raw', 'octopus_space_id'])
+    space_name = None
+
+    # Find the downstream space name
+    if api_key_retcode == 0 and server_retcode == 0 and space_id_retcode == 0:
+        url = server + '/api/Spaces/' + space_id
+        headers = {
+            "X-Octopus-ApiKey": api_key,
+            'Accept': 'application/json'
+        }
+        request = urllib.request.Request(url, headers=headers)
+        response = None
+        for x in range(3):
+            response = urllib.request.urlopen(request)
+            if response.getcode() == 200:
+                break
+            time.sleep(5)
+
+        response_data = response.read().decode("utf-8")
+        data = json.loads(response_data)
+        space_name = data.get("Name", None)
+
     for resource in resources:
         git_settings = resource.get('values', {}).get('git_library_persistence_settings', [{}])
         url = git_settings[0].get('url', None) if len(git_settings) != 0 else None
@@ -113,8 +140,8 @@ for workspace in workspaces:
                                          cwd=trimmed_workspace)
 
             if merge_base == merge_source_current_commit:
-                print(str(space_id or '') + ' "' + str(name or '') + '" ' + str(url or '') + " ✓")
+                print(str(space_name or space_id or '') + ' "' + str(name or '') + '" ' + str(url or '') + " ✓")
             elif merge_result != 0:
-                print(str(space_id or '') + ' "' + str(name or '') + '" ' + str(url or '') + " ×")
+                print(str(space_name or space_id or '') + ' "' + str(name or '') + '" ' + str(url or '') + " ×")
             else:
-                print(str(space_id or '') + ' "' + str(name or '') + '" ' + str(url or '') + " ▶")
+                print(str(space_name or space_id or '') + ' "' + str(name or '') + '" ' + str(url or '') + " ▶")

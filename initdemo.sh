@@ -6,9 +6,10 @@ then
   exit 1
 fi
 
-if ! which docker-compose
+if ! docker compose > /dev/null 2>&1
 then
   echo "You must install Docker Compose: https://docs.docker.com/get-docker/"
+  echo "Linux users can find instructions here: https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-compose-on-ubuntu-22-04"
   exit 1
 fi
 
@@ -67,8 +68,8 @@ fi
 
 # Start the Docker Compose stack
 pushd docker
-docker-compose pull
-docker-compose up -d
+docker compose pull
+docker compose up -d
 popd
 
 # Create a new cluster with a custom configuration that binds to all network addresses
@@ -293,18 +294,19 @@ do
 done
 
 # Install all the tools we'll need to perform deployments
-docker-compose -f docker/compose.yml exec octopus sh -c 'curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && apt-get install -y nodejs'
-docker-compose -f docker/compose.yml exec octopus sh -c 'apt-get install -y jq git dnsutils zip gnupg software-properties-common python3 python3-pip'
-docker-compose -f docker/compose.yml exec octopus sh -c 'pip install slack_sdk'
-docker-compose -f docker/compose.yml exec octopus sh -c 'apt update && apt install -y --no-install-recommends gnupg curl ca-certificates apt-transport-https && curl -sSfL https://apt.octopus.com/public.key | apt-key add - && sh -c "echo deb https://apt.octopus.com/ stable main > /etc/apt/sources.list.d/octopus.com.list" && apt update && apt install -y octopuscli'
-docker-compose -f docker/compose.yml exec octopus sh -c 'wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor > /usr/share/keyrings/hashicorp-archive-keyring.gpg'
-docker-compose -f docker/compose.yml exec octopus sh -c 'echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" > /etc/apt/sources.list.d/hashicorp.list'
-docker-compose -f docker/compose.yml exec octopus sh -c 'apt update && apt-get install -y terraform'
-docker-compose -f docker/compose.yml exec octopus sh -c 'curl -sL https://aka.ms/InstallAzureCLIDeb | bash'
-docker-compose -f docker/compose.yml exec octopus sh -c 'if [ ! -f /usr/local/bin/kubectl ]; then curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"; install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl; fi'
-docker-compose -f docker/compose.yml exec octopus sh -c 'RELEASES=$(curl --silent https://api.github.com/repos/OctopusDeployLabs/terraform-provider-octopusdeploy/releases | jq -r ".[] | .name[1:]"); echo $RELEASES; for RELEASE in ${RELEASES}; do echo "Downloading https://github.com/OctopusDeployLabs/terraform-provider-octopusdeploy/releases/download/v${RELEASE}/terraform-provider-octopusdeploy_${RELEASE}_linux_amd64.zip"; mkdir -p "/terraformcache/registry.terraform.io/octopusdeploylabs/octopusdeploy/${RELEASE}/linux_amd64"; cd "/terraformcache/registry.terraform.io/octopusdeploylabs/octopusdeploy/${RELEASE}/linux_amd64"; if [ ! -f "terraform-provider-octopusdeploy_v${RELEASE}" ]; then curl --silent -L -o "terraform-provider-octopusdeploy_${RELEASE}_linux_amd64.zip" "https://github.com/OctopusDeployLabs/terraform-provider-octopusdeploy/releases/download/v${RELEASE}/terraform-provider-octopusdeploy_${RELEASE}_linux_amd64.zip"; unzip "terraform-provider-octopusdeploy_${RELEASE}_linux_amd64.zip"; rm "terraform-provider-octopusdeploy_${RELEASE}_linux_amd64.zip"; fi; done'
+docker compose -f docker/compose.yml exec octopus sh -c 'curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && apt-get install -y nodejs'
+docker compose -f docker/compose.yml exec octopus sh -c 'apt-get install -y jq git dnsutils zip gnupg software-properties-common python3 python3-pip'
+docker compose -f docker/compose.yml exec octopus sh -c 'pip install slack_sdk'
+docker compose -f docker/compose.yml exec octopus sh -c 'pip install pycryptodome'
+docker compose -f docker/compose.yml exec octopus sh -c 'apt update && apt install -y --no-install-recommends gnupg curl ca-certificates apt-transport-https && curl -sSfL https://apt.octopus.com/public.key | apt-key add - && sh -c "echo deb https://apt.octopus.com/ stable main > /etc/apt/sources.list.d/octopus.com.list" && apt update && apt install -y octopuscli'
+docker compose -f docker/compose.yml exec octopus sh -c 'wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor > /usr/share/keyrings/hashicorp-archive-keyring.gpg'
+docker compose -f docker/compose.yml exec octopus sh -c 'echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" > /etc/apt/sources.list.d/hashicorp.list'
+docker compose -f docker/compose.yml exec octopus sh -c 'apt update && apt-get install -y terraform'
+docker compose -f docker/compose.yml exec octopus sh -c 'curl -sL https://aka.ms/InstallAzureCLIDeb | bash'
+docker compose -f docker/compose.yml exec octopus sh -c 'if [ ! -f /usr/local/bin/kubectl ]; then curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"; install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl; fi'
+docker compose -f docker/compose.yml exec octopus sh -c 'RELEASES=$(curl --silent https://api.github.com/repos/OctopusDeployLabs/terraform-provider-octopusdeploy/releases | jq -r ".[] | .name[1:]"); echo $RELEASES; for RELEASE in ${RELEASES}; do echo "Downloading https://github.com/OctopusDeployLabs/terraform-provider-octopusdeploy/releases/download/v${RELEASE}/terraform-provider-octopusdeploy_${RELEASE}_linux_amd64.zip"; mkdir -p "/terraformcache/registry.terraform.io/octopusdeploylabs/octopusdeploy/${RELEASE}/linux_amd64"; cd "/terraformcache/registry.terraform.io/octopusdeploylabs/octopusdeploy/${RELEASE}/linux_amd64"; if [ ! -f "terraform-provider-octopusdeploy_v${RELEASE}" ]; then curl --silent -L -o "terraform-provider-octopusdeploy_${RELEASE}_linux_amd64.zip" "https://github.com/OctopusDeployLabs/terraform-provider-octopusdeploy/releases/download/v${RELEASE}/terraform-provider-octopusdeploy_${RELEASE}_linux_amd64.zip"; unzip "terraform-provider-octopusdeploy_${RELEASE}_linux_amd64.zip"; rm "terraform-provider-octopusdeploy_${RELEASE}_linux_amd64.zip"; fi; done'
 # https://developer.hashicorp.com/terraform/cli/config/config-file#explicit-installation-method-configuration
-docker-compose -f docker/compose.yml exec octopus sh -c 'echo "provider_installation {\nfilesystem_mirror {\npath = \"/terraformcache\"\ninclude = [\"registry.terraform.io/octopusdeploylabs/octopusdeploy\"]\n}\n}" > ~/.terraformrc'
+docker compose -f docker/compose.yml exec octopus sh -c 'echo "provider_installation {\nfilesystem_mirror {\npath = \"/terraformcache\"\ninclude = [\"registry.terraform.io/octopusdeploylabs/octopusdeploy\"]\n}\n}" > ~/.terraformrc'
 
 # Wait for the Octopus server.
 echo "Waiting for the Octopus server"
@@ -321,7 +323,7 @@ execute_terraform () {
   TF_MODULE_PATH="${2}"
   SPACE_ID="${3}"
 
-  docker-compose -f docker/compose.yml exec terraformdb sh -c "/usr/bin/psql -v ON_ERROR_STOP=1 --username \"\$POSTGRES_USER\" -c \"CREATE DATABASE $PG_DATABASE\""
+  docker compose -f docker/compose.yml exec terraformdb sh -c "/usr/bin/psql -v ON_ERROR_STOP=1 --username \"\$POSTGRES_USER\" -c \"CREATE DATABASE $PG_DATABASE\""
   pushd "${TF_MODULE_PATH}" || exit 1
   terraform init -reconfigure -upgrade
   terraform workspace select -or-create "${SPACE_ID}"
@@ -352,7 +354,7 @@ execute_terraform_with_project () {
     COMPOSE_PROJECT="${8}"
     COMPOSE_RUNBOOK="${9}"
 
-    docker-compose -f docker/compose.yml exec terraformdb sh -c "/usr/bin/psql -v ON_ERROR_STOP=1 --username \"\$POSTGRES_USER\" -c \"CREATE DATABASE $PG_DATABASE\""
+    docker compose -f docker/compose.yml exec terraformdb sh -c "/usr/bin/psql -v ON_ERROR_STOP=1 --username \"\$POSTGRES_USER\" -c \"CREATE DATABASE $PG_DATABASE\""
     pushd "${TF_MODULE_PATH}" || exit 1
     terraform init -reconfigure -upgrade
 
@@ -389,7 +391,7 @@ execute_terraform_with_spacename () {
   TF_MODULE_PATH="${2}"
   SPACENAME="${3}"
 
-  docker-compose -f docker/compose.yml exec terraformdb sh -c "/usr/bin/psql -v ON_ERROR_STOP=1 --username \"\$POSTGRES_USER\" -c \"CREATE DATABASE $PG_DATABASE\""
+  docker compose -f docker/compose.yml exec terraformdb sh -c "/usr/bin/psql -v ON_ERROR_STOP=1 --username \"\$POSTGRES_USER\" -c \"CREATE DATABASE $PG_DATABASE\""
   pushd "${TF_MODULE_PATH}" || exit 1
   terraform init -reconfigure -upgrade
 
@@ -524,7 +526,7 @@ publish_runbook "__ Compose K8S Resources" "Initialize Space"
 execute_terraform 'project_pr_checks' 'management_instance/projects/pr_checks/pgbackend' 'Spaces-1'
 
 # Setup targets
-docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE target_k8s"'
+docker compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE target_k8s"'
 pushd shared/targets/k8s/pgbackend || exit 1
 terraform init -reconfigure -upgrade
 terraform workspace select -or-create "Spaces-1"
@@ -536,7 +538,7 @@ terraform apply \
 popd
 
 # Add the tenants
-docker-compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE tenants_region"'
+docker compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE tenants_region"'
 pushd management_instance/tenants/regional_tenants/pgbackend || exit 1
 terraform init -reconfigure -upgrade
 terraform workspace select -or-create "Spaces-1"
