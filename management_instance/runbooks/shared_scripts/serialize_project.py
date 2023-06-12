@@ -42,8 +42,12 @@ def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose
         print_output(' '.join(args))
 
     if print_output is not None:
-        print_output(stdout)
-        print_output(stderr)
+        # Octopus does not use ANSI color codes in the output, so strip these codes
+        stdout_no_ansi = re.sub('\x1b\[[0-9;]*m', '', stdout)
+        stderr_no_ansi = re.sub('\x1b\[[0-9;]*m', '', stderr)
+
+        print_output(stdout_no_ansi)
+        print_output(stderr_no_ansi)
 
     return stdout, stderr, retcode
 

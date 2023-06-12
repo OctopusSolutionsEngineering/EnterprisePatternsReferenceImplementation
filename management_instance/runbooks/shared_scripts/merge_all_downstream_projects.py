@@ -27,6 +27,7 @@ template_repo_url = 'http://gitea:3000/octopuscac/' + project_name + '.git'
 template_repo = 'http://' + cac_username + ':' + cac_password + '@gitea:3000/octopuscac/' + project_name + '.git'
 branch = 'main'
 project_dir = '${project_dir}'
+tenant_name = get_octopusvariable("Octopus.Deployment.Tenant.Name")
 
 
 def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose):
@@ -47,8 +48,12 @@ def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose
         print_output(' '.join(args))
 
     if print_output is not None:
-        print_output(stdout)
-        print_output(stderr)
+        # Octopus does not use ANSI color codes in the output, so strip these codes
+        stdout_no_ansi = re.sub('\x1b\[[0-9;]*m', '', stdout)
+        stderr_no_ansi = re.sub('\x1b\[[0-9;]*m', '', stderr)
+
+        print_output(stdout_no_ansi)
+        print_output(stderr_no_ansi)
 
     return stdout, stderr, retcode
 
@@ -98,6 +103,12 @@ def find_downstream_projects(merge_repo_callback):
             continue
 
         execute(['terraform', 'workspace', 'select', trimmed_workspace])
+
+        octopus_space_name, _, server_retcode = execute(['terraform', 'output', '-raw', 'octopus_space_name'])
+
+        # We only work on the projects associated with the current tenant
+        if not octopus_space_name == tenant_name:
+            continue
 
         state_json, _, _ = execute(['terraform', 'show', '-json'])
         state = json.loads(state_json)
