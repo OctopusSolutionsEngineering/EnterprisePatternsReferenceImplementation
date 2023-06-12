@@ -68,26 +68,7 @@ for workspace in workspaces:
     api_key, _, api_key_retcode = execute(['terraform', 'output', '-raw', 'octopus_apikey'], print_output=None)
     server, _, server_retcode = execute(['terraform', 'output', '-raw', 'octopus_server'])
     space_id, _, space_id_retcode = execute(['terraform', 'output', '-raw', 'octopus_space_id'])
-    space_name = None
-
-    # Find the downstream space name
-    if api_key_retcode == 0 and server_retcode == 0 and space_id_retcode == 0:
-        url = server + '/api/Spaces/' + space_id
-        headers = {
-            "X-Octopus-ApiKey": api_key,
-            'Accept': 'application/json'
-        }
-        request = urllib.request.Request(url, headers=headers)
-        response = None
-        for x in range(3):
-            response = urllib.request.urlopen(request)
-            if response.getcode() == 200:
-                break
-            time.sleep(5)
-
-        response_data = response.read().decode("utf-8")
-        data = json.loads(response_data)
-        space_name = data.get("Name", None)
+    space_name, _, _ = execute(['terraform', 'output', '-raw', 'octopus_space_name'])
 
     for resource in resources:
         git_settings = resource.get('values', {}).get('git_library_persistence_settings', [{}])

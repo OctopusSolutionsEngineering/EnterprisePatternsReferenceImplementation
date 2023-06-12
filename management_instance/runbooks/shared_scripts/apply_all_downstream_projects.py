@@ -30,7 +30,7 @@ project_space_population_dir = project_dir + '/space_population'
 octopus_server = get_octopusvariable("ManagedTenant.Octopus.Url")
 octopus_space_id = get_octopusvariable("ManagedTenant.Octopus.SpaceId")
 octopus_api_key = get_octopusvariable("ManagedTenant.Octopus.ApiKey")
-sanitized_tenant_name = re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable("Octopus.Deployment.Tenant.Name").lower())
+tenant_name = get_octopusvariable("Octopus.Deployment.Tenant.Name")
 
 
 def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose):
@@ -80,8 +80,10 @@ def find_downstream_projects(apply_project_callback):
     for workspace in workspaces:
         trimmed_workspace = workspace.strip()
 
+        octopus_space_name, _, server_retcode = execute(['terraform', 'output', '-raw', 'octopus_space_name'])
+
         # We only work on the projects associated with the current tenant
-        if not trimmed_workspace.startswith(sanitized_tenant_name):
+        if not octopus_space_name == tenant_name:
             continue
 
         execute(['terraform', 'workspace', 'select', trimmed_workspace], cwd=project_space_population_dir)
