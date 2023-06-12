@@ -52,6 +52,7 @@ cac_username = '${cac_username}'
 cac_password = '${cac_password}'
 backend = '${backend}'
 project_name = re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable('Octopus.Project.Name').lower())
+template_repo_url = 'http://gitea:3000/octopuscac/' + project_name + '.git'
 template_repo = 'http://' + cac_username + ':' + cac_password + '@gitea:3000/octopuscac/' + project_name + '.git'
 branch = 'main'
 
@@ -75,6 +76,7 @@ execute(['terraform', 'init', '-no-color',
 print("✓ - Up to date")
 print("▶ - Can automatically merge")
 print("× - Merge conflict")
+print("Verbose logs contain instructions for resolving merge conflicts.")
 
 workspaces, _, _ = execute(['terraform', 'workspace', 'list'])
 workspaces = workspaces.replace('*', '').split('\n')
@@ -128,5 +130,18 @@ for workspace in workspaces:
                 print(str(space_name or space_id or '') + ' "' + str(name or '') + '" ' + str(url or '') + " ✓")
             elif merge_result != 0:
                 print(str(space_name or space_id or '') + ' "' + str(name or '') + '" ' + str(url or '') + " ×")
+                printverbose('To resolve the conflicts, run the following commands:')
+                printverbose('mkdir cac')
+                printverbose('cd cac')
+                printverbose('git clone ' + url + ' .')
+                printverbose('git remote add upstream ' + template_repo_url)
+                printverbose('git fetch --all')
+                printverbose('git checkout -b upstream-' + branch + ' upstream/' + branch)
+                if branch != 'master' and branch != 'main':
+                    printverbose('git checkout -b ' + branch + ' origin/' + branch)
+                else:
+                    printverbose('git checkout ' + branch)
+                printverbose('git merge-base ' + branch + ' upstream-' + branch)
+                printverbose('git merge --no-commit --no-ff upstream-' + branch)
             else:
                 print(str(space_name or space_id or '') + ' "' + str(name or '') + '" ' + str(url or '') + " ▶")

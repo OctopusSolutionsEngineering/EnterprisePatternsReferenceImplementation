@@ -153,19 +153,19 @@ def find_downstream_projects(merge_repo_callback):
                     elif merge_result != 0:
                         print('Project ' + str(name or '') + ' in space ' + str(octopus_space_name or '') +
                               ' has merge conflicts and has not been processed')
-                        print('To resolve the conflicts, run the following commands:')
-                        print('mkdir cac')
-                        print('cd cac')
-                        print('git clone ' + url + ' .')
-                        print('git remote add upstream ' + template_repo_url)
-                        print('git fetch --all')
-                        print('git checkout -b upstream-' + branch + ' upstream/' + branch)
+                        printverbose('To resolve the conflicts, run the following commands:')
+                        printverbose('mkdir cac')
+                        printverbose('cd cac')
+                        printverbose('git clone ' + url + ' .')
+                        printverbose('git remote add upstream ' + template_repo_url)
+                        printverbose('git fetch --all')
+                        printverbose('git checkout -b upstream-' + branch + ' upstream/' + branch)
                         if branch != 'master' and branch != 'main':
-                            print('git checkout -b ' + branch + ' origin/' + branch)
+                            printverbose('git checkout -b ' + branch + ' origin/' + branch)
                         else:
-                            print('git checkout ' + branch)
-                        print('git merge-base ' + branch + ' upstream-' + branch)
-                        print('git merge --no-commit --no-ff upstream-' + branch)
+                            printverbose('git checkout ' + branch)
+                        printverbose('git merge-base ' + branch + ' upstream-' + branch)
+                        printverbose('git merge --no-commit --no-ff upstream-' + branch)
                     else:
                         print('Project ' + str(name or '') + ' in space ' + str(octopus_space_name or '') +
                               ' is being merged with the upstream repo')
@@ -175,6 +175,8 @@ def find_downstream_projects(merge_repo_callback):
                     shutil.rmtree(trimmed_workspace)
 
 
+print("Merging upstream template into downstream projects.")
+print("Verbose logs contain instructions for resolving merge conflicts.")
 init_git()
 init_terraform()
 find_downstream_projects(merge_repo)
