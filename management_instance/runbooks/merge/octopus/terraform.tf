@@ -143,7 +143,7 @@ resource "octopusdeploy_runbook" "runbook_merge_all_git" {
   force_package_download      = false
   default_guided_failure_mode = "EnvironmentDefault"
   description                 = "This project merges the changes from an upstream CaC repo into all non-conflicting downstream CaC repos."
-  multi_tenancy_mode          = "Untenanted"
+  multi_tenancy_mode          = "Tenanted"
 
   retention_policy {
     quantity_to_keep    = 100
