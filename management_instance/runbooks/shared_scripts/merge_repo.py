@@ -10,6 +10,13 @@ if "printverbose" not in globals():
     def printverbose(msg):
         print(msg)
 
+if "get_octopusvariable" not in globals():
+    def get_octopusvariable(variable):
+        if variable == 'Git.Credentials.Username':
+            return os.environ['GIT_CREDENTIALS_USERNAME']
+        if variable == 'Git.Credentials.Password':
+            return os.environ['GIT_CREDENTIALS_PASSWORD']
+
 
 def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose):
     """
@@ -56,8 +63,8 @@ def check_repo_exists(url, username, password):
 cac_proto = '${cac_proto}'
 cac_host = '${cac_host}'
 cac_org = '${cac_org}'
-cac_username = '${cac_username}'
-cac_password = '${cac_password}'
+cac_username = get_octopusvariable('Git.Credentials.Username')
+cac_password = get_octopusvariable('Git.Credentials.Password')
 new_repo = '${new_repo}'
 template_repo = '${template_repo}'
 project_dir = '${project_dir}'

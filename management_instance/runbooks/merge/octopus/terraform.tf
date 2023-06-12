@@ -112,9 +112,7 @@ resource "octopusdeploy_runbook_process" "runbook_process_merge_git" {
         "Octopus.Action.Script.ScriptBody"   = templatefile("../../shared_scripts/merge_repo.py", {
           cac_host      = local.cac_host,
           cac_proto     = local.cac_proto,
-          cac_username  = local.cac_username,
           cac_org       = local.cac_org,
-          cac_password  = local.cac_password,
           new_repo      = local.new_repo,
           template_repo = local.template_repo,
           project_dir   = local.project_dir
@@ -181,9 +179,7 @@ resource "octopusdeploy_runbook_process" "runbook_process_merge_all_git" {
         "Octopus.Action.Script.ScriptBody"   = templatefile("../../shared_scripts/merge_all_downstream_projects.py", {
           cac_host      = local.cac_host,
           cac_proto     = local.cac_proto,
-          cac_username  = local.cac_username,
           cac_org       = local.cac_org,
-          cac_password  = local.cac_password,
           template_repo = local.template_repo,
           project_dir   = local.project_dir,
           backend       = local.backend

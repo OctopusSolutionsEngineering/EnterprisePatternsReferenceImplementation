@@ -1,16 +1,19 @@
-import subprocess
-import sys
+import json
 import os
 import re
-import json
-from urllib.parse import urlparse
 import shutil
+import subprocess
+from urllib.parse import urlparse
 
 # If this script is not being run as part of an Octopus step, return variables from environment variables.
 if "get_octopusvariable" not in globals():
     def get_octopusvariable(variable):
         if variable == 'Octopus.Project.Name':
             return os.environ['OCTOPUS_PROJECT_NAME']
+        if variable == 'Git.Credentials.Username':
+            return os.environ['GIT_CREDENTIALS_USERNAME']
+        if variable == 'Git.Credentials.Password':
+            return os.environ['GIT_CREDENTIALS_PASSWORD']
 
         return ""
 
@@ -19,8 +22,8 @@ if "printverbose" not in globals():
     def printverbose(msg):
         print(msg)
 
-cac_username = '${cac_username}'
-cac_password = '${cac_password}'
+cac_username = get_octopusvariable('Git.Credentials.Username')
+cac_password = get_octopusvariable('Git.Credentials.Password')
 backend = '${backend}'
 project_name = re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable('Octopus.Project.Name').lower())
 template_repo_url = 'http://gitea:3000/octopuscac/' + project_name + '.git'

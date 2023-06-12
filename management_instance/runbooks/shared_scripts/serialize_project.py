@@ -125,6 +125,9 @@ stdout, _, _ = execute(['docker', 'run',
                         # This is library variable set used by excluded runbooks, and so we don't want to link to it in
                         # the export
                         '-excludeLibraryVariableSet', 'Export Options',
+                        # This is library variable set used by excluded runbooks, and so we don't want to link to it in
+                        # the export
+                        '-excludeLibraryVariableSet', 'Git',
                         # Capture the octopus endpoint, key, and space as output vars
                         '-includeOctopusOutputVars',
                         # The directory where the exported files will be saved

@@ -66,6 +66,10 @@ then
   exit 1
 fi
 
+# We know these test credentials, so hard code them
+export TF_VAR_git_username="octopus"
+export TF_VAR_git_password="Password01!"
+
 # Start the Docker Compose stack
 pushd docker
 docker compose pull
@@ -503,6 +507,8 @@ execute_terraform 'lib_var_k8s' 'shared/variables/k8s/pgbackend' 'Spaces-1'
 execute_terraform 'lib_var_client_slack' 'shared/variables/client_slack/pgbackend' 'Spaces-1'
 
 execute_terraform 'lib_var_slack' 'shared/variables/slack/pgbackend' 'Spaces-1'
+
+execute_terraform 'lib_var_git' 'shared/variables/git/pgbackend' 'Spaces-1'
 
 execute_terraform 'lib_var_export_options' 'shared/variables/export_options/pgbackend' 'Spaces-1'
 

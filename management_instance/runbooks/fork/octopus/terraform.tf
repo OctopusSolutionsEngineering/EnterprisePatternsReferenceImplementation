@@ -14,13 +14,11 @@ locals {
   new_repo               = "#{Octopus.Deployment.Tenant.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_${local.project_name_sanitized}"
   project_name_variable  = "project_#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_name"
   cac_org                = "octopuscac"
-  cac_password           = "Password01!"
-  cac_username           = "octopus"
   cac_host               = "gitea:3000"
   cac_proto              = "http"
   package                = "#{Octopus.Project.Name | Replace \"[^a-zA-Z0-9]\" \"_\"}"
-  git_url_var_name       = "project_${local.project_name_sanitized}_git_url"
-  template_repo          = local.project_name_sanitized
+  git_url_var_name       = "project_#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_git_url"
+  template_repo          = "#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
 }
 
 variable "project_name" {
@@ -377,9 +375,7 @@ EOT
         "Octopus.Action.Script.ScriptBody" = templatefile("../../shared_scripts/fork_repo.py", {
           cac_host      = local.cac_host,
           cac_proto     = local.cac_proto,
-          cac_username  = local.cac_username,
           cac_org       = local.cac_org,
-          cac_password  = local.cac_password,
           new_repo      = local.new_repo,
           template_repo = local.template_repo
         })

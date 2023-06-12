@@ -17,6 +17,10 @@ if "get_octopusvariable" not in globals():
             return os.environ['OCTOPUS_SPACE_ID']
         elif variable == 'Octopus.Project.Name':
             return os.environ['OCTOPUS_PROJECT_NAME']
+        if variable == 'Git.Credentials.Username':
+            return os.environ['GIT_CREDENTIALS_USERNAME']
+        if variable == 'Git.Credentials.Password':
+            return os.environ['GIT_CREDENTIALS_PASSWORD']
 
         return ""
 
@@ -58,8 +62,8 @@ def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose
 cac_proto = '${cac_proto}'
 cac_host = '${cac_host}'
 cac_org = '${cac_org}'
-cac_username = '${cac_username}'
-cac_password = '${cac_password}'
+cac_username = get_octopusvariable('Git.Credentials.Username')
+cac_password = get_octopusvariable('Git.Credentials.Password')
 new_repo = '${new_repo}'
 template_repo = '${template_repo}'
 branch = 'main'
