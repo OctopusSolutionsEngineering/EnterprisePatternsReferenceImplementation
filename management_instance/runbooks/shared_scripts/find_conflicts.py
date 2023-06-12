@@ -66,7 +66,7 @@ with open('backend.tf', 'w') as f:
         backend "pg" {
       }
       required_providers {
-        octopusdeploy = { source = "OctopusDeployLabs/octopusdeploy", version = "0.12.1" }
+        octopusdeploy = { source = "OctopusDeployLabs/octopusdeploy", version = "0.12.2" }
       }
     }
     """)
