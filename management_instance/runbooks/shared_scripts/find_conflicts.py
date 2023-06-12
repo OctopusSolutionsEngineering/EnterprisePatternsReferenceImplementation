@@ -56,8 +56,8 @@ cac_host = get_octopusvariable('Git.Url.Host')
 cac_org = get_octopusvariable('Git.Url.Organization')
 backend = re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable('Octopus.Project.Name').lower())
 project_name = re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable('Octopus.Project.Name').lower())
-template_repo_url = cac_host + '://' + cac_host + '/' + cac_org + '/' + project_name + '.git'
-template_repo = cac_host + '://' + cac_username + ':' + cac_password + '@' + cac_host + '/' + cac_org + '/' + project_name + '.git'
+template_repo_url = cac_proto + '://' + cac_host + '/' + cac_org + '/' + project_name + '.git'
+template_repo = cac_proto + '://' + cac_username + ':' + cac_password + '@' + cac_host + '/' + cac_org + '/' + project_name + '.git'
 branch = 'main'
 
 with open('backend.tf', 'w') as f:
