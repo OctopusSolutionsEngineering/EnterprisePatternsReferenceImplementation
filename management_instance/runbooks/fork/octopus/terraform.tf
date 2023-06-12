@@ -9,7 +9,7 @@ locals {
   # Otherwise default to the project name.
   project_name           = "#{if Exported.Project.Name}#{Exported.Project.Name}#{/if}#{unless Exported.Project.Name}#{Octopus.Project.Name}#{/unless}"
   project_name_sanitized = "#{if Exported.Project.Name}#{Exported.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}#{/if}#{unless Exported.Project.Name}#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}#{/unless}"
-  backend                = local.project_name_sanitized
+  backend                = "#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
   workspace              = "#{Octopus.Deployment.Tenant.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_${local.project_name_sanitized}"
   new_repo               = "#{Octopus.Deployment.Tenant.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_${local.project_name_sanitized}"
   project_name_variable  = "project_#{Octopus.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}_name"
@@ -150,7 +150,7 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_serial
       worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
       properties                         = {
         "Octopus.Action.Script.Syntax"       = "Python"
-        "Octopus.Action.Script.ScriptBody"   = templatefile("../../shared_scripts/serialize_project.py", {})
+        "Octopus.Action.Script.ScriptBody"   = file("../../shared_scripts/serialize_project.py")
         "Octopus.Action.Script.ScriptSource" = "Inline"
       }
       environments          = []
@@ -372,13 +372,7 @@ EOT
       worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
       properties                         = {
         "Octopus.Action.Script.Syntax"     = "Python"
-        "Octopus.Action.Script.ScriptBody" = templatefile("../../shared_scripts/fork_repo.py", {
-          cac_host      = local.cac_host,
-          cac_proto     = local.cac_proto,
-          cac_org       = local.cac_org,
-          new_repo      = local.new_repo,
-          template_repo = local.template_repo
-        })
+        "Octopus.Action.Script.ScriptBody" = file("../../shared_scripts/fork_repo.py")
         "Octopus.Action.Script.ScriptSource" = "Inline"
       }
       environments          = []

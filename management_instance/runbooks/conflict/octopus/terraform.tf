@@ -165,11 +165,7 @@ EOT
       properties                         = {
         "Octopus.Action.Script.ScriptSource" = "Inline"
         "Octopus.Action.Script.Syntax"       = "Python"
-        "Octopus.Action.Script.ScriptBody"   = templatefile("../../shared_scripts/find_conflicts.py", {
-          "backend"      = local.backend
-          "cac_password" = "Password01!"
-          "cac_username" = "octopus"
-        })
+        "Octopus.Action.Script.ScriptBody"   = file("../../shared_scripts/find_conflicts.py")
         "OctopusUseBundledTooling" = "False"
       }
 

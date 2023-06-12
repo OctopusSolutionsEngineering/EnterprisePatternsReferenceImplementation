@@ -165,9 +165,7 @@ EOT
       properties                         = {
         "Octopus.Action.Script.ScriptSource" = "Inline"
         "Octopus.Action.Script.Syntax"       = "Python"
-        "Octopus.Action.Script.ScriptBody"   = templatefile("../../shared_scripts/list_downstream_projects.py", {
-          backend : local.backend,
-        })
+        "Octopus.Action.Script.ScriptBody"   = file("../../shared_scripts/list_downstream_projects.py")
         "OctopusUseBundledTooling" = "False"
       }
 

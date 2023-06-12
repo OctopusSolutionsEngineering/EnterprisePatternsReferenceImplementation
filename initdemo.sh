@@ -69,6 +69,9 @@ fi
 # We know these test credentials, so hard code them
 export TF_VAR_git_username="octopus"
 export TF_VAR_git_password="Password01!"
+export TF_VAR_git_host="gitea:3000"
+export TF_VAR_git_protocol="http"
+export TF_VAR_git_organization="octopuscac"
 
 # Start the Docker Compose stack
 pushd docker

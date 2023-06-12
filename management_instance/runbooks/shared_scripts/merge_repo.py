@@ -60,14 +60,18 @@ def check_repo_exists(url, username, password):
         return False
 
 
-cac_proto = '${cac_proto}'
-cac_host = '${cac_host}'
-cac_org = '${cac_org}'
+cac_proto = get_octopusvariable('Git.Url.Protocol')
+cac_host = get_octopusvariable('Git.Url.Host')
+cac_org = get_octopusvariable('Git.Url.Organization')
 cac_username = get_octopusvariable('Git.Credentials.Username')
 cac_password = get_octopusvariable('Git.Credentials.Password')
-new_repo = '${new_repo}'
-template_repo = '${template_repo}'
-project_dir = '${project_dir}'
+tenant_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable('Octopus.Deployment.Tenant.Name').lower())
+new_project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable('Exported.Project.Name').lower())
+original_project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable('Octopus.Project.Name').lower())
+project_name_sanitized = new_project_name_sanitized if len(new_project_name_sanitized) != 0 else original_project_name_sanitized
+new_repo = tenant_name_sanitized + '_' + project_name_sanitized
+template_repo = re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable('Octopus.Project.Name').lower())
+project_dir = '.octopus/project'
 branch = 'main'
 
 new_repo_url = cac_proto + '://' + cac_host + '/' + cac_org + '/' + new_repo + '.git'

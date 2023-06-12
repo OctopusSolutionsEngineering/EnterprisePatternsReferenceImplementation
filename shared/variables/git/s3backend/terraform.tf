@@ -49,13 +49,29 @@ variable "git_username" {
 variable "git_password" {
   type      = string
   default   = "dummy"
-  sensitive = false
+  sensitive = true
+}
+
+variable "git_protocol" {
+  type    = string
+  default = "http"
+}
+
+variable "git_host" {
+  type    = string
+  default = "gitea:3000"
+}
+
+variable "git_organization" {
+  type    = string
+  default = "octopuscac"
 }
 
 module "octopus" {
-  source       = "../octopus"
-  git_username = var.git_username
-  git_password = var.git_password
+  source           = "../octopus"
+  git_username     = var.git_username
+  git_password     = var.git_password
+  git_protocol     = var.git_protocol
+  git_host         = var.git_host
+  git_organization = var.git_organization
 }
-
-

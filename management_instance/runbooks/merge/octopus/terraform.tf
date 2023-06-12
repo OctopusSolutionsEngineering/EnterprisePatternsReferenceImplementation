@@ -109,14 +109,7 @@ resource "octopusdeploy_runbook_process" "runbook_process_merge_git" {
       properties                         = {
         "Octopus.Action.Script.ScriptSource" = "Inline"
         "Octopus.Action.Script.Syntax"       = "Python"
-        "Octopus.Action.Script.ScriptBody"   = templatefile("../../shared_scripts/merge_repo.py", {
-          cac_host      = local.cac_host,
-          cac_proto     = local.cac_proto,
-          cac_org       = local.cac_org,
-          new_repo      = local.new_repo,
-          template_repo = local.template_repo,
-          project_dir   = local.project_dir
-        })
+        "Octopus.Action.Script.ScriptBody"   = file("../../shared_scripts/merge_repo.py")
         "OctopusUseBundledTooling" = "False"
       }
 
@@ -176,14 +169,7 @@ resource "octopusdeploy_runbook_process" "runbook_process_merge_all_git" {
       properties                         = {
         "Octopus.Action.Script.ScriptSource" = "Inline"
         "Octopus.Action.Script.Syntax"       = "Python"
-        "Octopus.Action.Script.ScriptBody"   = templatefile("../../shared_scripts/merge_all_downstream_projects.py", {
-          cac_host      = local.cac_host,
-          cac_proto     = local.cac_proto,
-          cac_org       = local.cac_org,
-          template_repo = local.template_repo,
-          project_dir   = local.project_dir,
-          backend       = local.backend
-        })
+        "Octopus.Action.Script.ScriptBody"   = file("../../shared_scripts/merge_all_downstream_projects.py")
         "OctopusUseBundledTooling" = "False"
       }
 

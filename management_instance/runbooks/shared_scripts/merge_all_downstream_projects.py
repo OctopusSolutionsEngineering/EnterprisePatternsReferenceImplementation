@@ -24,12 +24,15 @@ if "printverbose" not in globals():
 
 cac_username = get_octopusvariable('Git.Credentials.Username')
 cac_password = get_octopusvariable('Git.Credentials.Password')
-backend = '${backend}'
+cac_proto = get_octopusvariable('Git.Url.Protocol')
+cac_host = get_octopusvariable('Git.Url.Host')
+cac_org = get_octopusvariable('Git.Url.Organization')
+backend = re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable('Octopus.Project.Name').lower())
 project_name = re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable('Octopus.Project.Name').lower())
-template_repo_url = 'http://gitea:3000/octopuscac/' + project_name + '.git'
-template_repo = 'http://' + cac_username + ':' + cac_password + '@gitea:3000/octopuscac/' + project_name + '.git'
+template_repo_url = cac_proto + '://' + cac_host + '/' + cac_org + '/' + project_name + '.git'
+template_repo = cac_proto + '://' + cac_username + ':' + cac_password + '@' + cac_host + '/' + cac_org + '/' + project_name + '.git'
 branch = 'main'
-project_dir = '${project_dir}'
+project_dir = '.octopus/project'
 tenant_name = get_octopusvariable("Octopus.Deployment.Tenant.Name")
 
 

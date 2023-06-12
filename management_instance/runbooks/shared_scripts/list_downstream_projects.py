@@ -1,6 +1,13 @@
 import json
 import re
 import subprocess
+import os
+
+# If this script is not being run as part of an Octopus step, return variables from environment variables.
+if "get_octopusvariable" not in globals():
+    def get_octopusvariable(variable):
+        if variable == 'Octopus.Project.Name':
+            return os.environ['OCTOPUS_PROJECT_NAME']
 
 # If this script is not being run as part of an Octopus step, print directly to std out.
 if "printverbose" not in globals():
@@ -36,7 +43,7 @@ def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose
     return stdout, stderr, retcode
 
 
-backend = '${backend}'
+backend = re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable('Octopus.Project.Name').lower())
 
 with open('backend.tf', 'w') as f:
     f.write("""
