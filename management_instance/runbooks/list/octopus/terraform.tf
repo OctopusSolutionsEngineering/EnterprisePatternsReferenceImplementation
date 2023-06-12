@@ -70,7 +70,7 @@ resource "octopusdeploy_runbook" "runbook_merge_git" {
   environments                = [data.octopusdeploy_environments.sync.environments[0].id]
   force_package_download      = false
   default_guided_failure_mode = "EnvironmentDefault"
-  description                 = "This project merges the changes from an upstream CaC repo into the downstream CaC repo."
+  description                 = "This project lists all the downstream projects created from this upstream template."
   multi_tenancy_mode          = "Untenanted"
 
   retention_policy {

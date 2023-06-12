@@ -58,14 +58,6 @@ data "octopusdeploy_environments" "sync" {
   take         = 1
 }
 
-variable "runbook_backend_service_deploy_project_name" {
-  type        = string
-  nullable    = false
-  sensitive   = false
-  description = "The name of the project exported from Deploy Project"
-  default     = "__ 2. Deploy Project"
-}
-
 variable "compose_project" {
   type        = string
   nullable    = false
@@ -99,7 +91,7 @@ variable "create_space_runbook" {
 }
 
 resource "octopusdeploy_runbook" "runbook_backend_service_deploy_project" {
-  name                        = var.runbook_backend_service_deploy_project_name
+  name                        = "__ 2. Deploy Project"
   project_id                  = data.octopusdeploy_projects.project.projects[0].id
   environment_scope           = "Specified"
   environments                = [data.octopusdeploy_environments.sync.environments[0].id]
@@ -155,16 +147,8 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_serial
   }
 }
 
-variable "runbook_backend_service_serialize_project_name" {
-  type        = string
-  nullable    = false
-  sensitive   = false
-  description = "The name of the project exported from Serialize Project"
-  default     = "__ 1. Serialize Project"
-}
-
 resource "octopusdeploy_runbook" "runbook_backend_service_serialize_project" {
-  name                        = "${var.runbook_backend_service_serialize_project_name}"
+  name                        = "__ 1. Serialize Project"
   project_id                  = "${data.octopusdeploy_projects.project.projects[0].id}"
   environment_scope           = "Specified"
   environments                = [data.octopusdeploy_environments.sync.environments[0].id]
@@ -428,6 +412,73 @@ EOT
       }
 
       features = []
+    }
+
+    properties   = {}
+    target_roles = []
+  }
+}
+
+
+resource "octopusdeploy_runbook" "runbook_backend_service_deploy_all_projects" {
+  name                        = "__ 4. Deploy All Projects"
+  project_id                  = data.octopusdeploy_projects.project.projects[0].id
+  environment_scope           = "Specified"
+  environments                = [data.octopusdeploy_environments.sync.environments[0].id]
+  force_package_download      = false
+  default_guided_failure_mode = "EnvironmentDefault"
+  description                 = "This project deploys the package created by the Serialize Project runbook to all downstream projects in a space."
+  multi_tenancy_mode          = "Tenanted"
+
+  retention_policy {
+    quantity_to_keep    = 100
+    should_keep_forever = false
+  }
+
+  connectivity_policy {
+    allow_deployments_to_no_targets = true
+    exclude_unhealthy_targets       = false
+    skip_machine_behavior           = "None"
+  }
+}
+
+resource "octopusdeploy_runbook_process" "runbook_process_backend_service_deploy_all_projects" {
+  runbook_id = octopusdeploy_runbook.runbook_backend_service_deploy_all_projects.id
+
+  step {
+    condition           = "Success"
+    name                = "Reapply Projects"
+    package_requirement = "LetOctopusDecide"
+    start_trigger       = "StartAfterPrevious"
+
+    action {
+      action_type                        = "Octopus.Script"
+      name                               = "Reapply Projects"
+      condition                          = "Success"
+      run_on_server                      = true
+      is_disabled                        = false
+      can_be_used_for_project_versioning = true
+      is_required                        = false
+      worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
+      properties                         = {
+        "Octopus.Action.Script.Syntax"       = "Python"
+        "Octopus.Action.Script.ScriptBody"   = file("../../shared_scripts/apply_all_downstream_projects.py")
+        "Octopus.Action.Script.ScriptSource" = "Inline"
+      }
+      environments          = []
+      excluded_environments = []
+      channels              = []
+      tenant_tags           = []
+      features              = []
+
+      package {
+        name                      = replace(var.project_name, "/[^A-Za-z0-9]/", "_")
+        package_id                = replace(var.project_name, "/[^A-Za-z0-9]/", "_")
+        acquisition_location      = "Server"
+        feed_id                   = data.octopusdeploy_feeds.feed_octopus_server__built_in_.feeds[0].id
+        properties                = { SelectionMode = "immediate" }
+        extract_during_deployment = true
+      }
     }
 
     properties   = {}
