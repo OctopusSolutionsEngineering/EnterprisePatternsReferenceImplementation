@@ -51,8 +51,12 @@ def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose
         print_output(' '.join(args))
 
     if print_output is not None:
-        print_output(stdout)
-        print_output(stderr)
+        # Octopus does not use ANSI color codes in the output, so strip these codes
+        stdout_no_ansi = re.sub('\x1b\[[0-9;]*m', '', stdout)
+        stderr_no_ansi = re.sub('\x1b\[[0-9;]*m', '', stderr)
+
+        print_output(stdout_no_ansi)
+        print_output(stderr_no_ansi)
 
     return stdout, stderr, retcode
 
@@ -63,8 +67,8 @@ def init_project():
             cwd=project_space_population_dir)
 
 
-def apply_project(project_name):
-    print("Updating " + project_name + " in space " + octopus_space_id)
+def apply_project(project_name, space_name):
+    print("Updating " + project_name + " in space " + space_name)
     execute(['terraform', 'apply', '-no-color', '-auto-approve',
              '-var=octopus_server=' + octopus_server,
              '-var=octopus_space_id=' + octopus_space_id,
@@ -80,13 +84,17 @@ def find_downstream_projects(apply_project_callback):
     for workspace in workspaces:
         trimmed_workspace = workspace.strip()
 
-        octopus_space_name, _, server_retcode = execute(['terraform', 'output', '-raw', 'octopus_space_name'])
+        if trimmed_workspace == "default" or trimmed_workspace == "":
+            continue
+
+        execute(['terraform', 'workspace', 'select', trimmed_workspace], cwd=project_space_population_dir)
+
+        octopus_space_name, _, server_retcode = execute(['terraform', 'output', '-raw', 'octopus_space_name'],
+                                                        cwd=project_space_population_dir)
 
         # We only work on the projects associated with the current tenant
         if not octopus_space_name == tenant_name:
             continue
-
-        execute(['terraform', 'workspace', 'select', trimmed_workspace], cwd=project_space_population_dir)
 
         state_json, _, _ = execute(['terraform', 'show', '-json'], cwd=project_space_population_dir)
         state = json.loads(state_json)
@@ -98,7 +106,7 @@ def find_downstream_projects(apply_project_callback):
             name = resource.get('values', {}).get('name', None)
 
             if name is not None:
-                apply_project_callback(name)
+                apply_project_callback(name, space_name)
 
 
 init_project()
