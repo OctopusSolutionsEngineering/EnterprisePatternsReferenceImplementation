@@ -128,7 +128,13 @@ stdout, _, _ = execute(['docker', 'run',
                         # This is library variable set used by excluded runbooks, and so we don't want to link to it in
                         # the export
                         '-excludeLibraryVariableSet', 'Git',
-                        # Capture the octopus endpoint, key, and space as output vars
+                        # Capture the octopus endpoint, space ID, and space name as output vars. This is useful when
+                        # querying th Terraform state file to know which space and instance the resources were
+                        # created in. The scripts used to update downstream projects in bulk work by querying the
+                        # Terraform state, finding all the downstream projects, and using the space name to only process
+                        # resources that match the current tenant (because space names and tenant names are the same).
+                        # The output variables added by this option are octopus_server, octopus_space_id, and
+                        # octopus_space_name.
                         '-includeOctopusOutputVars',
                         # The directory where the exported files will be saved
                         '-dest', '/export'])
