@@ -98,7 +98,9 @@ stdout, _, _ = execute(['docker', 'run',
                         # allow the downstream project to change names
                         '-ignoreProjectNameChanges',
                         # CaC enabled projects will not export the deployment process, non-secret variables, and other
-                        # CaC managed project settings
+                        # CaC managed project settings if ignoreCacManagedValues is true. It is usually desirable to
+                        # set this value to true, but it is false here because CaC projects created by Terraform today
+                        # save some variables in the database rather than writing them to the Git repo.
                         '-ignoreCacManagedValues=false',
                         # This value is always true. Either this is an unmanaged project, in which case we are never
                         # reapplying it; or it is a variable configured project, in which case we need to ignore
