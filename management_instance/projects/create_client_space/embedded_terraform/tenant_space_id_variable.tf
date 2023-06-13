@@ -1,5 +1,3 @@
-
-
 variable "octopus_server" {
   type = string
 }
