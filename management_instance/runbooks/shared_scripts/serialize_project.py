@@ -100,6 +100,9 @@ stdout, _, _ = execute(['docker', 'run',
                         '-space', get_octopusvariable('Octopus.Space.Id'),
                         # the name of the project to serialize
                         '-projectName', get_octopusvariable('Octopus.Project.Name'),
+                        # ignoreProjectChanges can be set to ignore all changes to the project and variables
+                        '-ignoreProjectChanges=' + get_octopusvariable("Exported.Project.IgnoreAllChanges")
+                        if len(get_octopusvariable("Exported.Project.IgnoreAllChanges")) != 0 else 'false',
                         # use data sources to lookup external dependencies (like environments, accounts etc) rather
                         # than serialize those external resources
                         '-lookupProjectDependencies',
