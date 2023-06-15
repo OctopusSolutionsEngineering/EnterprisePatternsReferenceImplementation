@@ -1,0 +1,102 @@
+name: Publish Scripts
+permissions:
+  contents: write
+  packages: write
+'on':
+  workflow_dispatch: {}
+  push:
+    paths:
+      - '**/*.py'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone code repo
+        uses: actions/checkout@v2
+
+      - name: Set up JDK 1.17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: adopt
+          cache: 'maven'
+
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v0.9.15
+        with:
+          versionSpec: 5.x
+
+      - id: determine_version
+        name: Determine Version
+        uses: gittools/actions/gitversion/execute@v0.9.15
+        with:
+          additionalArguments: /overrideconfig mode=Mainline
+
+      # These are the dependencies that need to be manually installed to support https://github.com/ehsaniara/maven-repository-aws-s3
+      # Typically the deployment of artifacts is configured in a pom.xml file and executed as part of an application's build.
+      # However, because we are using the Maven feed to host arbitrary artifacts, it is nice to be able to call
+      # "mvn deploy:deploy-file" against any file. This means we don't have the luxury of referencing the
+      # "com.github.ehsaniara:maven-repository-aws-s3" dependency directly in a pom.xml file and having all the necessary
+      # transitive dependencies downloaded for us. Instead, we must download these dependencies manually.
+      - name: Install maven-repository-aws-s3 dependencies
+        run: |
+          HOME=$(dirname $(readlink -f $(which mvn)))
+          for dep in "com.github.ehsaniara:maven-repository-aws-s3:1.2.11:jar" "org.apache.httpcomponents:httpcore:4.4.16:jar" "com.amazonaws:aws-java-sdk-s3:1.12.405:jar" "com.amazonaws:aws-java-sdk-core:1.12.405:jar" "com.fasterxml.jackson.core:jackson-core:2.14.2:jar" "com.fasterxml.jackson.core:jackson-databind:2.14.2:jar" "com.fasterxml.jackson.core:jackson-annotations:2.14.2:jar" "joda-time:joda-time:2.12.2:jar" "org.apache.httpcomponents:httpclient:4.5.14:jar" "commons-io:commons-io:2.12.0"
+          do
+             split=(${dep//:/ })
+             mvn dependency:get \
+              --batch-mode \
+              -DrepoUrl=https://repo.maven.apache.org/maven2 \
+              -Dartifact=${dep} \
+              -Ddest=${HOME}/../lib/${split[0]}.${split[1]}.jar
+          done
+        shell: bash
+        working-directory: java
+
+      - name: Configure maven-repository-aws-s3
+        run: |
+          cat <<EOT > ~/.m2/settings.xml
+          <settings>
+            <servers>
+              <server>
+                <id>octopus-sales-public-snapshot</id>
+                <username>${{ secrets.AWS_ACCESS_KEY }}</username>
+                <password>${{ secrets.AWS_SECRET_ACCESS_KEY }}</password>
+                <configuration>
+                  <region>ap-southeast-2</region>
+                  <publicRepository>true</publicRepository>
+                </configuration>
+              </server>
+              <server>
+                <id>octopus-sales-public-release</id>
+                <username>${{ secrets.AWS_ACCESS_KEY }}</username>
+                <password>${{ secrets.AWS_SECRET_ACCESS_KEY }}</password>
+                <configuration>
+                  <region>ap-southeast-2</region>
+                  <publicRepository>true</publicRepository>
+                </configuration>
+              </server>
+            </servers>
+          </settings>
+          EOT
+        shell: bash
+        working-directory: java
+
+      - name: Create ZIP file
+        run: zip enterprise-patterns-scripts.zip *.py
+        shell: bash
+        working-directory: management_instance/runbooks/shared_scripts
+
+      - name: Push Enterprise Patterns Scripts
+        run: |
+          mvn deploy:deploy-file \
+            --batch-mode \
+            "-DgroupId=com.octopus" \
+            "-DartifactId=enterprise-patterns-scripts" \
+            "-Dversion=${{ steps.determine_version.outputs.semVer }}" \
+            "-Dpackaging=zip" \
+            "-Dfile=management_instance/runbooks/shared_scripts/enterprise-patterns-scripts.zip" \
+            "-DrepositoryId=octopus-sales-public-snapshot" \
+            "-Durl=s3://octopus-sales-public-maven-repo/snapshot"
+        shell: bash
