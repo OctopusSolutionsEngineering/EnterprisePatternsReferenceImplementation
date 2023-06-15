@@ -4,6 +4,7 @@ import re
 import sys
 from datetime import datetime
 from urllib.parse import urlparse
+import requests
 
 # If this script is not being run as part of an Octopus step, return variables from environment variables.
 if "get_octopusvariable" not in globals():
@@ -155,6 +156,15 @@ stdout, _, _ = execute(['docker', 'run',
 print(stdout)
 
 date = datetime.now().strftime('%Y.%m.%d.%H%M%S')
+
+# Download the CLI if needed
+_, _, retcode = execute(['octo', '--help'])
+
+if retcode != 0:
+    data = requests.get('https://download.octopusdeploy.com/octopus-tools/9.0.0/OctopusTools.9.0.0.linux-x64.tar.gz')
+    with open('OctopusTools.tar.gz', 'wb')as file:
+        file.write(data.content)
+    execute(['tar', '-xzf', 'OctopusTools.tar.gz'])
 
 stdout, _, _ = execute(['octo', 'pack',
                         '--format', 'zip',
