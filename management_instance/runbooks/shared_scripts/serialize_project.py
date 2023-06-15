@@ -70,8 +70,9 @@ This tool is also not recommended for production deployments.
 ============================================================================================================
 """)
 
-print("Pulling the octoterra image")
+print("Pulling the Docker images")
 execute(['docker', 'pull', 'octopussamples/octoterra'])
+execute(['docker', 'pull', 'octopusdeploy/octo'])
 
 # Find out the IP address of the Octopus container
 parsed_url = urlparse(get_octopusvariable('ThisInstance.Server.Url'))
@@ -157,31 +158,33 @@ print(stdout)
 
 date = datetime.now().strftime('%Y.%m.%d.%H%M%S')
 
-# Download the CLI if needed
-_, _, retcode = execute(['octo', '--help'])
 
-if retcode != 0:
-    data = requests.get('https://download.octopusdeploy.com/octopus-tools/9.0.0/OctopusTools.9.0.0.linux-x64.tar.gz')
-    with open('OctopusTools.tar.gz', 'wb')as file:
-        file.write(data.content)
-    execute(['tar', '-xzf', 'OctopusTools.tar.gz'])
-
-stdout, _, _ = execute(['octo', 'pack',
+stdout, _, _ = execute(['docker', 'run',
+                        '--rm',
+                        '--add-host=' + parsed_url.hostname + ':' + octopus.strip(),
+                        '-v', os.getcwd() + "/export:/export",
+                        'octopusdeploy/octo',
+                        'pack',
                         '--format', 'zip',
                         '--id', re.sub('[^0-9a-zA-Z]', '_', get_octopusvariable('Octopus.Project.Name')),
                         '--version', date,
-                        '--basePath', os.getcwd() + '/export',
-                        '--outFolder', os.getcwd() + '/export'])
+                        '--basePath', '/export',
+                        '--outFolder', '/export'])
 
 print(stdout)
 
-stdout, _, _ = execute(['octo', 'push',
+stdout, _, _ = execute(['docker', 'run',
+                        '--rm',
+                        '--add-host=' + parsed_url.hostname + ':' + octopus.strip(),
+                        '-v', os.getcwd() + "/export:/export",
+                        'octopusdeploy/octo',
+                        'push',
                         '--apiKey', get_octopusvariable('ThisInstance.Api.Key'),
                         '--server', get_octopusvariable('ThisInstance.Server.InternalUrl'),
                         '--space', get_octopusvariable('Octopus.UploadSpace.Id')
                         if len(get_octopusvariable('Octopus.UploadSpace.Id')) != 0
                         else get_octopusvariable('Octopus.Space.Id'),
-                        '--package', os.getcwd() + '/export/' +
+                        '--package', '/export/' +
                         re.sub('[^0-9a-zA-Z]', '_', get_octopusvariable('Octopus.Project.Name')) + '.' + date + '.zip',
                         '--replace-existing'])
 
