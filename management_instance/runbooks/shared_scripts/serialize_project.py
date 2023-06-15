@@ -1,6 +1,7 @@
 import subprocess
 import os
 import re
+import sys
 from datetime import datetime
 from urllib.parse import urlparse
 
@@ -51,6 +52,15 @@ def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose
 
     return stdout, stderr, retcode
 
+
+# Variable precondition checks
+if len(get_octopusvariable('ThisInstance.Server.Url')) == 0:
+    print("ThisInstance.Server.Url must be defined")
+    sys.exit(1)
+
+if len(get_octopusvariable('ThisInstance.Api.Key')) == 0:
+    print("ThisInstance.Api.Key must be defined")
+    sys.exit(1)
 
 print("""===================================================================================================
 Octoterra is an open source tool that serializes an Octopus project to a Terraform module.
