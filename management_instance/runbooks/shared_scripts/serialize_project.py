@@ -91,7 +91,9 @@ stdout, _, _ = execute(['docker', 'run',
                         # the api key used to access the instance
                         '-apiKey', get_octopusvariable('ThisInstance.Api.Key'),
                         # add a postgres backend to the generated modules
-                        '-terraformBackend', 'pg',
+                        '-terraformBackend',
+                        'pg' if len(get_octopusvariable('ThisInstance.Terraform.Backend')) == 0
+                        else get_octopusvariable('ThisInstance.Terraform.Backend'),
                         # dump the generated HCL to the console
                         '-console',
                         # dump the project from the current space
