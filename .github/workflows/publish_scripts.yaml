@@ -52,7 +52,6 @@ jobs:
               -Ddest=${HOME}/../lib/${split[0]}.${split[1]}.jar
           done
         shell: bash
-        working-directory: java
 
       - name: Configure maven-repository-aws-s3
         run: |
