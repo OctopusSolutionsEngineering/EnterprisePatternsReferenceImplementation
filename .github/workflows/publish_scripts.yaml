@@ -80,7 +80,6 @@ jobs:
           </settings>
           EOT
         shell: bash
-        working-directory: java
 
       - name: Create ZIP file
         run: zip enterprise-patterns-scripts.zip *.py
