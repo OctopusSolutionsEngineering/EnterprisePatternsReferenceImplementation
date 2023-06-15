@@ -12,8 +12,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Clone code repo
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Set up JDK 1.17
         uses: actions/setup-java@v3
