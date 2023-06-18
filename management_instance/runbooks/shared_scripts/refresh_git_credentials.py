@@ -22,7 +22,9 @@ if "get_octopusvariable" not in globals():
         if variable == 'GitHub.App.InstallationId':
             return os.environ['GITHUB_APP_INSTALLATIONID']
         if variable == 'Global.Octopus.ApiKey':
-            return os.environ['GLOBAL_OCTOPUS_APIKEY']
+            return os.environ['GITHUB_APP_INSTALLATIONID']
+        if variable == 'Global.Octopus.ServerUrl':
+            return os.environ['GLOBAL_OCTOPUS_SERVERURL']
         if variable == 'Octopus.GitHubAppCreds.Name':
             return os.environ['OCTOPUS_GITHUBAPPCREDS_NAME']
 
@@ -75,7 +77,7 @@ spaces_json = json.loads(response.read().decode())
 for space in spaces_json['Items']:
     space_id = space['Id']
 
-    url = 'http://octopus:8080/api/' + space_id + '/Git-Credentials'
+    url = get_octopusvariable('Global.Octopus.ServerUrl') + '/api/' + space_id + '/Git-Credentials'
     headers = {
         "X-Octopus-ApiKey": get_octopusvariable('Global.Octopus.ApiKey'),
         'Accept': 'application/json'
@@ -86,7 +88,8 @@ for space in spaces_json['Items']:
 
     for git_cred in git_creds_json['Items']:
         if git_cred['Name'] == get_octopusvariable('Octopus.GitHubAppCreds.Name'):
-            url = 'http://octopus:8080/api/' + space_id + '/Git-Credentials/' + git_cred['Id']
+            url = get_octopusvariable('Global.Octopus.ServerUrl') + '/api/' + space_id + '/Git-Credentials/' + \
+                  git_cred['Id']
             headers = {
                 "X-Octopus-ApiKey": get_octopusvariable('Global.Octopus.ApiKey'),
                 'Accept': 'application/json'
