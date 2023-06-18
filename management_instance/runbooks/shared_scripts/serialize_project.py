@@ -1,10 +1,9 @@
-import subprocess
 import os
 import re
+import subprocess
 import sys
 from datetime import datetime
 from urllib.parse import urlparse
-import requests
 
 # If this script is not being run as part of an Octopus step, return variables from environment variables.
 if "get_octopusvariable" not in globals():
