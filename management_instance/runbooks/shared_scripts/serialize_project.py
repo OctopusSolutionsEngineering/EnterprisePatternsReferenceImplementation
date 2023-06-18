@@ -204,7 +204,7 @@ stdout, _, _ = execute(['docker', 'run',
                         'octopusdeploy/octo',
                         'push',
                         '--apiKey', get_octopusvariable('ThisInstance.Api.Key'),
-                        '--server', get_octopusvariable('ThisInstance.Server.InternalUrl'),
+                        '--server', get_octopusvariable('ThisInstance.Server.Url'),
                         '--space', uploadSpace,
                         '--package', '/export/' +
                         re.sub('[^0-9a-zA-Z]', '_', get_octopusvariable('Octopus.Project.Name')) + '.' + date + '.zip',
