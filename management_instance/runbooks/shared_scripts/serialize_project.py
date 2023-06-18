@@ -80,6 +80,27 @@ octopus, _, _ = execute(['dig', '+short', parsed_url.hostname])
 print("Octopus container hostname: " + parsed_url.hostname)
 print("Octopus container IP: " + octopus.strip())
 
+# Assume we don't ignore all changes. Exported.Project.IgnoreAllChanges can override this behaviour.
+ignoreAllChanges = "false"
+try:
+    ignoreAllChanges = get_octopusvariable("Exported.Project.IgnoreAllChanges")
+except:
+    pass
+
+# Assume a postgres backend unless ThisInstance.Terraform.Backend is set
+terraformBackend = "pg"
+try:
+    terraformBackend = get_octopusvariable("ThisInstance.Terraform.Backend")
+except:
+    pass
+
+# Assume we upload to the same space unless Octopus.UploadSpace.Id is set
+uploadSpace = get_octopusvariable('Octopus.Space.Id')
+try:
+    uploadSpace = get_octopusvariable("Octopus.UploadSpace.Id")
+except:
+    pass
+
 stdout, _, _ = execute(['docker', 'run',
                         '--rm',
                         '--add-host=' + parsed_url.hostname + ':' + octopus.strip(),
@@ -90,9 +111,7 @@ stdout, _, _ = execute(['docker', 'run',
                         # the api key used to access the instance
                         '-apiKey', get_octopusvariable('ThisInstance.Api.Key'),
                         # add a postgres backend to the generated modules
-                        '-terraformBackend',
-                        'pg' if len(get_octopusvariable('ThisInstance.Terraform.Backend')) == 0
-                        else get_octopusvariable('ThisInstance.Terraform.Backend'),
+                        '-terraformBackend', terraformBackend,
                         # dump the generated HCL to the console
                         '-console',
                         # dump the project from the current space
@@ -100,8 +119,7 @@ stdout, _, _ = execute(['docker', 'run',
                         # the name of the project to serialize
                         '-projectName', get_octopusvariable('Octopus.Project.Name'),
                         # ignoreProjectChanges can be set to ignore all changes to the project and variables
-                        '-ignoreProjectChanges=' + get_octopusvariable("Exported.Project.IgnoreAllChanges")
-                        if len(get_octopusvariable("Exported.Project.IgnoreAllChanges")) != 0 else 'false',
+                        '-ignoreProjectChanges=' + ignoreAllChanges,
                         # use data sources to lookup external dependencies (like environments, accounts etc) rather
                         # than serialize those external resources
                         '-lookupProjectDependencies',
@@ -187,9 +205,7 @@ stdout, _, _ = execute(['docker', 'run',
                         'push',
                         '--apiKey', get_octopusvariable('ThisInstance.Api.Key'),
                         '--server', get_octopusvariable('ThisInstance.Server.InternalUrl'),
-                        '--space', get_octopusvariable('Octopus.UploadSpace.Id')
-                        if len(get_octopusvariable('Octopus.UploadSpace.Id')) != 0
-                        else get_octopusvariable('Octopus.Space.Id'),
+                        '--space', uploadSpace,
                         '--package', '/export/' +
                         re.sub('[^0-9a-zA-Z]', '_', get_octopusvariable('Octopus.Project.Name')) + '.' + date + '.zip',
                         '--replace-existing'])
