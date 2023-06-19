@@ -14,10 +14,16 @@ if "get_octopusvariable" not in globals():
             return os.environ['OCTOPUS_CLI_SERVER']
         elif variable == 'ThisInstance.Api.Key':
             return os.environ['OCTOPUS_CLI_API_KEY']
+        elif variable == 'ThisInstance.Terraform.Backend':
+            return os.environ['THISINSTANCE_TERRAFORM_BACKEND']
         elif variable == 'Octopus.Space.Id':
             return os.environ['OCTOPUS_SPACE_ID']
+        elif variable == 'Octopus.UploadSpace.Id':
+            return os.environ['OCTOPUS_UPLOADSPACE_ID']
         elif variable == 'Octopus.Project.Name':
             return os.environ['OCTOPUS_PROJECT_NAME']
+        elif variable == 'Exported.Project.IgnoreAllChanges':
+            return os.environ['EXPORTED_PROJECT_IGNOREALLCHANGES']
 
         return ""
 
@@ -77,11 +83,18 @@ def init_argparse() -> tuple[Namespace, list[str]]:
         usage='%(prog)s [OPTION] [FILE]...',
         description='Fork a GitHub repo'
     )
-    parser.add_argument('--ignore-all-changes', action='store', default=get_octopusvariable_quiet('Exported.Project.IgnoreAllChanges'))
-    parser.add_argument('--terraform-backend', action='store',
-                        default=get_octopusvariable_quiet('ThisInstance.Terraform.Backend'))
-    parser.add_argument('--upload-space-id', action='store',
-                        default=get_octopusvariable_quiet('Octopus.UploadSpace.Id'))
+    parser.add_argument('--ignore-all-changes',
+                        action='store',
+                        default=get_octopusvariable_quiet('Exported.Project.IgnoreAllChanges'),
+                        help='Set to true to set the "lifecycle.ignore_changes" setting on each exported resource to "all"')
+    parser.add_argument('--terraform-backend',
+                        action='store',
+                        default=get_octopusvariable_quiet('ThisInstance.Terraform.Backend'),
+                        help='Set this to the name of the Terraform backend to be included in the generated module.')
+    parser.add_argument('--upload-space-id',
+                        action='store',
+                        default=get_octopusvariable_quiet('Octopus.UploadSpace.Id'),
+                        help='Set this to the space ID of the Octopus space where the resulting package will be uploaded to.')
 
     return parser.parse_known_args()
 
@@ -142,7 +155,7 @@ stdout, _, _ = execute(['docker', 'run',
                         '-space', get_octopusvariable_quiet('Octopus.Space.Id'),
                         # the name of the project to serialize
                         '-projectName', get_octopusvariable_quiet('Octopus.Project.Name'),
-                        # ignoreProjectChanges can be set to ignore all changes to the project and variables
+                        # ignoreProjectChanges can be set to ignore all changes to the project, variables, runbooks etc
                         '-ignoreProjectChanges=' + ignoreAllChanges,
                         # use data sources to lookup external dependencies (like environments, accounts etc) rather
                         # than serialize those external resources
