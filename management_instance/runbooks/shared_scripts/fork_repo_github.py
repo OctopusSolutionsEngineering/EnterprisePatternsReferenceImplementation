@@ -142,10 +142,6 @@ payload = {
 jwt_instance = jwt.JWT()
 encoded_jwt = jwt_instance.encode(payload, signing_key, alg='RS256')
 
-print(app_id)
-print(encoded_jwt)
-print(parser.github_app_installation_id)
-
 # Create access token
 url = 'https://api.github.com/app/installations/' + parser.github_app_installation_id + '/access_tokens'
 headers = {
@@ -186,8 +182,10 @@ except:
     # If we could not view the repo, assume it needs to be created.
     # https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#create-an-organization-repository
     url = 'https://api.github.com/orgs/' + cac_org + '/repos'
+    auth = base64.b64encode(('x-access-token:' + token).encode('ascii'))
+    auth_header = 'Basic ' + auth.decode('ascii')
     headers = {
-        'Authorization': 'Bearer ' + encoded_jwt,
+        'Authorization': auth_header,
         'Content-Type': 'application/json',
         'Accept': 'application/vnd.github+json',
         'X-GitHub-Api-Version': '2022-11-28',
