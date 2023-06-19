@@ -238,7 +238,7 @@ token = generate_github_token()
 cac_org = parser.git_organization
 tenant_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.tenant_name.lower())
 new_project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.new_project_name.lower())
-original_project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.template_repo_name.lower())
+original_project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.original_project_name.lower())
 project_name_sanitized = new_project_name_sanitized if len(new_project_name_sanitized) != 0 \
     else original_project_name_sanitized
 new_repo = tenant_name_sanitized + '_' + project_name_sanitized
