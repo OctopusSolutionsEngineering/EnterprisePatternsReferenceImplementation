@@ -172,8 +172,6 @@ stdout, _, _ = execute(['docker', 'run',
                         '-excludeVariableEnvironmentScopes', 'Sync',
                         # Exclude any variables starting with "Private."
                         '-excludeProjectVariableRegex', 'Private\\..*',
-                        # Exclude the variable that defines whether all project changes are ignored
-                        '-excludeProjectVariable', 'Exported.Project.IgnoreAllChanges',
                         # This is a management runbook that we do not wish to export
                         '-excludeRunbookRegex', '__ .*',
                         # This is library variable set used by excluded runbooks, and so we don't want to link to it in
