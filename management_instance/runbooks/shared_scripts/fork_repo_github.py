@@ -181,6 +181,8 @@ try:
 except:
     # If we could not view the repo, assume it needs to be created.
     # https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#create-an-organization-repository
+    # Note you have to use the token rather than the JWT:
+    # https://stackoverflow.com/questions/39600396/bad-credentails-for-jwt-for-github-integrations-api
     url = 'https://api.github.com/orgs/' + cac_org + '/repos'
     auth = base64.b64encode(('x-access-token:' + token).encode('ascii'))
     auth_header = 'Basic ' + auth.decode('ascii')
