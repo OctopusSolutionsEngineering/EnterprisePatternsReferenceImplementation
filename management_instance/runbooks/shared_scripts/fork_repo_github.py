@@ -145,6 +145,7 @@ encoded_jwt = jwt_instance.encode(payload, signing_key, alg='RS256')
 
 print(app_id)
 print(encoded_jwt)
+print(parser.github_app_installation_id)
 
 # Create access token
 url = 'https://api.github.com/app/installations/' + parser.github_app_installation_id + '/access_tokens'
