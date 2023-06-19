@@ -94,16 +94,16 @@ def init_argparse() -> Namespace:
         usage='%(prog)s [OPTION] [FILE]...',
         description='Fork a GitHub repo'
     )
-    parser.add_argument('--originalProjectName', action='store',
+    parser.add_argument('--original-project-name', action='store',
                         default=get_octopusvariable_quiet('Octopus.Project.Name'))
-    parser.add_argument('--newProjectName', action='store', default=get_octopusvariable_quiet('Exported.Project.Name'))
-    parser.add_argument('--githubAppId', action='store', default=get_octopusvariable_quiet('GitHub.App.Id'))
-    parser.add_argument('--githubAppPrivateKey', action='store',
+    parser.add_argument('--new-project-name', action='store', default=get_octopusvariable_quiet('Exported.Project.Name'))
+    parser.add_argument('--github-app-id', action='store', default=get_octopusvariable_quiet('GitHub.App.Id'))
+    parser.add_argument('--github-app-private-key', action='store',
                         default=get_octopusvariable_quiet('GitHub.App.PrivateKey'))
-    parser.add_argument('--gitOrganization', action='store', default=get_octopusvariable_quiet('Git.Url.Organization'))
-    parser.add_argument('--tenantName', action='store',
+    parser.add_argument('--git-organization', action='store', default=get_octopusvariable_quiet('Git.Url.Organization'))
+    parser.add_argument('--tenant-name', action='store',
                         default=get_octopusvariable_quiet('Octopus.Deployment.Tenant.Name'))
-    parser.add_argument('--templateRepoName', action='store',
+    parser.add_argument('--template-repo-name', action='store',
                         default=get_octopusvariable_quiet('Octopus.Project.Name').lower())
     return parser.parse_known_args()
 
@@ -111,20 +111,20 @@ def init_argparse() -> Namespace:
 parser = init_argparse()
 
 # The values for these variables are injected by Terraform as it reads the file with the templatefile() function
-cac_org = parser.gitOrganization
+cac_org = parser.git_organization
 
-tenant_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.tenantName.lower())
-new_project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.newProjectName.lower())
-original_project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.templateRepoName.lower())
+tenant_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.tenant_name.lower())
+new_project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.new_project_name.lower())
+original_project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.template_repo_name.lower())
 project_name_sanitized = new_project_name_sanitized if len(new_project_name_sanitized) != 0 \
     else original_project_name_sanitized
 new_repo = tenant_name_sanitized + '_' + project_name_sanitized
-template_repo = re.sub('[^a-zA-Z0-9]', '_', parser.templateRepoName.lower())
+template_repo = re.sub('[^a-zA-Z0-9]', '_', parser.template_repo_name.lower())
 branch = 'main'
 
 # Generate the tokens used by git and the GitHub API
-app_id = parser.githubAppId
-signing_key = jwt.jwk_from_pem(parser.githubAppPrivateKey.encode('utf-8'))
+app_id = parser.github_app_id
+signing_key = jwt.jwk_from_pem(parser.github_app_private_key.encode('utf-8'))
 
 payload = {
     # Issued at time
