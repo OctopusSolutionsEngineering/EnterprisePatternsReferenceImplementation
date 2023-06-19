@@ -17,12 +17,12 @@ import time
 import argparse
 
 # If this script is not being run as part of an Octopus step, setting variables is a noop
-if "set_octopusvariable" not in globals():
-    def set_octopusvariable(variable):
+if 'set_octopusvariable' not in globals():
+    def set_octopusvariable(variable, value):
         pass
 
 # If this script is not being run as part of an Octopus step, return variables from environment variables.
-if "get_octopusvariable" not in globals():
+if 'get_octopusvariable' not in globals():
     def get_octopusvariable(variable):
         if variable == 'ThisInstance.Server.Url':
             return os.environ['OCTOPUS_CLI_SERVER']
@@ -41,10 +41,10 @@ if "get_octopusvariable" not in globals():
         if variable == 'GitHub.App.PrivateKey':
             return os.environ['GITHUB_APP_PRIVATEKEY']
 
-        return ""
+        return ''
 
 # If this script is not being run as part of an Octopus step, print directly to std out.
-if "printverbose" not in globals():
+if 'printverbose' not in globals():
     def printverbose(msg):
         print(msg)
 
@@ -91,19 +91,19 @@ def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose
 
 def init_argparse() -> Namespace:
     parser = argparse.ArgumentParser(
-        usage="%(prog)s [OPTION] [FILE]...",
-        description="Fork a GitHub repo"
+        usage='%(prog)s [OPTION] [FILE]...',
+        description='Fork a GitHub repo'
     )
-    parser.add_argument("--originalProjectName", action="store",
+    parser.add_argument('--originalProjectName', action='store',
                         default=get_octopusvariable_quiet('Octopus.Project.Name'))
-    parser.add_argument("--newProjectName", action="store", default=get_octopusvariable_quiet('Exported.Project.Name'))
-    parser.add_argument("--githubAppId", action="store", default=get_octopusvariable_quiet('GitHub.App.Id'))
-    parser.add_argument("--githubAppPrivateKey", action="store",
+    parser.add_argument('--newProjectName', action='store', default=get_octopusvariable_quiet('Exported.Project.Name'))
+    parser.add_argument('--githubAppId', action='store', default=get_octopusvariable_quiet('GitHub.App.Id'))
+    parser.add_argument('--githubAppPrivateKey', action='store',
                         default=get_octopusvariable_quiet('GitHub.App.PrivateKey'))
-    parser.add_argument("--gitOrganization", action="store", default=get_octopusvariable_quiet('Git.Url.Organization'))
-    parser.add_argument("--tenantName", action="store",
+    parser.add_argument('--gitOrganization', action='store', default=get_octopusvariable_quiet('Git.Url.Organization'))
+    parser.add_argument('--tenantName', action='store',
                         default=get_octopusvariable_quiet('Octopus.Deployment.Tenant.Name'))
-    parser.add_argument("--templateRepoName", action="store",
+    parser.add_argument('--templateRepoName', action='store',
                         default=get_octopusvariable_quiet('Octopus.Project.Name').lower())
     return parser.parse_known_args()
 
@@ -124,7 +124,7 @@ branch = 'main'
 
 # Generate the tokens used by git and the GitHub API
 app_id = parser.githubAppId
-signing_key = jwt.jwk_from_pem(parser.githubAppPrivateKey.encode("utf-8"))
+signing_key = jwt.jwk_from_pem(parser.githubAppPrivateKey.encode('utf-8'))
 
 payload = {
     # Issued at time
@@ -140,7 +140,7 @@ jwt_instance = jwt.JWT()
 encoded_jwt = jwt_instance.encode(payload, signing_key, alg='RS256')
 
 # Create access token
-url = "https://api.github.com/app/installations/" + get_octopusvariable('GitHub.App.InstallationId') + "/access_tokens"
+url = 'https://api.github.com/app/installations/' + get_octopusvariable('GitHub.App.InstallationId') + '/access_tokens'
 headers = {
     'Authorization': 'Bearer ' + encoded_jwt,
     'Accept': 'application/vnd.github+json',
@@ -155,9 +155,9 @@ token = response_json['token']
 try:
     url = 'https://github.com/' + cac_org + '/' + template_repo + '.git'
     auth = base64.b64encode(('x-access-token:' + token).encode('ascii'))
-    auth_header = "Basic " + auth.decode('ascii')
+    auth_header = 'Basic ' + auth.decode('ascii')
     headers = {
-        "Authorization": auth_header,
+        'Authorization': auth_header,
     }
     request = urllib.request.Request(url, headers=headers)
     urllib.request.urlopen(request)
@@ -169,9 +169,9 @@ except:
 try:
     url = 'https://github.com/' + cac_org + '/' + new_repo + '.git'
     auth = base64.b64encode(('x-access-token:' + token).encode('ascii'))
-    auth_header = "Basic " + auth.decode('ascii')
+    auth_header = 'Basic ' + auth.decode('ascii')
     headers = {
-        "Authorization": auth_header,
+        'Authorization': auth_header,
     }
     request = urllib.request.Request(url, headers=headers)
     urllib.request.urlopen(request)
@@ -180,7 +180,7 @@ except:
     # https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#create-an-organization-repository
     url = 'https://api.github.com/orgs/' + cac_org + '/repos'
     headers = {
-        "Authorization": 'Bearer ' + encoded_jwt,
+        'Authorization': 'Bearer ' + encoded_jwt,
         'Content-Type': 'application/json',
         'Accept': 'application/vnd.github+json',
         'X-GitHub-Api-Version': '2022-11-28',
@@ -219,7 +219,7 @@ execute(['git', 'reset', '--hard', 'upstream/' + branch], cwd=new_repo)
 # Push the changes.
 execute(['git', 'push', 'origin', branch], cwd=new_repo)
 
-set_octopusvariable("NewRepo", 'https://github.com/' + cac_org + '/' + new_repo)
+set_octopusvariable('NewRepo', 'https://github.com/' + cac_org + '/' + new_repo)
 
 print(
     'Repo was forked from ' + 'https://github.com/' + cac_org + '/' + template_repo + ' to '
