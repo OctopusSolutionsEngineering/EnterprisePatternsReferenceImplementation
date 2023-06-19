@@ -41,6 +41,8 @@ if 'get_octopusvariable' not in globals():
             return os.environ['GITHUB_APP_ID']
         if variable == 'GitHub.App.PrivateKey':
             return os.environ['GITHUB_APP_PRIVATEKEY']
+        if variable == 'GitHub.App.InstallationId':
+            return os.environ['GITHUB_APP_INSTALLATIONID']
 
         return ''
 
