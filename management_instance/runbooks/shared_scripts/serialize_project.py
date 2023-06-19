@@ -1,7 +1,9 @@
+import argparse
 import os
 import re
 import subprocess
 import sys
+from argparse import Namespace
 from datetime import datetime
 from urllib.parse import urlparse
 
@@ -34,6 +36,18 @@ def printverbose_noansi(output):
     printverbose(output_no_ansi)
 
 
+def get_octopusvariable_quiet(variable):
+    """
+    Gets an octopus variable, or an empty string if it does not exist.
+    :param variable: The variable name
+    :return: The variable value, or an empty string if the variable does not exist
+    """
+    try:
+        return get_octopusvariable(variable)
+    except:
+        return ''
+
+
 def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose_noansi):
     """
         The execute method provides the ability to execute external processes while capturing and returning the
@@ -58,16 +72,32 @@ def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose
     return stdout, stderr, retcode
 
 
+def init_argparse() -> tuple[Namespace, list[str]]:
+    parser = argparse.ArgumentParser(
+        usage='%(prog)s [OPTION] [FILE]...',
+        description='Fork a GitHub repo'
+    )
+    parser.add_argument('--ignore-all-changes', action='store', default=get_octopusvariable_quiet('Exported.Project.IgnoreAllChanges'))
+    parser.add_argument('--terraform-backend', action='store',
+                        default=get_octopusvariable_quiet('ThisInstance.Terraform.Backend'))
+    parser.add_argument('--upload-space-id', action='store',
+                        default=get_octopusvariable_quiet('Octopus.UploadSpace.Id'))
+
+    return parser.parse_known_args()
+
+
 # Variable precondition checks
-if len(get_octopusvariable('ThisInstance.Server.Url')) == 0:
+if len(get_octopusvariable_quiet('ThisInstance.Server.Url')) == 0:
     print("ThisInstance.Server.Url must be defined")
     sys.exit(1)
 
-if len(get_octopusvariable('ThisInstance.Api.Key')) == 0:
+if len(get_octopusvariable_quiet('ThisInstance.Api.Key')) == 0:
     print("ThisInstance.Api.Key must be defined")
     sys.exit(1)
 
-print("""===================================================================================================
+parser, _ = init_argparse()
+
+print("""============================================================================================================
 Octoterra is an open source tool that serializes an Octopus project to a Terraform module.
 Please note that, as part of the pilot program, octoterra is not covered by existing Octopus support SLAs.
 This tool is also not recommended for production deployments.
@@ -79,32 +109,21 @@ execute(['docker', 'pull', 'octopussamples/octoterra'])
 execute(['docker', 'pull', 'octopusdeploy/octo'])
 
 # Find out the IP address of the Octopus container
-parsed_url = urlparse(get_octopusvariable('ThisInstance.Server.Url'))
+parsed_url = urlparse(get_octopusvariable_quiet('ThisInstance.Server.Url'))
 octopus, _, _ = execute(['dig', '+short', parsed_url.hostname])
 
 print("Octopus container hostname: " + parsed_url.hostname)
 print("Octopus container IP: " + octopus.strip())
 
 # Assume we don't ignore all changes. Exported.Project.IgnoreAllChanges can override this behaviour.
-ignoreAllChanges = "false"
-try:
-    ignoreAllChanges = get_octopusvariable("Exported.Project.IgnoreAllChanges")
-except:
-    pass
+ignoreAllChanges = parser.ignore_all_changes if len(parser.ignore_all_changes) != 0 else "false"
 
 # Assume a postgres backend unless ThisInstance.Terraform.Backend is set
-terraformBackend = "pg"
-try:
-    terraformBackend = get_octopusvariable("ThisInstance.Terraform.Backend")
-except:
-    pass
+terraformBackend = parser.terraform_backend if len(parser.terraform_backend) != 0 else "pg"
 
 # Assume we upload to the same space unless Octopus.UploadSpace.Id is set
-uploadSpace = get_octopusvariable('Octopus.Space.Id')
-try:
-    uploadSpace = get_octopusvariable("Octopus.UploadSpace.Id")
-except:
-    pass
+uploadSpace = parser.upload_space_id if len(parser.upload_space_id) != 0 \
+    else get_octopusvariable_quiet('Octopus.Space.Id')
 
 stdout, _, _ = execute(['docker', 'run',
                         '--rm',
@@ -112,17 +131,17 @@ stdout, _, _ = execute(['docker', 'run',
                         '-v', os.getcwd() + "/export:/export",
                         'octopussamples/octoterra',
                         # the url of the instance
-                        '-url', get_octopusvariable('ThisInstance.Server.Url'),
+                        '-url', get_octopusvariable_quiet('ThisInstance.Server.Url'),
                         # the api key used to access the instance
-                        '-apiKey', get_octopusvariable('ThisInstance.Api.Key'),
+                        '-apiKey', get_octopusvariable_quiet('ThisInstance.Api.Key'),
                         # add a postgres backend to the generated modules
                         '-terraformBackend', terraformBackend,
                         # dump the generated HCL to the console
                         '-console',
                         # dump the project from the current space
-                        '-space', get_octopusvariable('Octopus.Space.Id'),
+                        '-space', get_octopusvariable_quiet('Octopus.Space.Id'),
                         # the name of the project to serialize
-                        '-projectName', get_octopusvariable('Octopus.Project.Name'),
+                        '-projectName', get_octopusvariable_quiet('Octopus.Project.Name'),
                         # ignoreProjectChanges can be set to ignore all changes to the project and variables
                         '-ignoreProjectChanges=' + ignoreAllChanges,
                         # use data sources to lookup external dependencies (like environments, accounts etc) rather
@@ -194,7 +213,7 @@ stdout, _, _ = execute(['docker', 'run',
                         'octopusdeploy/octo',
                         'pack',
                         '--format', 'zip',
-                        '--id', re.sub('[^0-9a-zA-Z]', '_', get_octopusvariable('Octopus.Project.Name')),
+                        '--id', re.sub('[^0-9a-zA-Z]', '_', get_octopusvariable_quiet('Octopus.Project.Name')),
                         '--version', date,
                         '--basePath', '/export',
                         '--outFolder', '/export'])
@@ -207,11 +226,11 @@ stdout, _, _ = execute(['docker', 'run',
                         '-v', os.getcwd() + "/export:/export",
                         'octopusdeploy/octo',
                         'push',
-                        '--apiKey', get_octopusvariable('ThisInstance.Api.Key'),
-                        '--server', get_octopusvariable('ThisInstance.Server.Url'),
+                        '--apiKey', get_octopusvariable_quiet('ThisInstance.Api.Key'),
+                        '--server', get_octopusvariable_quiet('ThisInstance.Server.Url'),
                         '--space', uploadSpace,
                         '--package', '/export/' +
-                        re.sub('[^0-9a-zA-Z]', '_', get_octopusvariable('Octopus.Project.Name')) + '.' + date + '.zip',
+                        re.sub('[^0-9a-zA-Z]', '_', get_octopusvariable_quiet('Octopus.Project.Name')) + '.' + date + '.zip',
                         '--replace-existing'])
 
 print(stdout)
