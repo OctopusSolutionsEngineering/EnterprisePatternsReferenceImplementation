@@ -143,6 +143,7 @@ payload = {
 jwt_instance = jwt.JWT()
 encoded_jwt = jwt_instance.encode(payload, signing_key, alg='RS256')
 
+print(app_id)
 print(encoded_jwt)
 
 # Create access token
