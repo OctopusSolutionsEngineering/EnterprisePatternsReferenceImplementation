@@ -100,7 +100,7 @@ def init_argparse() -> Namespace:
                         default=get_octopusvariable_quiet('Octopus.Deployment.Tenant.Name'))
     parser.add_argument("--templateRepoName", action="store",
                         default=get_octopusvariable_quiet('Octopus.Project.Name').lower())
-    return parser.parse_args()
+    return parser.parse_known_args()
 
 
 parser = init_argparse()
