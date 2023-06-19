@@ -1,3 +1,4 @@
+import argparse
 import subprocess
 import sys
 import os
@@ -16,6 +17,18 @@ if "get_octopusvariable" not in globals():
             return os.environ['GIT_CREDENTIALS_USERNAME']
         if variable == 'Git.Credentials.Password':
             return os.environ['GIT_CREDENTIALS_PASSWORD']
+
+
+def get_octopusvariable_quiet(variable):
+    """
+    Gets an octopus variable, or an empty string if it does not exist.
+    :param variable: The variable name
+    :return: The variable value, or an empty string if the variable does not exist
+    """
+    try:
+        return get_octopusvariable(variable)
+    except:
+        return ''
 
 
 def printverbose_noansi(output):
@@ -61,35 +74,56 @@ def check_repo_exists(url, username, password):
         request = urllib.request.Request(url, headers=headers)
         urllib.request.urlopen(request)
         return True
-    except Exception as ex:
+    except:
         return False
 
 
-cac_proto = get_octopusvariable('Git.Url.Protocol')
-cac_host = get_octopusvariable('Git.Url.Host')
-cac_org = get_octopusvariable('Git.Url.Organization')
-cac_username = get_octopusvariable('Git.Credentials.Username')
-cac_password = get_octopusvariable('Git.Credentials.Password')
-tenant_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable('Octopus.Deployment.Tenant.Name').lower())
-new_project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable('Exported.Project.Name').lower())
-original_project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable('Octopus.Project.Name').lower())
-project_name_sanitized = new_project_name_sanitized if len(
-    new_project_name_sanitized) != 0 else original_project_name_sanitized
+def init_argparse() -> tuple[argparse.Namespace, list[str]]:
+    parser = argparse.ArgumentParser(
+        usage='%(prog)s [OPTION] [FILE]...',
+        description='Merge the upstream repo into the downstream repo'
+    )
+    parser.add_argument('--original-project-name', action='store',
+                        default=get_octopusvariable_quiet('Octopus.Project.Name'))
+    parser.add_argument('--new-project-name', action='store',
+                        default=get_octopusvariable_quiet('Exported.Project.Name'))
+    parser.add_argument('--git-protocol', action='store', default=get_octopusvariable_quiet('Git.Url.Protocol'))
+    parser.add_argument('--git-host', action='store', default=get_octopusvariable_quiet('Git.Url.Host'))
+    parser.add_argument('--git-username', action='store', default=get_octopusvariable_quiet('Git.Credentials.Username'))
+    parser.add_argument('--git-password', action='store', default=get_octopusvariable_quiet('Git.Credentials.Password'))
+    parser.add_argument('--git-organization', action='store', default=get_octopusvariable_quiet('Git.Url.Organization'))
+    parser.add_argument('--tenant-name', action='store',
+                        default=get_octopusvariable_quiet('Octopus.Deployment.Tenant.Name'))
+    parser.add_argument('--template-repo-name', action='store',
+                        default=re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable_quiet('Octopus.Project.Name').lower()))
+    return parser.parse_known_args()
+
+
+parser, _ = init_argparse()
+
+tenant_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.tenant_name.lower())
+new_project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.new_project_name.lower())
+original_project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.original_project_name.lower())
+project_name_sanitized = new_project_name_sanitized if len(new_project_name_sanitized) != 0 \
+    else original_project_name_sanitized
 new_repo = tenant_name_sanitized + '_' + project_name_sanitized
-template_repo = re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable('Octopus.Project.Name').lower())
 project_dir = '.octopus/project'
 branch = 'main'
 
-new_repo_url = cac_proto + '://' + cac_host + '/' + cac_org + '/' + new_repo + '.git'
-new_repo_url_wth_creds = cac_proto + '://' + cac_username + ':' + cac_password + '@' + cac_host + '/' + cac_org + '/' + new_repo + '.git'
-template_repo_url = cac_proto + '://' + cac_host + '/' + cac_org + '/' + template_repo + '.git'
-template_repo_url_with_creds = cac_proto + '://' + cac_username + ':' + cac_password + '@' + cac_host + '/' + cac_org + '/' + template_repo + '.git'
+new_repo_url = parser.git_protocol + '://' + parser.git_host + '/' + parser.git_organization + '/' + new_repo + '.git'
+new_repo_url_wth_creds = parser.git_protocol + '://' + parser.git_username + ':' + parser.git_password + '@' + \
+                         parser.git_host + '/' + parser.git_organization + '/' + new_repo + '.git'
+parser.template_repo_name_url = parser.git_protocol + '://' + parser.git_host + '/' + parser.git_organization + '/' + \
+                                parser.template_repo_name + '.git'
+parser.template_repo_name_url_with_creds = parser.git_protocol + '://' + parser.git_username + ':' + \
+                                           parser.git_password + '@' + parser.git_host + '/' + \
+                                           parser.git_organization + '/' + parser.template_repo_name + '.git'
 
-if not check_repo_exists(new_repo_url, cac_username, cac_password):
+if not check_repo_exists(new_repo_url, parser.git_username, parser.git_password):
     print('Downstream repo ' + new_repo_url + ' is not available')
     sys.exit(1)
 
-if not check_repo_exists(template_repo_url, cac_username, cac_password):
+if not check_repo_exists(parser.template_repo_name_url, parser.git_username, parser.git_password):
     print('Upstream repo ' + new_repo_url + ' is not available')
     sys.exit(1)
 
@@ -99,7 +133,7 @@ execute(['git', 'config', '--global', 'user.name', 'Octopus Server'])
 
 # Clone the template repo to test for a step template reference
 os.mkdir('template')
-execute(['git', 'clone', template_repo_url, 'template'])
+execute(['git', 'clone', parser.template_repo_name_url, 'template'])
 if branch != 'master' and branch != 'main':
     execute(['git', 'checkout', '-b', branch, 'origin/' + branch], cwd='template')
 else:
@@ -109,8 +143,8 @@ try:
     with open('template/' + project_dir + '/deployment_process.ocl', 'r') as file:
         data = file.read()
         if 'ActionTemplates' in data:
-            print(
-                'Template repo references a step template. Step templates can not be merged across spaces or instances.')
+            print('Template repo references a step template. ' +
+                  'Step templates can not be merged across spaces or instances.')
             sys.exit(1)
 except Exception as ex:
     print(ex)
@@ -118,7 +152,7 @@ except Exception as ex:
 
 # Merge the template changes
 execute(['git', 'clone', new_repo_url_wth_creds])
-execute(['git', 'remote', 'add', 'upstream', template_repo_url_with_creds], cwd=new_repo)
+execute(['git', 'remote', 'add', 'upstream', parser.template_repo_name_url_with_creds], cwd=new_repo)
 execute(['git', 'fetch', '--all'], cwd=new_repo)
 execute(['git', 'checkout', '-b', 'upstream-' + branch, 'upstream/' + branch], cwd=new_repo)
 
@@ -143,6 +177,6 @@ if merge_result == 0:
     else:
         print('No changes found.')
 else:
-    print(
-        'Template repo branch could not be automatically merged into project branch. This merge will need to be resolved manually.')
+    print('Template repo branch could not be automatically merged into project branch. ' +
+          'This merge will need to be resolved manually.')
     sys.exit(1)
