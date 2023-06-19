@@ -221,7 +221,7 @@ def fork_repo(token, cac_org, new_repo, template_repo):
             execute(['git', 'checkout', branch], cwd=new_repo)
 
         if os.path.exists(new_repo + '/.octopus'):
-            print('The repo has already been forked.')
+            print('The repo https://github.com/' + cac_org + '/' + new_repo + ' has already been forked.')
             sys.exit(0)
 
     # Create a new branch representing the forked main branch.

@@ -83,19 +83,36 @@ def init_argparse() -> tuple[argparse.Namespace, list[str]]:
         usage='%(prog)s [OPTION] [FILE]...',
         description='Merge the upstream repo into the downstream repo'
     )
-    parser.add_argument('--original-project-name', action='store',
+    parser.add_argument('--original-project-name',
+                        action='store',
                         default=get_octopusvariable_quiet('Octopus.Project.Name'))
-    parser.add_argument('--new-project-name', action='store',
+    parser.add_argument('--new-project-name',
+                        action='store',
                         default=get_octopusvariable_quiet('Exported.Project.Name'))
-    parser.add_argument('--git-protocol', action='store', default=get_octopusvariable_quiet('Git.Url.Protocol'))
-    parser.add_argument('--git-host', action='store', default=get_octopusvariable_quiet('Git.Url.Host'))
-    parser.add_argument('--git-username', action='store', default=get_octopusvariable_quiet('Git.Credentials.Username'))
-    parser.add_argument('--git-password', action='store', default=get_octopusvariable_quiet('Git.Credentials.Password'))
-    parser.add_argument('--git-organization', action='store', default=get_octopusvariable_quiet('Git.Url.Organization'))
-    parser.add_argument('--tenant-name', action='store',
+    parser.add_argument('--git-protocol',
+                        action='store',
+                        default=get_octopusvariable_quiet('Git.Url.Protocol'))
+    parser.add_argument('--git-host',
+                        action='store',
+                        default=get_octopusvariable_quiet('Git.Url.Host'))
+    parser.add_argument('--git-username',
+                        action='store',
+                        default=get_octopusvariable_quiet('Git.Credentials.Username'))
+    parser.add_argument('--git-password',
+                        action='store',
+                        default=get_octopusvariable_quiet('Git.Credentials.Password'))
+    parser.add_argument('--git-organization',
+                        action='store',
+                        default=get_octopusvariable_quiet('Git.Url.Organization'))
+    parser.add_argument('--tenant-name',
+                        action='store',
                         default=get_octopusvariable_quiet('Octopus.Deployment.Tenant.Name'))
-    parser.add_argument('--template-repo-name', action='store',
+    parser.add_argument('--template-repo-name',
+                        action='store',
                         default=re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable_quiet('Octopus.Project.Name').lower()))
+    parser.add_argument('--repo-name',
+                        action='store',
+                        default='')
     return parser.parse_known_args()
 
 
@@ -106,7 +123,7 @@ new_project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.new_project_name
 original_project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.original_project_name.lower())
 project_name_sanitized = new_project_name_sanitized if len(new_project_name_sanitized) != 0 \
     else original_project_name_sanitized
-new_repo = tenant_name_sanitized + '_' + project_name_sanitized
+new_repo = parser.repo_name if len(parser.repo_name) != 0 else tenant_name_sanitized + '_' + project_name_sanitized
 project_dir = '.octopus/project'
 branch = 'main'
 
