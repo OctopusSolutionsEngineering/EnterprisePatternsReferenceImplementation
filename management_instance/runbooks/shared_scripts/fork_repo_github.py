@@ -108,7 +108,7 @@ def init_argparse() -> tuple[Namespace, list[str]]:
     parser.add_argument('--tenant-name', action='store',
                         default=get_octopusvariable_quiet('Octopus.Deployment.Tenant.Name'))
     parser.add_argument('--template-repo-name', action='store',
-                        default=get_octopusvariable_quiet('Octopus.Project.Name').lower())
+                        default=re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable_quiet('Octopus.Project.Name').lower()))
     return parser.parse_known_args()
 
 
@@ -123,7 +123,7 @@ original_project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.template_re
 project_name_sanitized = new_project_name_sanitized if len(new_project_name_sanitized) != 0 \
     else original_project_name_sanitized
 new_repo = tenant_name_sanitized + '_' + project_name_sanitized
-template_repo = re.sub('[^a-zA-Z0-9]', '_', parser.template_repo_name.lower())
+template_repo = parser.template_repo_name
 branch = 'main'
 
 # Generate the tokens used by git and the GitHub API
