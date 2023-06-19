@@ -6,6 +6,12 @@
 # hour. This script regenerates the token and updates any Octopus git credentials to ensure they are always available.
 # This script needs to be triggers every 30 mins to ensure all spaces have valid tokens.
 
+import sys
+import subprocess
+
+# Install our own dependencies
+subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'jwt'])
+
 import jwt
 import time
 import urllib.request
@@ -36,7 +42,7 @@ if "printverbose" not in globals():
         print(msg)
 
 app_id = get_octopusvariable('GitHub.App.Id')
-signing_key = jwt.jwk_from_pem(get_octopusvariable('GitHub.App.PrivateKey'))
+signing_key = jwt.jwk_from_pem(get_octopusvariable('GitHub.App.PrivateKey').encode("utf-8"))
 
 payload = {
     # Issued at time
@@ -107,4 +113,6 @@ for space in spaces_json['Items']:
             request = urllib.request.Request(url, headers=headers, data=json.dumps(body).encode("utf-8"), method='PUT')
             response = urllib.request.urlopen(request)
             if not response.getcode() == 200:
-                print("Failed to update git creds in space " + space['Name'])
+                print('Failed to update git creds in space ' + space['Name'])
+            else:
+                print('Refreshed creds in space ' + space['Name'])
