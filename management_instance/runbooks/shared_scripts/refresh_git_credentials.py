@@ -108,6 +108,7 @@ for space in spaces_json['Items']:
                 'Accept': 'application/json'
             }
             body = {
+                'Name': git_cred['Name'],
                 'Details': {
                     'Password': {
                         'HasValue': True,
