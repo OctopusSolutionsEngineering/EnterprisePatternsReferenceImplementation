@@ -1,6 +1,7 @@
 import sys
 import subprocess
 from argparse import Namespace
+from typing import Tuple, List
 
 # Install our own dependencies
 subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'jwt'])
@@ -89,7 +90,7 @@ def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose
     return stdout, stderr, retcode
 
 
-def init_argparse() -> Namespace:
+def init_argparse() -> tuple[Namespace, list[str]]:
     parser = argparse.ArgumentParser(
         usage='%(prog)s [OPTION] [FILE]...',
         description='Fork a GitHub repo'
@@ -108,7 +109,7 @@ def init_argparse() -> Namespace:
     return parser.parse_known_args()
 
 
-parser = init_argparse()
+parser, _ = init_argparse()
 
 # The values for these variables are injected by Terraform as it reads the file with the templatefile() function
 cac_org = parser.git_organization
