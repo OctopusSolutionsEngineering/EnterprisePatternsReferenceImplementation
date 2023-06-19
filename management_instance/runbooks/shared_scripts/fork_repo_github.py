@@ -16,6 +16,11 @@ import jwt
 import time
 import argparse
 
+# If this script is not being run as part of an Octopus step, setting variables is a noop
+if "set_octopusvariable" not in globals():
+    def set_octopusvariable(variable):
+        pass
+
 # If this script is not being run as part of an Octopus step, return variables from environment variables.
 if "get_octopusvariable" not in globals():
     def get_octopusvariable(variable):
@@ -213,6 +218,8 @@ execute(['git', 'reset', '--hard', 'upstream/' + branch], cwd=new_repo)
 
 # Push the changes.
 execute(['git', 'push', 'origin', branch], cwd=new_repo)
+
+set_octopusvariable("NewRepo", 'https://github.com/' + cac_org + '/' + new_repo)
 
 print(
     'Repo was forked from ' + 'https://github.com/' + cac_org + '/' + template_repo + ' to '
