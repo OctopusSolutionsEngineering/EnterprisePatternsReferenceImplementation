@@ -15,6 +15,7 @@ subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'jwt'])
 import jwt
 import time
 import urllib.request
+import urllib.error
 import os
 import json
 
@@ -64,14 +65,14 @@ headers = {
     'Accept': 'application/vnd.github+json',
     'X-GitHub-Api-Version': '2022-11-28'
 }
-request = urllib.request.Request(url, headers=headers)
+request = urllib.request.Request(url, headers=headers, method='POST')
 response = urllib.request.urlopen(request)
 response_json = json.loads(response.read().decode())
 token = response_json['token']
 
 # Update git credentials
 
-url = 'http://octopus:8080/api/Spaces'
+url = get_octopusvariable('Global.Octopus.ServerUrl') + '/api/Spaces'
 headers = {
     "X-Octopus-ApiKey": get_octopusvariable('Global.Octopus.ApiKey'),
     'Accept': 'application/json'
@@ -89,7 +90,13 @@ for space in spaces_json['Items']:
         'Accept': 'application/json'
     }
     request = urllib.request.Request(url, headers=headers)
-    response = urllib.request.urlopen(request)
+
+    try:
+        response = urllib.request.urlopen(request)
+    except urllib.error.HTTPError as e:
+        print('Failed to get git creds from ' + space['Name'] + ': ', e)
+        continue
+
     git_creds_json = json.loads(response.read().decode())
 
     for git_cred in git_creds_json['Items']:
@@ -111,8 +118,9 @@ for space in spaces_json['Items']:
                 }
             }
             request = urllib.request.Request(url, headers=headers, data=json.dumps(body).encode("utf-8"), method='PUT')
-            response = urllib.request.urlopen(request)
-            if not response.getcode() == 200:
-                print('Failed to update git creds in space ' + space['Name'])
-            else:
+
+            try:
+                response = urllib.request.urlopen(request)
                 print('Refreshed creds in space ' + space['Name'])
+            except urllib.error.HTTPError as e:
+                print('Failed to update git creds in space ' + space['Name'] + ':', e)
