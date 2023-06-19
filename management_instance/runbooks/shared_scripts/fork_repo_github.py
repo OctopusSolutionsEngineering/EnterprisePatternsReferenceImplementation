@@ -130,6 +130,9 @@ new_repo = tenant_name_sanitized + '_' + project_name_sanitized
 template_repo = parser.template_repo_name
 branch = 'main'
 
+# This is the value of the forked git repo
+set_octopusvariable('NewRepo', 'https://github.com/' + cac_org + '/' + new_repo)
+
 # Generate the tokens used by git and the GitHub API
 app_id = parser.github_app_id
 signing_key = jwt.jwk_from_pem(parser.github_app_private_key.encode('utf-8'))
@@ -228,8 +231,6 @@ execute(['git', 'reset', '--hard', 'upstream/' + branch], cwd=new_repo)
 
 # Push the changes.
 execute(['git', 'push', 'origin', branch], cwd=new_repo)
-
-set_octopusvariable('NewRepo', 'https://github.com/' + cac_org + '/' + new_repo)
 
 print(
     'Repo was forked from ' + 'https://github.com/' + cac_org + '/' + template_repo + ' to '
