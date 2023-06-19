@@ -30,6 +30,18 @@ if "printverbose" not in globals():
         print(msg)
 
 
+def get_octopusvariable_quiet(variable):
+    """
+    Gets an octopus variable, or an empty string if it does not exist.
+    :param variable: The variable name
+    :return: The variable value, or an empty string if the variable does not exist
+    """
+    try:
+        return get_octopusvariable(variable)
+    except:
+        return ''
+
+
 def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose):
     """
         The execute method provides the ability to execute external processes while capturing and returning the
@@ -59,17 +71,18 @@ def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose
 
 
 # The values for these variables are injected by Terraform as it reads the file with the templatefile() function
-cac_proto = get_octopusvariable('Git.Url.Protocol')
-cac_host = get_octopusvariable('Git.Url.Host')
-cac_org = get_octopusvariable('Git.Url.Organization')
-cac_username = get_octopusvariable('Git.Credentials.Username')
-cac_password = get_octopusvariable('Git.Credentials.Password')
-tenant_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable('Octopus.Deployment.Tenant.Name').lower())
-new_project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable('Exported.Project.Name').lower())
-original_project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable('Octopus.Project.Name').lower())
-project_name_sanitized = new_project_name_sanitized if len(new_project_name_sanitized) != 0 else original_project_name_sanitized
+cac_proto = get_octopusvariable_quiet('Git.Url.Protocol')
+cac_host = get_octopusvariable_quiet('Git.Url.Host')
+cac_org = get_octopusvariable_quiet('Git.Url.Organization')
+cac_username = get_octopusvariable_quiet('Git.Credentials.Username')
+cac_password = get_octopusvariable_quiet('Git.Credentials.Password')
+tenant_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable_quiet('Octopus.Deployment.Tenant.Name').lower())
+new_project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable_quiet('Exported.Project.Name').lower())
+original_project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable_quiet('Octopus.Project.Name').lower())
+project_name_sanitized = new_project_name_sanitized if len(new_project_name_sanitized) != 0 \
+    else original_project_name_sanitized
 new_repo = tenant_name_sanitized + '_' + project_name_sanitized
-template_repo = re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable('Octopus.Project.Name').lower())
+template_repo = re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable_quiet('Octopus.Project.Name').lower())
 branch = 'main'
 
 # Attempt to view the template repo
