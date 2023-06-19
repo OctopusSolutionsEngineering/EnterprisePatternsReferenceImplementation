@@ -141,7 +141,7 @@ if not check_repo_exists(new_repo_url, parser.git_username, parser.git_password)
     sys.exit(1)
 
 if not check_repo_exists(parser.template_repo_name_url, parser.git_username, parser.git_password):
-    print('Upstream repo ' + new_repo_url + ' is not available')
+    print('Upstream repo ' + parser.template_repo_name_url + ' is not available')
     sys.exit(1)
 
 # Set some default user details
@@ -192,7 +192,8 @@ if merge_result == 0:
         execute(['git', 'push', 'origin'], cwd=new_repo)
         print('Changed merged successfully')
     else:
-        print('No changes found.')
+        print('No changes found in the upstream repo ' + parser.template_repo_name_url +
+              ' that do not exist in the downstream repo ' + new_repo_url)
 else:
     print('Template repo branch could not be automatically merged into project branch. ' +
           'This merge will need to be resolved manually.')
