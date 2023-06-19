@@ -97,8 +97,11 @@ def init_argparse() -> tuple[Namespace, list[str]]:
     )
     parser.add_argument('--original-project-name', action='store',
                         default=get_octopusvariable_quiet('Octopus.Project.Name'))
-    parser.add_argument('--new-project-name', action='store', default=get_octopusvariable_quiet('Exported.Project.Name'))
+    parser.add_argument('--new-project-name', action='store',
+                        default=get_octopusvariable_quiet('Exported.Project.Name'))
     parser.add_argument('--github-app-id', action='store', default=get_octopusvariable_quiet('GitHub.App.Id'))
+    parser.add_argument('--github-app-installation-id', action='store',
+                        default=get_octopusvariable_quiet('GitHub.App.InstallationId'))
     parser.add_argument('--github-app-private-key', action='store',
                         default=get_octopusvariable_quiet('GitHub.App.PrivateKey'))
     parser.add_argument('--git-organization', action='store', default=get_octopusvariable_quiet('Git.Url.Organization'))
@@ -140,8 +143,10 @@ payload = {
 jwt_instance = jwt.JWT()
 encoded_jwt = jwt_instance.encode(payload, signing_key, alg='RS256')
 
+print(encoded_jwt)
+
 # Create access token
-url = 'https://api.github.com/app/installations/' + get_octopusvariable('GitHub.App.InstallationId') + '/access_tokens'
+url = 'https://api.github.com/app/installations/' + parser.github_app_installation_id + '/access_tokens'
 headers = {
     'Authorization': 'Bearer ' + encoded_jwt,
     'Accept': 'application/vnd.github+json',
