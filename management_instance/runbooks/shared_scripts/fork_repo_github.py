@@ -184,10 +184,8 @@ except:
     # Note you have to use the token rather than the JWT:
     # https://stackoverflow.com/questions/39600396/bad-credentails-for-jwt-for-github-integrations-api
     url = 'https://api.github.com/orgs/' + cac_org + '/repos'
-    auth = base64.b64encode(('x-access-token:' + token).encode('ascii'))
-    auth_header = 'Basic ' + auth.decode('ascii')
     headers = {
-        'Authorization': auth_header,
+        'Authorization': 'token ' + token,
         'Content-Type': 'application/json',
         'Accept': 'application/vnd.github+json',
         'X-GitHub-Api-Version': '2022-11-28',
