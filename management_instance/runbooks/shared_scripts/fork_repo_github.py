@@ -50,6 +50,15 @@ if 'printverbose' not in globals():
         print(msg)
 
 
+def printverbose_noansi(output):
+    """
+    Strip ANSI color codes and print the output as verbose
+    :param output: The output to print
+    """
+    output_no_ansi = re.sub('\x1b\[[0-9;]*m', '', output)
+    printverbose(output_no_ansi)
+
+
 def get_octopusvariable_quiet(variable):
     """
     Gets an octopus variable, or an empty string if it does not exist.
@@ -62,7 +71,7 @@ def get_octopusvariable_quiet(variable):
         return ''
 
 
-def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose):
+def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose_noansi):
     """
         The execute method provides the ability to execute external processes while capturing and returning the
         output to std err and std out and exit code.
@@ -80,12 +89,8 @@ def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose
         print_output(' '.join(args))
 
     if print_output is not None:
-        # Octopus does not use ANSI color codes in the output, so strip these codes
-        stdout_no_ansi = re.sub('\x1b\[[0-9;]*m', '', stdout)
-        stderr_no_ansi = re.sub('\x1b\[[0-9;]*m', '', stderr)
-
-        print_output(stdout_no_ansi)
-        print_output(stderr_no_ansi)
+        print_output(stdout)
+        print_output(stderr)
 
     return stdout, stderr, retcode
 

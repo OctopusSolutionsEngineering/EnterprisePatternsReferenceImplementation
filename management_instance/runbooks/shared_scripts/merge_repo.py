@@ -18,7 +18,16 @@ if "get_octopusvariable" not in globals():
             return os.environ['GIT_CREDENTIALS_PASSWORD']
 
 
-def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose):
+def printverbose_noansi(output):
+    """
+    Strip ANSI color codes and print the output as verbose
+    :param output: The output to print
+    """
+    output_no_ansi = re.sub('\x1b\[[0-9;]*m', '', output)
+    printverbose(output_no_ansi)
+
+
+def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose_noansi):
     """
         The execute method provides the ability to execute external processes while capturing and returning the
         output to std err and std out and exit code.
@@ -36,12 +45,8 @@ def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose
         print_output(' '.join(args))
 
     if print_output is not None:
-        # Octopus does not use ANSI color codes in the output, so strip these codes
-        stdout_no_ansi = re.sub('\x1b\[[0-9;]*m', '', stdout)
-        stderr_no_ansi = re.sub('\x1b\[[0-9;]*m', '', stderr)
-
-        print_output(stdout_no_ansi)
-        print_output(stderr_no_ansi)
+        print_output(stdout)
+        print_output(stderr)
 
     return stdout, stderr, retcode
 
@@ -68,7 +73,8 @@ cac_password = get_octopusvariable('Git.Credentials.Password')
 tenant_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable('Octopus.Deployment.Tenant.Name').lower())
 new_project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable('Exported.Project.Name').lower())
 original_project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable('Octopus.Project.Name').lower())
-project_name_sanitized = new_project_name_sanitized if len(new_project_name_sanitized) != 0 else original_project_name_sanitized
+project_name_sanitized = new_project_name_sanitized if len(
+    new_project_name_sanitized) != 0 else original_project_name_sanitized
 new_repo = tenant_name_sanitized + '_' + project_name_sanitized
 template_repo = re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable('Octopus.Project.Name').lower())
 project_dir = '.octopus/project'

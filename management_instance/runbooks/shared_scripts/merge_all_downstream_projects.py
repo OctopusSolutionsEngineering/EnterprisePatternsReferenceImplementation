@@ -22,6 +22,16 @@ if "printverbose" not in globals():
     def printverbose(msg):
         print(msg)
 
+
+def printverbose_noansi(output):
+    """
+    Strip ANSI color codes and print the output as verbose
+    :param output: The output to print
+    """
+    output_no_ansi = re.sub('\x1b\[[0-9;]*m', '', output)
+    printverbose(output_no_ansi)
+
+
 cac_username = get_octopusvariable('Git.Credentials.Username')
 cac_password = get_octopusvariable('Git.Credentials.Password')
 cac_proto = get_octopusvariable('Git.Url.Protocol')
@@ -36,7 +46,7 @@ project_dir = '.octopus/project'
 tenant_name = get_octopusvariable("Octopus.Deployment.Tenant.Name")
 
 
-def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose):
+def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose_noansi):
     """
         The execute method provides the ability to execute external processes while capturing and returning the
         output to std err and std out and exit code.
@@ -54,12 +64,8 @@ def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose
         print_output(' '.join(args))
 
     if print_output is not None:
-        # Octopus does not use ANSI color codes in the output, so strip these codes
-        stdout_no_ansi = re.sub('\x1b\[[0-9;]*m', '', stdout)
-        stderr_no_ansi = re.sub('\x1b\[[0-9;]*m', '', stderr)
-
-        print_output(stdout_no_ansi)
-        print_output(stderr_no_ansi)
+        print_output(stdout)
+        print_output(stderr)
 
     return stdout, stderr, retcode
 
@@ -155,7 +161,8 @@ def find_downstream_projects(merge_repo_callback):
                                                  cwd=trimmed_workspace)
 
                     if merge_base == merge_source_current_commit:
-                        print('Project ' + str(name or '') + ' in space ' + str(octopus_space_name or '') + ' is up to date')
+                        print('Project ' + str(name or '') + ' in space ' + str(
+                            octopus_space_name or '') + ' is up to date')
                     elif merge_result != 0:
                         print('Project ' + str(name or '') + ' in space ' + str(octopus_space_name or '') +
                               ' has merge conflicts and has not been processed')
