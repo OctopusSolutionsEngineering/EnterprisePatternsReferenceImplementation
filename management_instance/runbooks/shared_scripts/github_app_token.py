@@ -82,4 +82,4 @@ response = urllib.request.urlopen(request)
 response_json = json.loads(response.read().decode())
 token = response_json['token']
 
-set_octopusvariable('GithubToken', token)
+set_octopusvariable('GitHubToken', token)
