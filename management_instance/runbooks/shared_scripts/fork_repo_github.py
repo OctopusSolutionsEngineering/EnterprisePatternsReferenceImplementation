@@ -114,9 +114,8 @@ def init_argparse() -> tuple[Namespace, list[str]]:
 
 parser, _ = init_argparse()
 
-# The values for these variables are injected by Terraform as it reads the file with the templatefile() function
-cac_org = parser.git_organization
 
+cac_org = parser.git_organization
 tenant_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.tenant_name.lower())
 new_project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.new_project_name.lower())
 original_project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.template_repo_name.lower())
