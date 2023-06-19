@@ -71,8 +71,6 @@ def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose
 
 
 # The values for these variables are injected by Terraform as it reads the file with the templatefile() function
-cac_proto = get_octopusvariable('Git.Url.Protocol')
-cac_host = get_octopusvariable('Git.Url.Host')
 cac_org = get_octopusvariable('Git.Url.Organization')
 
 tenant_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable('Octopus.Deployment.Tenant.Name').lower())
@@ -115,7 +113,7 @@ token = response_json['token']
 
 # Attempt to view the template repo
 try:
-    url = cac_proto + '://' + cac_host + '/' + cac_org + '/' + template_repo + '.git'
+    url = 'https://github.com/' + cac_org + '/' + template_repo + '.git'
     auth = base64.b64encode(('x-access-token:' + token).encode('ascii'))
     auth_header = "Basic " + auth.decode('ascii')
     headers = {
@@ -129,7 +127,7 @@ except:
 
 # Attempt to view the new repo
 try:
-    url = cac_proto + '://' + cac_host + '/' + cac_org + '/' + new_repo + '.git'
+    url = 'https://github.com/' + cac_org + '/' + new_repo + '.git'
     auth = base64.b64encode(('x-access-token:' + token).encode('ascii'))
     auth_header = "Basic " + auth.decode('ascii')
     headers = {
@@ -140,7 +138,7 @@ try:
 except:
     # If we could not view the repo, assume it needs to be created.
     # https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#create-an-organization-repository
-    url = cac_proto + '://' + cac_host + '/orgs/' + cac_org + '/repos'
+    url = 'https://api.github.com/orgs/' + cac_org + '/repos'
     headers = {
         "Authorization": 'Bearer ' + encoded_jwt,
         'Content-Type': 'application/json',
@@ -152,11 +150,11 @@ except:
     urllib.request.urlopen(request)
 
 # Clone the repo and add the upstream repo
-execute(['git', 'clone', cac_proto + '://' + 'x-access-token:' + token + '@'
-         + cac_host + '/' + cac_org + '/' + new_repo + '.git'])
+execute(['git', 'clone', 'https://' + 'x-access-token:' + token + '@'
+         + 'github.com/' + cac_org + '/' + new_repo + '.git'])
 execute(
-    ['git', 'remote', 'add', 'upstream', cac_proto + '://' + 'x-access-token:' + token + '@'
-     + cac_host + '/' + cac_org + '/' + template_repo + '.git'],
+    ['git', 'remote', 'add', 'upstream', 'https://' + 'x-access-token:' + token + '@'
+     + 'github.com/' + cac_org + '/' + template_repo + '.git'],
     cwd=new_repo)
 execute(['git', 'fetch', '--all'], cwd=new_repo)
 _, _, show_branch_result = execute(['git', 'show-branch', 'remotes/origin/' + branch], cwd=new_repo)
@@ -182,5 +180,5 @@ execute(['git', 'reset', '--hard', 'upstream/' + branch], cwd=new_repo)
 execute(['git', 'push', 'origin', branch], cwd=new_repo)
 
 print(
-    'Repo was forked from ' + cac_proto + '://' + cac_host + '/' + cac_org + '/' + template_repo + ' to '
-    + cac_proto + '://' + cac_host + '/' + cac_org + '/' + new_repo)
+    'Repo was forked from ' + 'https://github.com/' + cac_org + '/' + template_repo + ' to '
+    + 'https://github.com/' + cac_org + '/' + new_repo)
