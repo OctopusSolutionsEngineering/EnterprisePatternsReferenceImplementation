@@ -1,5 +1,6 @@
 import sys
 import subprocess
+from argparse import Namespace
 
 # Install our own dependencies
 subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'jwt'])
@@ -13,6 +14,7 @@ import base64
 import re
 import jwt
 import time
+import argparse
 
 # If this script is not being run as part of an Octopus step, return variables from environment variables.
 if "get_octopusvariable" not in globals():
@@ -40,6 +42,18 @@ if "get_octopusvariable" not in globals():
 if "printverbose" not in globals():
     def printverbose(msg):
         print(msg)
+
+
+def get_octopusvariable_quiet(variable):
+    """
+    Gets an octopus variable, or an empty string if it does not exist.
+    :param variable: The variable name
+    :return: The variable value, or an empty string if the variable does not exist
+    """
+    try:
+        return get_octopusvariable(variable)
+    except:
+        return ''
 
 
 def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose):
@@ -70,21 +84,42 @@ def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose
     return stdout, stderr, retcode
 
 
-# The values for these variables are injected by Terraform as it reads the file with the templatefile() function
-cac_org = get_octopusvariable('Git.Url.Organization')
+def init_argparse() -> Namespace:
+    parser = argparse.ArgumentParser(
+        usage="%(prog)s [OPTION] [FILE]...",
+        description="Fork a GitHub repo"
+    )
+    parser.add_argument("--originalProjectName", action="store",
+                        default=get_octopusvariable_quiet('Octopus.Project.Name'))
+    parser.add_argument("--newProjectName", action="store", default=get_octopusvariable_quiet('Exported.Project.Name'))
+    parser.add_argument("--githubAppId", action="store", default=get_octopusvariable_quiet('GitHub.App.Id'))
+    parser.add_argument("--githubAppPrivateKey", action="store",
+                        default=get_octopusvariable_quiet('GitHub.App.PrivateKey'))
+    parser.add_argument("--gitOrganization", action="store", default=get_octopusvariable_quiet('Git.Url.Organization'))
+    parser.add_argument("--tenantName", action="store",
+                        default=get_octopusvariable_quiet('Octopus.Deployment.Tenant.Name'))
+    parser.add_argument("--templateRepoName", action="store",
+                        default=get_octopusvariable_quiet('Octopus.Project.Name').lower())
+    return parser.parse_args()
 
-tenant_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable('Octopus.Deployment.Tenant.Name').lower())
-new_project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable('Exported.Project.Name').lower())
-original_project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable('Octopus.Project.Name').lower())
-project_name_sanitized = new_project_name_sanitized if len(
-    new_project_name_sanitized) != 0 else original_project_name_sanitized
+
+parser = init_argparse()
+
+# The values for these variables are injected by Terraform as it reads the file with the templatefile() function
+cac_org = parser.gitOrganization
+
+tenant_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.tenantName.lower())
+new_project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.newProjectName.lower())
+original_project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.templateRepoName.lower())
+project_name_sanitized = new_project_name_sanitized if len(new_project_name_sanitized) != 0 \
+    else original_project_name_sanitized
 new_repo = tenant_name_sanitized + '_' + project_name_sanitized
-template_repo = re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable('Octopus.Project.Name').lower())
+template_repo = re.sub('[^a-zA-Z0-9]', '_', parser.templateRepoName.lower())
 branch = 'main'
 
 # Generate the tokens used by git and the GitHub API
-app_id = get_octopusvariable('GitHub.App.Id')
-signing_key = jwt.jwk_from_pem(get_octopusvariable('GitHub.App.PrivateKey').encode("utf-8"))
+app_id = parser.githubAppId
+signing_key = jwt.jwk_from_pem(parser.githubAppPrivateKey.encode("utf-8"))
 
 payload = {
     # Issued at time
