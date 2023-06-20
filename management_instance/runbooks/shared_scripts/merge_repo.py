@@ -77,7 +77,7 @@ def check_repo_exists(url, username, password):
         return False
 
 
-def init_argparse() -> tuple[argparse.Namespace, list[str]]:
+def init_argparse():
     parser = argparse.ArgumentParser(
         usage='%(prog)s [OPTION] [FILE]...',
         description='Merge the upstream repo into the downstream repo'
