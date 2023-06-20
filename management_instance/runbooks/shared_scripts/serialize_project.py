@@ -71,7 +71,8 @@ def init_argparse():
     parser.add_argument('--ignore-all-changes',
                         action='store',
                         default=get_octopusvariable_quiet('Exported.Project.IgnoreAllChanges'),
-                        help='Set to true to set the "lifecycle.ignore_changes" setting on each exported resource to "all"')
+                        help='Set to true to set the "lifecycle.ignore_changes" ' +
+                             'setting on each exported resource to "all"')
     parser.add_argument('--terraform-backend',
                         action='store',
                         default=get_octopusvariable_quiet('ThisInstance.Terraform.Backend'),
@@ -79,7 +80,14 @@ def init_argparse():
     parser.add_argument('--upload-space-id',
                         action='store',
                         default=get_octopusvariable_quiet('Octopus.UploadSpace.Id'),
-                        help='Set this to the space ID of the Octopus space where the resulting package will be uploaded to.')
+                        help='Set this to the space ID of the Octopus space where ' +
+                             'the resulting package will be uploaded to.')
+    parser.add_argument('--ignore-cac-managed-values',
+                        action='store',
+                        default='false',
+                        help='Set this to true to exclude cac managed values like non-secret variables, ' +
+                             'deployment processes, and project versioning into the Terraform module. ' +
+                             'Set to false to have these values embedded into the module.')
 
     return parser.parse_known_args()
 
@@ -158,7 +166,7 @@ stdout, _, _ = execute(['docker', 'run',
                         # CaC managed project settings if ignoreCacManagedValues is true. It is usually desirable to
                         # set this value to true, but it is false here because CaC projects created by Terraform today
                         # save some variables in the database rather than writing them to the Git repo.
-                        '-ignoreCacManagedValues=false',
+                        '-ignoreCacManagedValues=' + parser.ignore_cac_managed_values,
                         # This value is always true. Either this is an unmanaged project, in which case we are never
                         # reapplying it; or it is a variable configured project, in which case we need to ignore
                         # variable changes, or it is a shared CaC project, in which case we don't use Terraform to
@@ -231,7 +239,8 @@ stdout, _, _ = execute(['docker', 'run',
                         '--server', get_octopusvariable_quiet('ThisInstance.Server.Url'),
                         '--space', uploadSpace,
                         '--package', '/export/' +
-                        re.sub('[^0-9a-zA-Z]', '_', get_octopusvariable_quiet('Octopus.Project.Name')) + '.' + date + '.zip',
+                        re.sub('[^0-9a-zA-Z]', '_',
+                               get_octopusvariable_quiet('Octopus.Project.Name')) + '.' + date + '.zip',
                         '--replace-existing'])
 
 print(stdout)
