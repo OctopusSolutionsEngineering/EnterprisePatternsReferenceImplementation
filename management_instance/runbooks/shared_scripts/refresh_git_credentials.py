@@ -20,22 +20,10 @@ import os
 import json
 
 # If this script is not being run as part of an Octopus step, return variables from environment variables.
+# Periods are replaced with underscores, and the variable name is converted to uppercase
 if "get_octopusvariable" not in globals():
     def get_octopusvariable(variable):
-        if variable == 'GitHub.App.PrivateKey':
-            return os.environ['GITHUB_APP_PRIVATEKEY']
-        if variable == 'GitHub.App.Id':
-            return os.environ['GITHUB_APP_ID']
-        if variable == 'GitHub.App.InstallationId':
-            return os.environ['GITHUB_APP_INSTALLATIONID']
-        if variable == 'Global.Octopus.ApiKey':
-            return os.environ['GITHUB_APP_INSTALLATIONID']
-        if variable == 'Global.Octopus.ServerUrl':
-            return os.environ['GLOBAL_OCTOPUS_SERVERURL']
-        if variable == 'Octopus.GitHubAppCreds.Name':
-            return os.environ['OCTOPUS_GITHUBAPPCREDS_NAME']
-
-        return ""
+        return os.environ[re.sub('\\.', '_', variable.upper())]
 
 # If this script is not being run as part of an Octopus step, print directly to std out.
 if "printverbose" not in globals():

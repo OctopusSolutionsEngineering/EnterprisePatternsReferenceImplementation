@@ -19,16 +19,10 @@ if 'set_octopusvariable' not in globals():
         pass
 
 # If this script is not being run as part of an Octopus step, return variables from environment variables.
-if 'get_octopusvariable' not in globals():
+# Periods are replaced with underscores, and the variable name is converted to uppercase
+if "get_octopusvariable" not in globals():
     def get_octopusvariable(variable):
-        if variable == 'GitHub.App.Id':
-            return os.environ['GITHUB_APP_ID']
-        if variable == 'GitHub.App.PrivateKey':
-            return os.environ['GITHUB_APP_PRIVATEKEY']
-        if variable == 'GitHub.App.InstallationId':
-            return os.environ['GITHUB_APP_INSTALLATIONID']
-
-        return ''
+        return os.environ[re.sub('\\.', '_', variable.upper())]
 
 
 def get_octopusvariable_quiet(variable):

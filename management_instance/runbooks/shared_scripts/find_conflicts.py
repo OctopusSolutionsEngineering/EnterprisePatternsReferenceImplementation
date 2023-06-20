@@ -4,17 +4,10 @@ import re
 import subprocess
 
 # If this script is not being run as part of an Octopus step, return variables from environment variables.
+# Periods are replaced with underscores, and the variable name is converted to uppercase
 if "get_octopusvariable" not in globals():
     def get_octopusvariable(variable):
-        if variable == 'Octopus.Project.Name':
-            return os.environ['OCTOPUS_PROJECT_NAME']
-        if variable == 'Git.Credentials.Username':
-            return os.environ['GIT_CREDENTIALS_USERNAME']
-        if variable == 'Git.Credentials.Password':
-            return os.environ['GIT_CREDENTIALS_PASSWORD']
-
-        return ""
-
+        return os.environ[re.sub('\\.', '_', variable.upper())]
 # If this script is not being run as part of an Octopus step, print directly to std out.
 if "printverbose" not in globals():
     def printverbose(msg):

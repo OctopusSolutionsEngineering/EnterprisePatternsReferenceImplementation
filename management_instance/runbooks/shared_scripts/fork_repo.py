@@ -7,22 +7,10 @@ import base64
 import re
 
 # If this script is not being run as part of an Octopus step, return variables from environment variables.
+# Periods are replaced with underscores, and the variable name is converted to uppercase
 if "get_octopusvariable" not in globals():
     def get_octopusvariable(variable):
-        if variable == 'ThisInstance.Server.Url':
-            return os.environ['OCTOPUS_CLI_SERVER']
-        elif variable == 'ThisInstance.Api.Key':
-            return os.environ['OCTOPUS_CLI_API_KEY']
-        elif variable == 'Octopus.Space.Id':
-            return os.environ['OCTOPUS_SPACE_ID']
-        elif variable == 'Octopus.Project.Name':
-            return os.environ['OCTOPUS_PROJECT_NAME']
-        if variable == 'Git.Credentials.Username':
-            return os.environ['GIT_CREDENTIALS_USERNAME']
-        if variable == 'Git.Credentials.Password':
-            return os.environ['GIT_CREDENTIALS_PASSWORD']
-
-        return ""
+        return os.environ[re.sub('\\.', '_', variable.upper())]
 
 # If this script is not being run as part of an Octopus step, print directly to std out.
 if "printverbose" not in globals():

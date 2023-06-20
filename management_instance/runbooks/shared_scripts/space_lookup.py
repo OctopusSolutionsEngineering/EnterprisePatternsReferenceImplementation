@@ -10,12 +10,10 @@ import sys
 import time
 
 # If this script is not being run as part of an Octopus step, return variables from environment variables.
+# Periods are replaced with underscores, and the variable name is converted to uppercase
 if "get_octopusvariable" not in globals():
     def get_octopusvariable(variable):
-        if variable == 'Octopus.Deployment.Tenant.Name':
-            return os.environ['OCTOPUS_TENANT_NAME']
-
-        return ""
+        return os.environ[re.sub('\\.', '_', variable.upper())]
 
 # If this script is not being run as part of an Octopus step, just print any set variable to std out.
 if "set_octopusvariable" not in globals():
