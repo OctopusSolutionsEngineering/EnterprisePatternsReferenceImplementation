@@ -115,6 +115,113 @@ def init_argparse():
     return parser.parse_known_args()
 
 
+def set_git_user():
+    """
+    Configure the user details that appear in the git logs
+    """
+    execute(['git', 'config', '--global', 'user.email', 'octopus@octopus.com'])
+    execute(['git', 'config', '--global', 'user.name', 'Octopus Server'])
+
+
+def clone_repo(template_repo_name_url, branch):
+    """
+    Clone the template repo into the template directory
+    :param template_repo_name_url: The template repo url
+    :param branch: The branch holding the template code
+    :return: The directory holding the template repo
+    """
+    # Clone the template repo to test for a step template reference
+    os.mkdir('template')
+    execute(['git', 'clone', template_repo_name_url, 'template'])
+    if branch != 'master' and branch != 'main':
+        execute(['git', 'checkout', '-b', branch, 'origin/' + branch], cwd='template')
+    else:
+        execute(['git', 'checkout', branch], cwd='template')
+    return 'template'
+
+
+def add_upstream_remote(new_repo_url_wth_creds, template_repo_name_url_with_creds, new_repo):
+    """
+    Clone the downstream repo and link the upstream remote
+    :param new_repo_url_wth_creds: The downstream repo url
+    :param template_repo_name_url_with_creds: The upstream repo
+    :param new_repo: The directory to clone the downstream repo into
+    :return:
+    """
+    execute(['git', 'clone', new_repo_url_wth_creds])
+    execute(['git', 'remote', 'add', 'upstream', template_repo_name_url_with_creds], cwd=new_repo)
+    execute(['git', 'fetch', '--all'], cwd=new_repo)
+    execute(['git', 'checkout', '-b', 'upstream-' + branch, 'upstream/' + branch], cwd=new_repo)
+
+    # Checkout the project branch, assuming "main" or "master" are already linked upstream
+    if branch != 'master' and branch != 'main':
+        execute(['git', 'checkout', '-b', branch, 'origin/' + branch], cwd=new_repo)
+    else:
+        execute(['git', 'checkout', branch], cwd=new_repo)
+
+
+def check_action_templates(project_dir, template_dir):
+    """
+    Verify that the template does not contain step templates.
+    :param project_dir:  The name of the directory holding the Octopus CaC files
+    :param template_dir: The directory holding the cloned template repo
+    """
+    try:
+        with open(template_dir + '/' + project_dir + '/deployment_process.ocl', 'r') as file:
+            data = file.read()
+            if 'ActionTemplates' in data:
+                print('Template repo references a step template. ' +
+                      'Step templates can not be merged across spaces or instances.')
+                sys.exit(1)
+    except Exception as ex:
+        print(ex)
+        print('Failed to open ' + template_dir + '/' + project_dir +
+              '/deployment_process.ocl to check for ActionTemplates')
+
+
+def merge_changes(branch, new_repo, template_repo_name_url, new_repo_url):
+    """
+    Merge the changes between the upstream template repo and the downstream managed repo.
+    :param branch: The branch holding the CaC code
+    :param new_repo: The directory containing the downstream repo
+    :param template_repo_name_url: The url of the upstream repo
+    :param new_repo_url: The URL of the downstream repo
+    """
+    # Test to see if we can merge the two branches together without conflict.
+    # https://stackoverflow.com/a/501461/8246539
+    _, _, merge_result = execute(['git', 'merge', '--no-commit', '--no-ff', 'upstream-' + branch], cwd=new_repo)
+    if merge_result == 0:
+        # All good, so actually do the merge
+        execute(['git', 'merge', 'upstream-' + branch], cwd=new_repo)
+        execute(['git', 'merge', '--continue'], cwd=new_repo, env=dict(os.environ, GIT_EDITOR="/bin/true"))
+
+        _, _, diff_result = execute(['git', 'diff', '--quiet', '--exit-code', '@{upstream}'], cwd=new_repo)
+        if diff_result != 0:
+            execute(['git', 'push', 'origin'], cwd=new_repo)
+            print('Changed merged successfully')
+        else:
+            print('No changes found in the upstream repo ' + template_repo_name_url +
+                  ' that do not exist in the downstream repo ' + new_repo_url)
+    else:
+        print('Template repo branch could not be automatically merged into project branch. ' +
+              'This merge will need to be resolved manually. ' +
+              'See the verbose logs for instructions on resolving the conflict.')
+        printverbose('To resolve the conflicts, run the following commands:')
+        printverbose('mkdir cac')
+        printverbose('cd cac')
+        printverbose('git clone ' + new_repo_url + ' .')
+        printverbose('git remote add upstream ' + template_repo_name_url)
+        printverbose('git fetch --all')
+        printverbose('git checkout -b upstream-' + branch + ' upstream/' + branch)
+        if branch != 'master' and branch != 'main':
+            printverbose('git checkout -b ' + branch + ' origin/' + branch)
+        else:
+            printverbose('git checkout ' + branch)
+        printverbose('git merge-base ' + branch + ' upstream-' + branch)
+        printverbose('git merge --no-commit --no-ff upstream-' + branch)
+        sys.exit(1)
+
+
 parser, _ = init_argparse()
 
 tenant_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.tenant_name.lower())
@@ -129,85 +236,22 @@ branch = 'main'
 new_repo_url = parser.git_protocol + '://' + parser.git_host + '/' + parser.git_organization + '/' + new_repo + '.git'
 new_repo_url_wth_creds = parser.git_protocol + '://' + parser.git_username + ':' + parser.git_password + '@' + \
                          parser.git_host + '/' + parser.git_organization + '/' + new_repo + '.git'
-parser.template_repo_name_url = parser.git_protocol + '://' + parser.git_host + '/' + parser.git_organization + '/' + \
-                                parser.template_repo_name + '.git'
-parser.template_repo_name_url_with_creds = parser.git_protocol + '://' + parser.git_username + ':' + \
-                                           parser.git_password + '@' + parser.git_host + '/' + \
-                                           parser.git_organization + '/' + parser.template_repo_name + '.git'
+template_repo_name_url = parser.git_protocol + '://' + parser.git_host + '/' + parser.git_organization + '/' + \
+                         parser.template_repo_name + '.git'
+template_repo_name_url_with_creds = parser.git_protocol + '://' + parser.git_username + ':' + \
+                                    parser.git_password + '@' + parser.git_host + '/' + \
+                                    parser.git_organization + '/' + parser.template_repo_name + '.git'
 
 if not check_repo_exists(new_repo_url, parser.git_username, parser.git_password):
     print('Downstream repo ' + new_repo_url + ' is not available')
     sys.exit(1)
 
-if not check_repo_exists(parser.template_repo_name_url, parser.git_username, parser.git_password):
-    print('Upstream repo ' + parser.template_repo_name_url + ' is not available')
+if not check_repo_exists(template_repo_name_url, parser.git_username, parser.git_password):
+    print('Upstream repo ' + template_repo_name_url + ' is not available')
     sys.exit(1)
 
-# Set some default user details
-execute(['git', 'config', '--global', 'user.email', 'octopus@octopus.com'])
-execute(['git', 'config', '--global', 'user.name', 'Octopus Server'])
-
-# Clone the template repo to test for a step template reference
-os.mkdir('template')
-execute(['git', 'clone', parser.template_repo_name_url, 'template'])
-if branch != 'master' and branch != 'main':
-    execute(['git', 'checkout', '-b', branch, 'origin/' + branch], cwd='template')
-else:
-    execute(['git', 'checkout', branch], cwd='template')
-
-try:
-    with open('template/' + project_dir + '/deployment_process.ocl', 'r') as file:
-        data = file.read()
-        if 'ActionTemplates' in data:
-            print('Template repo references a step template. ' +
-                  'Step templates can not be merged across spaces or instances.')
-            sys.exit(1)
-except Exception as ex:
-    print(ex)
-    print('Failed to open template/' + project_dir + '/deployment_process.ocl to check for ActionTemplates')
-
-# Merge the template changes
-execute(['git', 'clone', new_repo_url_wth_creds])
-execute(['git', 'remote', 'add', 'upstream', parser.template_repo_name_url_with_creds], cwd=new_repo)
-execute(['git', 'fetch', '--all'], cwd=new_repo)
-execute(['git', 'checkout', '-b', 'upstream-' + branch, 'upstream/' + branch], cwd=new_repo)
-
-# Checkout the project branch, assuming "main" or "master" are already linked upstream
-if branch != 'master' and branch != 'main':
-    execute(['git', 'checkout', '-b', branch, 'origin/' + branch], cwd=new_repo)
-else:
-    execute(['git', 'checkout', branch], cwd=new_repo)
-
-# Test to see if we can merge the two branches together without conflict.
-# https://stackoverflow.com/a/501461/8246539
-_, _, merge_result = execute(['git', 'merge', '--no-commit', '--no-ff', 'upstream-' + branch], cwd=new_repo)
-if merge_result == 0:
-    # All good, so actually do the merge
-    execute(['git', 'merge', 'upstream-' + branch], cwd=new_repo)
-    execute(['git', 'merge', '--continue'], cwd=new_repo, env=dict(os.environ, GIT_EDITOR="/bin/true"))
-
-    _, _, diff_result = execute(['git', 'diff', '--quiet', '--exit-code', '@{upstream}'], cwd=new_repo)
-    if diff_result != 0:
-        execute(['git', 'push', 'origin'], cwd=new_repo)
-        print('Changed merged successfully')
-    else:
-        print('No changes found in the upstream repo ' + parser.template_repo_name_url +
-              ' that do not exist in the downstream repo ' + new_repo_url)
-else:
-    print('Template repo branch could not be automatically merged into project branch. ' +
-          'This merge will need to be resolved manually. ' +
-          'See the verbose logs for instructions on resolving the conflict.')
-    printverbose('To resolve the conflicts, run the following commands:')
-    printverbose('mkdir cac')
-    printverbose('cd cac')
-    printverbose('git clone ' + new_repo_url + ' .')
-    printverbose('git remote add upstream ' + parser.template_repo_name_url)
-    printverbose('git fetch --all')
-    printverbose('git checkout -b upstream-' + branch + ' upstream/' + branch)
-    if branch != 'master' and branch != 'main':
-        printverbose('git checkout -b ' + branch + ' origin/' + branch)
-    else:
-        printverbose('git checkout ' + branch)
-    printverbose('git merge-base ' + branch + ' upstream-' + branch)
-    printverbose('git merge --no-commit --no-ff upstream-' + branch)
-    sys.exit(1)
+set_git_user()
+template_dir = clone_repo(template_repo_name_url, branch)
+check_action_templates(project_dir, template_dir)
+add_upstream_remote(new_repo_url_wth_creds, template_repo_name_url_with_creds, new_repo)
+merge_changes(branch, new_repo, template_repo_name_url, new_repo_url)
