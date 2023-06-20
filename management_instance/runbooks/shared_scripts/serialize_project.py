@@ -199,7 +199,7 @@ stdout, _, _ = execute(['docker', 'run',
                         # option explicitly exports the default worker pool by name. This means if two spaces have
                         # different default pools, the exported project still uses the pool that the original project
                         # used.
-                        '-lookUpDefaultWorkerPools'
+                        '-lookUpDefaultWorkerPools',
                         # The directory where the exported files will be saved
                         '-dest', '/export'])
 
