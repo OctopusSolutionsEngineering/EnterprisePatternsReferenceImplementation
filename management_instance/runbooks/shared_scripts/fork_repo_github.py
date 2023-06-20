@@ -1,5 +1,5 @@
-import sys
 import subprocess
+import sys
 
 # Install our own dependencies
 subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'jwt'])
@@ -14,7 +14,6 @@ import re
 import jwt
 import time
 import argparse
-from argparse import Namespace
 
 # If this script is not being run as part of an Octopus step, setting variables is a noop
 if 'set_octopusvariable' not in globals():
@@ -96,7 +95,7 @@ def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose
     return stdout, stderr, retcode
 
 
-def init_argparse() -> tuple[Namespace, list[str]]:
+def init_argparse():
     parser = argparse.ArgumentParser(
         usage='%(prog)s [OPTION] [FILE]...',
         description='Fork a GitHub repo'

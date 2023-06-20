@@ -3,7 +3,6 @@ import os
 import re
 import subprocess
 import sys
-from argparse import Namespace
 from datetime import datetime
 from urllib.parse import urlparse
 
@@ -78,7 +77,7 @@ def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose
     return stdout, stderr, retcode
 
 
-def init_argparse() -> tuple[Namespace, list[str]]:
+def init_argparse():
     parser = argparse.ArgumentParser(
         usage='%(prog)s [OPTION] [FILE]...',
         description='Fork a GitHub repo'
