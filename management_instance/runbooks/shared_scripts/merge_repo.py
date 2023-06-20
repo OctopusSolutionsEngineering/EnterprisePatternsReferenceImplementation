@@ -195,5 +195,19 @@ if merge_result == 0:
               ' that do not exist in the downstream repo ' + new_repo_url)
 else:
     print('Template repo branch could not be automatically merged into project branch. ' +
-          'This merge will need to be resolved manually.')
+          'This merge will need to be resolved manually. ' +
+          'See the verbose logs for instructions on resolving the conflict.')
+    printverbose('To resolve the conflicts, run the following commands:')
+    printverbose('mkdir cac')
+    printverbose('cd cac')
+    printverbose('git clone ' + new_repo_url + ' .')
+    printverbose('git remote add upstream ' + parser.template_repo_name_url)
+    printverbose('git fetch --all')
+    printverbose('git checkout -b upstream-' + branch + ' upstream/' + branch)
+    if branch != 'master' and branch != 'main':
+        printverbose('git checkout -b ' + branch + ' origin/' + branch)
+    else:
+        printverbose('git checkout ' + branch)
+    printverbose('git merge-base ' + branch + ' upstream-' + branch)
+    printverbose('git merge --no-commit --no-ff upstream-' + branch)
     sys.exit(1)
