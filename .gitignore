@@ -37,3 +37,6 @@ terraform.rc
 *.zip
 
 **/node_modules
+
+# We don't use these version locks
+**/.terraform.lock.hcl
