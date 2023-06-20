@@ -1,3 +1,7 @@
+# This script previews the changes to be merged in from an upstream repo. It makes use of the diff2html
+# tool. Run this script in the octopussamples/diff2html container image, which has diff2html and Python 3
+# installed and ready to use.
+
 import argparse
 import subprocess
 import sys

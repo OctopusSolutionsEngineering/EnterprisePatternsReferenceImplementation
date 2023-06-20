@@ -1,3 +1,6 @@
+# This script forks a GitHub repo. It creates a token from a GitHub App installation to avoid
+# having to use a regular user account.
+
 import subprocess
 import sys
 
