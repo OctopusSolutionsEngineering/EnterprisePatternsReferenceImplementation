@@ -161,9 +161,11 @@ def generate_auth_header(token):
 def verify_template_repo(token, cac_org, template_repo):
     # Attempt to view the template repo
     try:
-        url = 'https://github.com/' + cac_org + '/' + template_repo + '.git'
+        url = 'https://api.github.com/repos/' + cac_org + '/' + template_repo
         headers = {
-            'Authorization': generate_auth_header(token),
+            'Accept': 'application/vnd.github+json',
+            'Authorization': 'Bearer ' + token,
+            'X-GitHub-Api-Version': '2022-11-28'
         }
         request = urllib.request.Request(url, headers=headers)
         urllib.request.urlopen(request)
@@ -175,9 +177,11 @@ def verify_template_repo(token, cac_org, template_repo):
 def verify_new_repo(token, cac_org, new_repo):
     # Attempt to view the new repo
     try:
-        url = 'https://github.com/' + cac_org + '/' + new_repo + '.git'
+        url = 'https://api.github.com/repos/' + cac_org + '/' + new_repo
         headers = {
-            'Authorization': generate_auth_header(token),
+            'Accept': 'application/vnd.github+json',
+            'Authorization': 'Bearer ' + token,
+            'X-GitHub-Api-Version': '2022-11-28'
         }
         request = urllib.request.Request(url, headers=headers)
         urllib.request.urlopen(request)
