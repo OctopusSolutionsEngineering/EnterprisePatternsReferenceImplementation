@@ -188,5 +188,5 @@ git_diff_out, _, _ = execute(['git', 'diff', 'main..upstream-main'], cwd=new_rep
 with open('upstream.diff', 'w') as f:
     f.write(git_diff_out)
 
-execute(['diff2html', '-F', 'diff.html', '--', 'upstream.diff'], cwd=new_repo)
-createartifact(new_repo + '/diff.html', 'diff.html')
+execute(['diff2html', '-F', 'diff.html', '-i', 'file', '--', 'upstream.diff'])
+createartifact('diff.html', 'diff.html')
