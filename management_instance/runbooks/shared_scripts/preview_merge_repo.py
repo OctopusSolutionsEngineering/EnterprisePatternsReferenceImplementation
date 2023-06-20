@@ -183,10 +183,10 @@ if branch != 'master' and branch != 'main':
 else:
     execute(['git', 'checkout', branch], cwd=new_repo)
 
-git_diff_out, _, _ = execute(['git', 'diff', 'main..upstream-main'])
+git_diff_out, _, _ = execute(['git', 'diff', 'main..upstream-main'], cwd=new_repo)
 
 with open('upstream.diff', 'w') as f:
     f.write(git_diff_out)
 
-execute(['diff2html', '-F', 'diff.html', '--', 'upstream.diff'])
-createartifact('diff.html')
+execute(['diff2html', '-F', 'diff.html', '--', 'upstream.diff'], cwd=new_repo)
+createartifact(new_repo + '/diff.html', 'diff.html')
