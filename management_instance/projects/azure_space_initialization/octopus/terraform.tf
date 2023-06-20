@@ -193,7 +193,7 @@ EOT
       worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
       properties                         = {
         "Octopus.Action.AutoRetry.MaximumCount"       = "3"
-        "Octopus.Action.Terraform.Template"           = file("../terrform_scripts/azure.tf")
+        "Octopus.Action.Terraform.Template"           = file("../terraform_scripts/azure.tf")
         "Octopus.Action.Terraform.TemplateParameters" = jsonencode({
           "azure_application_id"  = "#{Tenant.Azure.ApplicationId}"
           "azure_subscription_id" = "#{Tenant.Azure.SubscriptionId}"

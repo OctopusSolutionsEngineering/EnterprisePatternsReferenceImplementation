@@ -193,7 +193,7 @@ EOT
       worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
       properties                         = {
         "Octopus.Action.AutoRetry.MaximumCount"       = "3"
-        "Octopus.Action.Terraform.Template"           = file("../terrform_scripts/k8s.tf")
+        "Octopus.Action.Terraform.Template"           = file("../terraform_scripts/k8s.tf")
         "Octopus.Action.Terraform.TemplateParameters" = jsonencode({
           "k8s_cluster_url"  = "#{Tenant.K8S.Url}"
           "k8s_client_cert"  = "#{Tenant.K8S.CertificateData}"
