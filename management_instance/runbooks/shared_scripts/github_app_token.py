@@ -43,7 +43,7 @@ def get_octopusvariable_quiet(variable):
         return ''
 
 
-def init_argparse() -> tuple[Namespace, list[str]]:
+def init_argparse():
     parser = argparse.ArgumentParser(
         usage='%(prog)s [OPTION] [FILE]...',
         description='Fork a GitHub repo'
