@@ -195,6 +195,11 @@ stdout, _, _ = execute(['docker', 'run',
                         # The output variables added by this option are octopus_server, octopus_space_id, and
                         # octopus_space_name.
                         '-includeOctopusOutputVars',
+                        # Where steps do not explicitly define a worker pool and reference the default one, this
+                        # option explicitly exports the default worker pool by name. This means if two spaces have
+                        # different default pools, the exported project still uses the pool that the original project
+                        # used.
+                        '-lookUpDefaultWorkerPools'
                         # The directory where the exported files will be saved
                         '-dest', '/export'])
 
