@@ -46,12 +46,16 @@ def get_octopusvariable_quiet(variable):
 def init_argparse():
     parser = argparse.ArgumentParser(
         usage='%(prog)s [OPTION] [FILE]...',
-        description='Fork a GitHub repo'
+        description='Generate a GitHub token from an app registration'
     )
-    parser.add_argument('--github-app-id', action='store', default=get_octopusvariable_quiet('GitHub.App.Id'))
-    parser.add_argument('--github-app-installation-id', action='store',
+    parser.add_argument('--github-app-id',
+                        action='store',
+                        default=get_octopusvariable_quiet('GitHub.App.Id'))
+    parser.add_argument('--github-app-installation-id',
+                        action='store',
                         default=get_octopusvariable_quiet('GitHub.App.InstallationId'))
-    parser.add_argument('--github-app-private-key', action='store',
+    parser.add_argument('--github-app-private-key',
+                        action='store',
                         default=get_octopusvariable_quiet('GitHub.App.PrivateKey'))
 
     return parser.parse_known_args()
