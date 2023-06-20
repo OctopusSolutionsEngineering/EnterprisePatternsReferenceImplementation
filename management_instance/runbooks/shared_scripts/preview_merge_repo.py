@@ -185,6 +185,10 @@ else:
 
 git_diff_out, _, _ = execute(['git', 'diff', 'main...upstream-main'], cwd=new_repo)
 
+if len(git_diff_out) == 0:
+    print('There are no changes to merge.')
+    sys.exit(0)
+
 with open('upstream.diff', 'w') as f:
     f.write(git_diff_out)
 
