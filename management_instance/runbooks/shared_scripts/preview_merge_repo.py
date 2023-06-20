@@ -183,7 +183,7 @@ if branch != 'master' and branch != 'main':
 else:
     execute(['git', 'checkout', branch], cwd=new_repo)
 
-git_diff_out, _, _ = execute(['git', 'diff', 'main..upstream-main'], cwd=new_repo)
+git_diff_out, _, _ = execute(['git', 'diff', 'main...upstream-main'], cwd=new_repo)
 
 with open('upstream.diff', 'w') as f:
     f.write(git_diff_out)
