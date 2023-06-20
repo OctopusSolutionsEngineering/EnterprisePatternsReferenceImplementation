@@ -153,14 +153,17 @@ def generate_github_token():
     return response_json['token']
 
 
+def generate_auth_header(token):
+    auth = base64.b64encode(('x-access-token:' + token).encode('ascii'))
+    return 'Basic ' + auth.decode('ascii')
+
+
 def verify_template_repo(token, cac_org, template_repo):
     # Attempt to view the template repo
     try:
         url = 'https://github.com/' + cac_org + '/' + template_repo + '.git'
-        auth = base64.b64encode(('x-access-token:' + token).encode('ascii'))
-        auth_header = 'Basic ' + auth.decode('ascii')
         headers = {
-            'Authorization': auth_header,
+            'Authorization': generate_auth_header(token),
         }
         request = urllib.request.Request(url, headers=headers)
         urllib.request.urlopen(request)
@@ -173,10 +176,8 @@ def verify_new_repo(token, cac_org, new_repo):
     # Attempt to view the new repo
     try:
         url = 'https://github.com/' + cac_org + '/' + new_repo + '.git'
-        auth = base64.b64encode(('x-access-token:' + token).encode('ascii'))
-        auth_header = 'Basic ' + auth.decode('ascii')
         headers = {
-            'Authorization': auth_header,
+            'Authorization': generate_auth_header(token),
         }
         request = urllib.request.Request(url, headers=headers)
         urllib.request.urlopen(request)
