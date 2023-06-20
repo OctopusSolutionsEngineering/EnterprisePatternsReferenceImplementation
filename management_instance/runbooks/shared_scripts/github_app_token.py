@@ -1,3 +1,9 @@
+import sys
+import subprocess
+
+# Install our own dependencies
+subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'jwt'])
+
 import argparse
 import json
 import os

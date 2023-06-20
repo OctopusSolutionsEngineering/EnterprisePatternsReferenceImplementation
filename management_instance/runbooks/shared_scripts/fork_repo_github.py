@@ -1,7 +1,5 @@
 import sys
 import subprocess
-from argparse import Namespace
-from typing import Tuple, List
 
 # Install our own dependencies
 subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'jwt'])
@@ -16,6 +14,7 @@ import re
 import jwt
 import time
 import argparse
+from argparse import Namespace
 
 # If this script is not being run as part of an Octopus step, setting variables is a noop
 if 'set_octopusvariable' not in globals():
