@@ -131,7 +131,7 @@ terraformBackend = parser.terraform_backend if len(parser.terraform_backend) != 
 uploadSpace = parser.upload_space_id if len(parser.upload_space_id) != 0 \
     else get_octopusvariable_quiet('Octopus.Space.Id')
 
-stdout, _, _ = execute(['docker', 'run',
+stdout, _, octoterra_exit = execute(['docker', 'run',
                         '--rm',
                         '--add-host=' + parsed_url.hostname + ':' + octopus.strip(),
                         '-v', os.getcwd() + "/export:/export",
@@ -212,6 +212,10 @@ stdout, _, _ = execute(['docker', 'run',
                         '-dest', '/export'])
 
 print(stdout)
+
+if not octoterra_exit == 0:
+    print("Octoterra failed. Please check the logs for more information.")
+    sys.exit(1)
 
 date = datetime.now().strftime('%Y.%m.%d.%H%M%S')
 
