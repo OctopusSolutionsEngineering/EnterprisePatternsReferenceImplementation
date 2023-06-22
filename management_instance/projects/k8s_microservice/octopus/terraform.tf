@@ -286,7 +286,7 @@ EOT
         "Octopus.Action.KubernetesContainers.TerminationGracePeriodSeconds" = "5"
         "Octopus.Action.KubernetesContainers.PodSecuritySysctls"            = jsonencode([])
         "Octopus.Action.KubernetesContainers.PodServiceAccountName"         = "default"
-        "Octopus.Action.KubernetesContainers.PodSecurityRunAsNonRoot"       = "true"
+        "Octopus.Action.KubernetesContainers.PodSecurityRunAsNonRoot"       = "false"
         "Octopus.Action.KubernetesContainers.ServiceType"                   = "LoadBalancer"
         "Octopus.Action.KubernetesContainers.DeploymentResourceType"        = "Deployment"
         "Octopus.Action.KubernetesContainers.PodSecurityRunAsGroup"         = "#{if Kubernetes.Security.PodSecurityRunAsGroup}#{Kubernetes.Security.PodSecurityRunAsGroup}#{/if}"
