@@ -198,7 +198,8 @@ def merge_changes(branch, new_repo, template_repo_name_url, new_repo_url):
         _, _, diff_result = execute(['git', 'diff', '--quiet', '--exit-code', '@{upstream}'], cwd=new_repo)
         if diff_result != 0:
             execute(['git', 'push', 'origin'], cwd=new_repo)
-            print('Changed merged successfully')
+            print('Changed merged successfully from upstream repo ' + template_repo_name_url
+                  + ' into the downstream repo ' + new_repo_url)
         else:
             print('No changes found in the upstream repo ' + template_repo_name_url +
                   ' that do not exist in the downstream repo ' + new_repo_url)
