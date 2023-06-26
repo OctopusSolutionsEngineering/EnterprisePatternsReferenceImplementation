@@ -43,7 +43,7 @@ resource "octopusdeploy_variable" "git_username" {
   name         = "Git.Credentials.Username"
   is_sensitive = false
   value        = var.git_username
-}0
+}
 
 resource "octopusdeploy_variable" "git_proto" {
   owner_id     = octopusdeploy_library_variable_set.octopus_library_variable_set.id
