@@ -421,7 +421,7 @@ EOT
 
 
 resource "octopusdeploy_runbook" "runbook_backend_service_deploy_all_projects" {
-  name                        = "__ 4. Deploy All Projects"
+  name                        = "__ 4. Update Previous Deployments"
   project_id                  = data.octopusdeploy_projects.project.projects[0].id
   environment_scope           = "Specified"
   environments                = [data.octopusdeploy_environments.sync.environments[0].id]

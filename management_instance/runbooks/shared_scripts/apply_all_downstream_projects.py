@@ -102,7 +102,7 @@ def find_downstream_projects(apply_project_callback):
             name = resource.get('values', {}).get('name', None)
 
             if name is not None:
-                apply_project_callback(name, space_name)
+                apply_project_callback(name, octopus_space_name)
 
 
 init_project()
