@@ -210,8 +210,7 @@ stdout, _, octoterra_exit = execute(['docker', 'run',
                         '-lookUpDefaultWorkerPools',
                         # These tenants are linked to the project to support some management runbooks, but should not
                         # be exported
-                        '-excludeTenants', 'America',
-                        '-excludeTenants', 'Europe',
+                        '-excludeAllTenants',
                         # The directory where the exported files will be saved
                         '-dest', '/export'])
 
