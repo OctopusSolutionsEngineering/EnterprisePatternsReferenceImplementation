@@ -146,8 +146,8 @@ def create_issue(token, org, repo, title, body):
             'X-GitHub-Api-Version': '2022-11-28'
         }
         body_object = {
-            title: title,
-            body: body
+            'title': title,
+            'body': body
         }
         request = urllib.request.Request(url,
                                          headers=headers,
