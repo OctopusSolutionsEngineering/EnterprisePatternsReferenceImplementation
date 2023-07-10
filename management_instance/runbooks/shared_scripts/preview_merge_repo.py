@@ -124,11 +124,15 @@ def init_argparse():
     parser.add_argument('--generate-diff',
                         action='store_true',
                         default='false')
+    parser.add_argument('--silent-fail',
+                        action='store_true',
+                        default='false')
     return parser.parse_known_args()
 
 
 parser, _ = init_argparse()
 
+exit_code = 0 if parser.silent_fail else 1
 tenant_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.tenant_name.lower())
 new_project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.new_project_name.lower())
 original_project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.original_project_name.lower())
@@ -149,11 +153,11 @@ parser.template_repo_name_url_with_creds = parser.git_protocol + '://' + parser.
 
 if not check_repo_exists(new_repo_url, parser.git_username, parser.git_password):
     print('Downstream repo ' + new_repo_url + ' is not available')
-    sys.exit(1)
+    sys.exit(exit_code)
 
 if not check_repo_exists(parser.template_repo_name_url, parser.git_username, parser.git_password):
     print('Upstream repo ' + parser.template_repo_name_url + ' is not available')
-    sys.exit(1)
+    sys.exit(exit_code)
 
 # Set some default user details
 execute(['git', 'config', '--global', 'user.email', 'octopus@octopus.com'])
@@ -173,7 +177,7 @@ try:
         if 'ActionTemplates' in data:
             print('Template repo references a step template. ' +
                   'Step templates can not be merged across spaces or instances.')
-            sys.exit(1)
+            sys.exit(exit_code)
 except Exception as ex:
     print(ex)
     print('Failed to open template/' + project_dir + '/deployment_process.ocl to check for ActionTemplates')
