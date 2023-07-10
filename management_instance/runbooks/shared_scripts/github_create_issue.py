@@ -151,7 +151,8 @@ def create_issue(token, org, repo, title, body):
         }
         request = urllib.request.Request(url, headers=headers, data=json.dumps(body_object).encode('utf-8'))
         urllib.request.urlopen(request)
-    except:
+    except Exception as ex:
+        print(ex)
         print('Could not create the GitHub issue')
         sys.exit(1)
 
