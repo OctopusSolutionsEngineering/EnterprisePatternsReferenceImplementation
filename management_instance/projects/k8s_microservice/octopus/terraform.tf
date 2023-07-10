@@ -175,7 +175,7 @@ resource "octopusdeploy_variable" "read_only_fs" {
 
 resource "octopusdeploy_variable" "k8s_image" {
   owner_id     = octopusdeploy_project.project_k8s_microservice.id
-  value        = "octopussamples/octopub-frontend"
+  value        = "octopussamples/octopus-selfcontained"
   name         = "Kubernetes.Application.Image"
   type         = "String"
   description  = "The Docker image deployed by this application."
