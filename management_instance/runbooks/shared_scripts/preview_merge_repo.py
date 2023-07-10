@@ -197,7 +197,7 @@ else:
 git_diff_out, _, _ = execute(['git', 'diff', 'main...upstream-main'], cwd=new_repo)
 
 if len(git_diff_out) == 0:
-    print('There are no changes to merge.')
+    print('This project is up to date with the upstream repo.')
     sys.exit(0)
 
 if parser.generate_diff:
