@@ -93,7 +93,7 @@ def merge_repo(trimmed_workspace):
     _, _, diff_result = execute(['git', 'diff', '--quiet', '--exit-code', '@{upstream}'], cwd=trimmed_workspace)
     if diff_result != 0:
         execute(['git', 'push', 'origin'], cwd=trimmed_workspace)
-        print('Changed merged successfully')
+        print('Changes merged successfully')
     else:
         print('No changes found.')
 

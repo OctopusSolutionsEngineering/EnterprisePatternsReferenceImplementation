@@ -199,7 +199,7 @@ def merge_changes(branch, new_repo, template_repo_name_url, new_repo_url):
         if diff_result != 0:
             _, _, push_result = execute(['git', 'push', 'origin'], cwd=new_repo)
             if push_result == 0:
-                print('Changed merged successfully from upstream repo ' + template_repo_name_url
+                print('Changes merged successfully from upstream repo ' + template_repo_name_url
                       + ' into the downstream repo ' + new_repo_url)
             else:
                 print('The git push operation failed. Check the verbose logs for more details.')
