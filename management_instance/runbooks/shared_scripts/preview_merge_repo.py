@@ -121,6 +121,9 @@ def init_argparse():
     parser.add_argument('--repo-name',
                         action='store',
                         default='')
+    parser.add_argument('--generate-diff',
+                        action='store_true',
+                        default='false')
     return parser.parse_known_args()
 
 
@@ -193,8 +196,11 @@ if len(git_diff_out) == 0:
     print('There are no changes to merge.')
     sys.exit(0)
 
-with open('upstream.diff', 'w') as f:
-    f.write(git_diff_out)
+if parser.generate_diff:
+    with open('upstream.diff', 'w') as f:
+        f.write(git_diff_out)
 
-execute(['diff2html', '-F', 'diff.html', '-i', 'file', '--', 'upstream.diff'])
-createartifact('diff.html', 'diff.html')
+    execute(['diff2html', '-F', 'diff.html', '-i', 'file', '--', 'upstream.diff'])
+    createartifact('diff.html', 'diff.html')
+else:
+    print('The upstream repo has changes available to be merged into this project.')
