@@ -149,7 +149,10 @@ def create_issue(token, org, repo, title, body):
             title: title,
             body: body
         }
-        request = urllib.request.Request(url, headers=headers, data=json.dumps(body_object).encode('utf-8'))
+        request = urllib.request.Request(url,
+                                         headers=headers,
+                                         data=json.dumps(body_object).encode('utf-8'),
+                                         method='POST')
         urllib.request.urlopen(request)
     except Exception as ex:
         print(ex)
