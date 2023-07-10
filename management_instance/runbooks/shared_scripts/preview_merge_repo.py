@@ -145,9 +145,9 @@ branch = 'main'
 new_repo_url = parser.git_protocol + '://' + parser.git_host + '/' + parser.git_organization + '/' + new_repo + '.git'
 new_repo_url_wth_creds = parser.git_protocol + '://' + parser.git_username + ':' + parser.git_password + '@' + \
                          parser.git_host + '/' + parser.git_organization + '/' + new_repo + '.git'
-parser.template_repo_name_url = parser.git_protocol + '://' + parser.git_host + '/' + parser.git_organization + '/' + \
+template_repo_name_url = parser.git_protocol + '://' + parser.git_host + '/' + parser.git_organization + '/' + \
                                 parser.template_repo_name + '.git'
-parser.template_repo_name_url_with_creds = parser.git_protocol + '://' + parser.git_username + ':' + \
+template_repo_name_url_with_creds = parser.git_protocol + '://' + parser.git_username + ':' + \
                                            parser.git_password + '@' + parser.git_host + '/' + \
                                            parser.git_organization + '/' + parser.template_repo_name + '.git'
 
@@ -155,8 +155,8 @@ if not check_repo_exists(new_repo_url, parser.git_username, parser.git_password)
     print('Downstream repo ' + new_repo_url + ' is not available')
     sys.exit(exit_code)
 
-if not check_repo_exists(parser.template_repo_name_url, parser.git_username, parser.git_password):
-    print('Upstream repo ' + parser.template_repo_name_url + ' is not available')
+if not check_repo_exists(template_repo_name_url, parser.git_username, parser.git_password):
+    print('Upstream repo ' + template_repo_name_url + ' is not available')
     sys.exit(exit_code)
 
 # Set some default user details
@@ -165,7 +165,7 @@ execute(['git', 'config', '--global', 'user.name', 'Octopus Server'])
 
 # Clone the template repo to test for a step template reference
 os.mkdir('template')
-execute(['git', 'clone', parser.template_repo_name_url, 'template'])
+execute(['git', 'clone', template_repo_name_url, 'template'])
 if branch != 'master' and branch != 'main':
     execute(['git', 'checkout', '-b', branch, 'origin/' + branch], cwd='template')
 else:
@@ -184,7 +184,7 @@ except Exception as ex:
 
 # Merge the template changes
 execute(['git', 'clone', new_repo_url_wth_creds])
-execute(['git', 'remote', 'add', 'upstream', parser.template_repo_name_url_with_creds], cwd=new_repo)
+execute(['git', 'remote', 'add', 'upstream', template_repo_name_url_with_creds], cwd=new_repo)
 execute(['git', 'fetch', '--all'], cwd=new_repo)
 execute(['git', 'checkout', '-b', 'upstream-' + branch, 'upstream/' + branch], cwd=new_repo)
 
@@ -197,7 +197,7 @@ else:
 git_diff_out, _, _ = execute(['git', 'diff', 'main...upstream-main'], cwd=new_repo)
 
 if len(git_diff_out) == 0:
-    print('This project is up to date with the upstream repo.')
+    print('This project is up to date with the upstream repo at ' + template_repo_name_url)
     sys.exit(0)
 
 if parser.generate_diff:
