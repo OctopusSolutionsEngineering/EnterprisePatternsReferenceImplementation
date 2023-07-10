@@ -67,7 +67,7 @@ data "octopusdeploy_environments" "production" {
 
 
 resource "octopusdeploy_deployment_process" "deployment_process_project_hello_world" {
-  project_id = "${octopusdeploy_project.project_hello_world.id}"
+  project_id = octopusdeploy_project.project_hello_world.id
 
   lifecycle {
     ignore_changes = [
@@ -119,7 +119,7 @@ resource "octopusdeploy_deployment_process" "deployment_process_project_hello_wo
       is_disabled                        = false
       can_be_used_for_project_versioning = false
       is_required                        = true
-      worker_pool_id                     = "${data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id}"
+      worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
       properties                         = {
         "Octopus.Action.Script.ScriptSource" = "Inline"
         "Octopus.Action.Script.ScriptBody"   = "echo 'Hello world, using Bash'\n\n#TODO: Experiment with steps of your own :)\n\necho '[Learn more about the types of steps available in Octopus](https://oc.to/OnboardingAddStepsLearnMore)'"
@@ -180,6 +180,6 @@ resource "octopusdeploy_project" "project_hello_world" {
     url                = "http://gitea:3000/octopuscac/hello_world_cac.git"
     base_path          = ".octopus/project"
     default_branch     = "main"
-    protected_branches = []
+    protected_branches = ["main"]
   }
 }
