@@ -180,6 +180,6 @@ resource "octopusdeploy_project" "project_hello_world" {
     url                = "http://gitea:3000/octopuscac/hello_world_cac.git"
     base_path          = ".octopus/project"
     default_branch     = "main"
-    protected_branches = ["main"]
+    protected_branches = []
   }
 }
