@@ -95,3 +95,13 @@ Set these variables to complete the deployment of the sample Azure application:
 * `TF_VAR_azure_subscription_id` - set to your Azure subscription ID.
 * `TF_VAR_azure_password` - set to your Azure password.
 * `TF_VAR_azure_tenant_id` - set to your Azure tenant ID.
+
+## FAQ
+
+Q. How do I fix the `"command failed" err="failed complete: too many open files"` error some minikube pods have?
+A. [This post](https://github.com/kubeflow/manifests/issues/2087) has some suggestions. Linux users can run these commands:
+```bash
+sudo sysctl fs.inotify.max_user_instances=1280
+sudo sysctl fs.inotify.max_user_watches=655360
+```
+[This page](https://www.suse.com/support/kb/doc/?id=000020048) has details on setting these values permanently.
