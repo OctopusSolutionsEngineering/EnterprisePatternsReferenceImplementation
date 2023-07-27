@@ -102,6 +102,8 @@ then
 
   docker network connect minikube octopus
 
+  minikube addons enable ingress
+
   # This returns the IP address of the minikube network
   DOCKER_HOST_IP=$(minikube ip)
 
