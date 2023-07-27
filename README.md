@@ -99,6 +99,7 @@ Set these variables to complete the deployment of the sample Azure application:
 ## FAQ
 
 Q. How do I fix the `"command failed" err="failed complete: too many open files"` error some minikube pods have?
+
 A. [This post](https://github.com/kubeflow/manifests/issues/2087) has some suggestions. Linux users can run these commands:
 ```bash
 sudo sysctl fs.inotify.max_user_instances=1280
