@@ -95,7 +95,7 @@ then
   do
      minikube delete
      sleep 10
-     [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
+     [[ counter -eq $max_retry ]] && echo "Failed! Try running the ./cleanup.sh script." && exit 1
      echo "Trying again. Try #$counter"
      ((counter++))
   done
