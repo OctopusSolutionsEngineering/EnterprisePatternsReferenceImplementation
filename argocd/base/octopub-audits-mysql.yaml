@@ -1,0 +1,16 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: octopub-audits
+  namespace: argocd
+spec:
+  project: default
+  source:
+    chart: octopub-audits-mysql
+    repoURL: https://octopus-sales-public-helm-repo.s3.ap-southeast-2.amazonaws.com/charts
+    targetRevision: 0.1.170
+    helm:
+      releaseName: octopub-audits
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: octopub

@@ -1,0 +1,17 @@
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: octopub-products
+  namespace: argocd
+spec:
+  project: default
+  source:
+    chart: octopub-products-mysql
+    repoURL: https://octopus-sales-public-helm-repo.s3.ap-southeast-2.amazonaws.com/charts
+    targetRevision: 0.1.170
+    helm:
+      releaseName: octopub-products
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: octopub

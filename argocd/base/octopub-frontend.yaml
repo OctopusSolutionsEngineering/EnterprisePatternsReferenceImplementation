@@ -1,0 +1,16 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: octopub-frontend
+  namespace: argocd
+spec:
+  project: default
+  source:
+    chart: octopub-frontend
+    repoURL: https://octopus-sales-public-helm-repo.s3.ap-southeast-2.amazonaws.com/charts
+    targetRevision: 0.1.170
+    helm:
+      releaseName: octopub-frontend
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: octopub
