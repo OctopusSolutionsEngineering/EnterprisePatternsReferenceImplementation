@@ -1,0 +1,28 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+
+patchesStrategicMerge:
+  - frontend-versions.yaml
+
+patches:
+  - target:
+      group: argoproj.io
+      version: v1alpha1
+      kind: Application
+      name: octopub-frontend
+    patch: |-
+      - op: replace
+        path: /spec/destination/namespace
+        value: octopub-test
+  - target:
+      group: argoproj.io
+      version: v1alpha1
+      kind: Namespace
+      name: octopub
+    patch: |-
+      - op: replace
+        path: /name
+        value: octopub-test
