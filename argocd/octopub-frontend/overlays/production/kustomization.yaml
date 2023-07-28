@@ -4,10 +4,8 @@ kind: Kustomization
 resources:
   - ../../base
 
-patchesStrategicMerge:
-  - frontend-versions.yaml
-
 patches:
+  - path: frontend-versions.yaml
   - target:
       group: argoproj.io
       version: v1alpha1
