@@ -4,8 +4,10 @@ kind: Kustomization
 resources:
   - ../../base
 
-components:
-  - ../../components/test
+patchesStrategicMerge:
+  - audits-versions.yaml
+  - products-versions.yaml
+  - frontend-versions.yaml
 
 patches:
   - target:
