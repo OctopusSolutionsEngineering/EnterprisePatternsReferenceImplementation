@@ -16,8 +16,7 @@ patches:
         path: /spec/destination/namespace
         value: octopub-development
   - target:
-      group: argoproj.io
-      version: v1alpha1
+      version: v1
       kind: Namespace
       name: octopub
     patch: |-
