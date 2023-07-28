@@ -15,12 +15,3 @@ patches:
       - op: replace
         path: /spec/destination/namespace
         value: octopus-test
-  - target:
-      group: argoproj.io
-      version: v1alpha1
-      kind: Namespace
-      name: octopub
-    patch: |-
-      - op: replace
-        path: /metadata/name
-        value: octopub-test

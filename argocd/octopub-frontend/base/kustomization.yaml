@@ -3,4 +3,3 @@ kind: Kustomization
 
 resources:
   - octopub-frontend.yaml
-  - octopub-namespace.yaml

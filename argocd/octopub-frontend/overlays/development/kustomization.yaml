@@ -15,11 +15,3 @@ patches:
       - op: replace
         path: /spec/destination/namespace
         value: octopub-development
-  - target:
-      version: v1
-      kind: Namespace
-      name: octopub
-    patch: |-
-      - op: replace
-        path: /metadata/name
-        value: octopub-development
