@@ -1,12 +1,27 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: octopub-frontend-development
+  name: octopub-frontend-development-parent
   namespace: argocd
 spec:
   project: default
   source:
     path: argocd/octopub-frontend/overlays/development
+    repoURL: https://github.com/OctopusSolutionsEngineering/EnterprisePatternsReferenceImplementation.git
+    targetRevision: HEAD
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: argocd
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: octopub-products-development-parent
+  namespace: argocd
+spec:
+  project: default
+  source:
+    path: argocd/octopub-products/overlays/development
     repoURL: https://github.com/OctopusSolutionsEngineering/EnterprisePatternsReferenceImplementation.git
     targetRevision: HEAD
   destination:

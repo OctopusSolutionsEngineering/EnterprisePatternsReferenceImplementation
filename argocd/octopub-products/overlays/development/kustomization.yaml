@@ -16,7 +16,7 @@ patches:
     patch: |-
       - op: replace
         path: /spec/destination/namespace
-        value: octopus-development
+        value: octopub-development
   - target:
       group: argoproj.io
       version: v1alpha1
