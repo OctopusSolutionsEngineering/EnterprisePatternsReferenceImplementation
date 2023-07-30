@@ -11,9 +11,9 @@ spec:
     targetRevision: 0.1.170
     helm:
       releaseName: octopub-audits
-    values: |
-      image:
-        repository: octopussamples/octopub-audit-microservice
+      values: |
+        image:
+          repository: octopussamples/octopub-audit-microservice
   destination:
     server: "https://kubernetes.default.svc"
     namespace: octopub
