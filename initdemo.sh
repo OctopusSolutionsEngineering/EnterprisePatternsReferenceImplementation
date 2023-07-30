@@ -101,6 +101,7 @@ then
   done
 
   docker network connect minikube octopus
+  docker network connect minikube gitea
 
   minikube addons enable ingress
 
@@ -338,7 +339,7 @@ then
   cwd=$(pwd)
   pushd "$argocddir"
     git clone http://octopus:Password01!@localhost:3000/octopuscac/argo_cd.git .
-    cp -r "$cwd/argocd/." "$argocddir"
+    cp -r "$cwd/argocd" "$argocddir"
     git add .
     git commit -m "Added Argo CD apps"
     git push
@@ -665,6 +666,14 @@ done
 
 # Publish the check PR runbook
 publish_runbook "PR Checks" "PR Check"
+
+# Push the sample ArgoCD app
+if [[ "${INSTALL_ARGO}" == "TRUE" ]]
+then
+  cp argocd/app-of-apps.yaml /tmp
+  sed -i "s#https://github.com/OctopusSolutionsEngineering/EnterprisePatternsReferenceImplementation.git#http://gitea:3000/octopuscac/argo_cd.git#" /tmp/app-of-apps.yaml
+  KUBECONFIG=/tmp/octoconfig.yml kubectl apply -f /tmp/app-of-apps.yaml
+fi
 
 # All done
 echo "###############################################################################################################################"
