@@ -670,9 +670,7 @@ publish_runbook "PR Checks" "PR Check"
 # Push the sample ArgoCD app
 if [[ "${INSTALL_ARGO}" == "TRUE" ]]
 then
-  cp argocd/app-of-apps.yaml /tmp
-  sed -i "s#https://github.com/OctopusSolutionsEngineering/EnterprisePatternsReferenceImplementation.git#http://gitea:3000/octopuscac/argo_cd.git#" /tmp/app-of-apps.yaml
-  KUBECONFIG=/tmp/octoconfig.yml kubectl apply -f /tmp/app-of-apps.yaml
+  KUBECONFIG=/tmp/octoconfig.yml kubectl apply -f argocd/app-of-apps-gitea.yaml
 fi
 
 # All done

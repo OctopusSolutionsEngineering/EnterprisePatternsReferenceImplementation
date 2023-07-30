@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: octopub-development
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: octopub-frontend-development-parent
+  namespace: argocd
+spec:
+  project: default
+  source:
+    path: argocd/octopub-frontend/overlays/development
+    repoURL: http://gitea:3000/octopuscac/argo_cd.git
+    targetRevision: HEAD
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: argocd
+  syncPolicy:
+    automated: {}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: octopub-products-development-parent
+  namespace: argocd
+spec:
+  project: default
+  source:
+    path: argocd/octopub-products/overlays/development
+    repoURL: http://gitea:3000/octopuscac/argo_cd.git
+    targetRevision: HEAD
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: argocd
+  syncPolicy:
+    automated: {}
