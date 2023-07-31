@@ -8,7 +8,7 @@ spec:
   source:
     chart: octopub-audits-mysql
     repoURL: https://octopus-sales-public-helm-repo.s3.ap-southeast-2.amazonaws.com/charts
-    targetRevision: 0.1.170
+    targetRevision: 0.1.174
     helm:
       releaseName: octopub-audits
       values: |
@@ -16,6 +16,8 @@ spec:
           repository: octopussamples/octopub-audit-microservice
         ingress:
           enabled: true
+        application:
+          disableAuth: true
   destination:
     server: "https://kubernetes.default.svc"
     namespace: octopub
