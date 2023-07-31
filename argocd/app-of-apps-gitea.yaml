@@ -42,7 +42,7 @@ spec:
             environment: production
   template:
     metadata:
-      name: '{{name}}-{{environment}}'
+      name: '{{name}}-{{environment}}-parent'
     spec:
       project: default
       syncPolicy:
