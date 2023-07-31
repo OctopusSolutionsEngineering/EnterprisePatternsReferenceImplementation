@@ -8,7 +8,7 @@ spec:
   source:
     chart: octopub-frontend
     repoURL: https://octopus-sales-public-helm-repo.s3.ap-southeast-2.amazonaws.com/charts
-    targetRevision: 0.1.170
+    targetRevision: 0.1.173
     helm:
       releaseName: octopub-frontend
       values: |
