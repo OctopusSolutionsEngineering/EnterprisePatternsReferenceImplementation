@@ -3,53 +3,56 @@ kind: Namespace
 metadata:
   name: octopub-development
 ---
-apiVersion: argoproj.io/v1alpha1
-kind: Application
+apiVersion: v1
+kind: Namespace
 metadata:
-  name: octopub-frontend-development-parent
-  namespace: argocd
-spec:
-  project: default
-  source:
-    path: argocd/octopub-frontend/overlays/development
-    repoURL: https://github.com/OctopusSolutionsEngineering/EnterprisePatternsReferenceImplementation.git
-    targetRevision: HEAD
-  destination:
-    server: "https://kubernetes.default.svc"
-    namespace: argocd
-  syncPolicy:
-    automated: {}
+  name: octopub-test
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: octopub-production
 ---
 apiVersion: argoproj.io/v1alpha1
-kind: Application
+kind: ApplicationSet
 metadata:
-  name: octopub-products-development-parent
+  name: octopub
   namespace: argocd
 spec:
-  project: default
-  source:
-    path: argocd/octopub-products/overlays/development
-    repoURL: https://github.com/OctopusSolutionsEngineering/EnterprisePatternsReferenceImplementation.git
-    targetRevision: HEAD
-  destination:
-    server: "https://kubernetes.default.svc"
-    namespace: argocd
-  syncPolicy:
-    automated: {}
----
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: octopub-audits-development-parent
-  namespace: argocd
-spec:
-  project: default
-  source:
-    path: argocd/octopub-audits/overlays/development
-    repoURL: https://github.com/OctopusSolutionsEngineering/EnterprisePatternsReferenceImplementation.git
-    targetRevision: HEAD
-  destination:
-    server: "https://kubernetes.default.svc"
-    namespace: argocd
-  syncPolicy:
-    automated: {}
+  generators:
+    - list:
+        elements:
+          - name: octopub-products
+            environment: development
+          - name: octopub-products
+            environment: test
+          - name: octopub-products
+            environment: production
+          - name: octopub-audits
+            environment: development
+          - name: octopub-audits
+            environment: test
+          - name: octopub-audits
+            environment: production
+          - name: octopub-frontend
+            environment: development
+          - name: octopub-frontend
+            environment: test
+          - name: octopub-frontend
+            environment: production
+  template:
+    metadata:
+      name: '{{name}}-{{environment}}'
+    spec:
+      project: default
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+      source:
+        repoURL: https://github.com/OctopusSolutionsEngineering/EnterprisePatternsReferenceImplementation.git
+        targetRevision: HEAD
+        path: argocd/{{name}}/overlays/{{environment}}
+      destination:
+        server: "https://kubernetes.default.svc"
+        namespace: argocd

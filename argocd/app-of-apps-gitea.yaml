@@ -14,156 +14,45 @@ metadata:
   name: octopub-production
 ---
 apiVersion: argoproj.io/v1alpha1
-kind: Application
+kind: ApplicationSet
 metadata:
-  name: octopub-frontend-development-parent
+  name: octopub
   namespace: argocd
 spec:
-  project: default
-  source:
-    path: argocd/octopub-frontend/overlays/development
-    repoURL: http://gitea:3000/octopuscac/argo_cd.git
-    targetRevision: HEAD
-  destination:
-    server: "https://kubernetes.default.svc"
-    namespace: argocd
-  syncPolicy:
-    automated: {}
----
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: octopub-products-development-parent
-  namespace: argocd
-spec:
-  project: default
-  source:
-    path: argocd/octopub-products/overlays/development
-    repoURL: http://gitea:3000/octopuscac/argo_cd.git
-    targetRevision: HEAD
-  destination:
-    server: "https://kubernetes.default.svc"
-    namespace: argocd
-  syncPolicy:
-    automated: {}
----
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: octopub-audits-development-parent
-  namespace: argocd
-spec:
-  project: default
-  source:
-    path: argocd/octopub-audits/overlays/development
-    repoURL: http://gitea:3000/octopuscac/argo_cd.git
-    targetRevision: HEAD
-  destination:
-    server: "https://kubernetes.default.svc"
-    namespace: argocd
-  syncPolicy:
-    automated: {}
-
----
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: octopub-frontend-test-parent
-  namespace: argocd
-spec:
-  project: default
-  source:
-    path: argocd/octopub-frontend/overlays/test
-    repoURL: http://gitea:3000/octopuscac/argo_cd.git
-    targetRevision: HEAD
-  destination:
-    server: "https://kubernetes.default.svc"
-    namespace: argocd
-  syncPolicy:
-    automated: {}
----
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: octopub-products-test-parent
-  namespace: argocd
-spec:
-  project: default
-  source:
-    path: argocd/octopub-products/overlays/test
-    repoURL: http://gitea:3000/octopuscac/argo_cd.git
-    targetRevision: HEAD
-  destination:
-    server: "https://kubernetes.default.svc"
-    namespace: argocd
-  syncPolicy:
-    automated: {}
----
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: octopub-audits-test-parent
-  namespace: argocd
-spec:
-  project: default
-  source:
-    path: argocd/octopub-audits/overlays/test
-    repoURL: http://gitea:3000/octopuscac/argo_cd.git
-    targetRevision: HEAD
-  destination:
-    server: "https://kubernetes.default.svc"
-    namespace: argocd
-  syncPolicy:
-    automated: {}
-
----
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: octopub-frontend-production-parent
-  namespace: argocd
-spec:
-  project: default
-  source:
-    path: argocd/octopub-frontend/overlays/production
-    repoURL: http://gitea:3000/octopuscac/argo_cd.git
-    targetRevision: HEAD
-  destination:
-    server: "https://kubernetes.default.svc"
-    namespace: argocd
-  syncPolicy:
-    automated: {}
----
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: octopub-products-production-parent
-  namespace: argocd
-spec:
-  project: default
-  source:
-    path: argocd/octopub-products/overlays/production
-    repoURL: http://gitea:3000/octopuscac/argo_cd.git
-    targetRevision: HEAD
-  destination:
-    server: "https://kubernetes.default.svc"
-    namespace: argocd
-  syncPolicy:
-    automated: {}
----
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: octopub-audits-production-parent
-  namespace: argocd
-spec:
-  project: default
-  source:
-    path: argocd/octopub-audits/overlays/production
-    repoURL: http://gitea:3000/octopuscac/argo_cd.git
-    targetRevision: HEAD
-  destination:
-    server: "https://kubernetes.default.svc"
-    namespace: argocd
-  syncPolicy:
-    automated: {}
+  generators:
+    - list:
+        elements:
+          - name: octopub-products
+            environment: development
+          - name: octopub-products
+            environment: test
+          - name: octopub-products
+            environment: production
+          - name: octopub-audits
+            environment: development
+          - name: octopub-audits
+            environment: test
+          - name: octopub-audits
+            environment: production
+          - name: octopub-frontend
+            environment: development
+          - name: octopub-frontend
+            environment: test
+          - name: octopub-frontend
+            environment: production
+  template:
+    metadata:
+      name: '{{name}}-{{environment}}'
+    spec:
+      project: default
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+      source:
+        repoURL: http://gitea:3000/octopuscac/argo_cd.git
+        targetRevision: HEAD
+        path: argocd/{{name}}/overlays/{{environment}}
+      destination:
+        server: "https://kubernetes.default.svc"
+        namespace: argocd
