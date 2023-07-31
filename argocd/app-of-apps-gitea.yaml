@@ -36,3 +36,20 @@ spec:
     namespace: argocd
   syncPolicy:
     automated: {}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: octopub-audits-development-parent
+  namespace: argocd
+spec:
+  project: default
+  source:
+    path: argocd/octopub-audits/overlays/development
+    repoURL: http://gitea:3000/octopuscac/argo_cd.git
+    targetRevision: HEAD
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: argocd
+  syncPolicy:
+    automated: {}
