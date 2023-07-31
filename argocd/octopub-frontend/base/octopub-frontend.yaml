@@ -13,9 +13,6 @@ spec:
     targetRevision: 0.1.173
     helm:
       releaseName: octopub-frontend
-      values: |
-        ingress:
-          enabled: true
   destination:
     server: "https://kubernetes.default.svc"
     namespace: octopub

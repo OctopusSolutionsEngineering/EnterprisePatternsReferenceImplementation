@@ -6,6 +6,7 @@ resources:
 
 patches:
   - path: products-versions.yaml
+  - path: products-values.yaml
   - target:
       group: argoproj.io
       version: v1alpha1
@@ -24,3 +25,13 @@ patches:
       - op: replace
         path: /metadata/labels/environment
         value: production
+
+  - target:
+      group: argoproj.io
+      version: v1alpha1
+      kind: Application
+      name: octopub-products
+    patch: |-
+      - op: replace
+        path: /metadata/name
+        value: octopub-products-production

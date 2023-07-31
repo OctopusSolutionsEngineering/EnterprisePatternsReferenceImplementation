@@ -6,6 +6,7 @@ resources:
 
 patches:
   - path: frontend-versions.yaml
+  - path: frontend-values.yaml
   - target:
       group: argoproj.io
       version: v1alpha1
@@ -24,3 +25,12 @@ patches:
       - op: replace
         path: /metadata/labels/environment
         value: test
+  - target:
+      group: argoproj.io
+      version: v1alpha1
+      kind: Application
+      name: octopub-frontend
+    patch: |-
+      - op: replace
+        path: /metadata/name
+        value: octopub-frontend-test

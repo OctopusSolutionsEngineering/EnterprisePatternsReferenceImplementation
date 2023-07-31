@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: octopub-frontend
+  namespace: argocd
+spec:
+  source:
+    helm:
+      values: |
+        image:
+          repository: octopussamples/octopub-audit-microservice
+        application:
+          disableAuth: true 
+        ingress:
+          enabled: true
+          annotations:
+            nginx.ingress.kubernetes.io/use-regex: "true"
+            nginx.ingress.kubernetes.io/rewrite-target: /$2
+          hosts:
+            - host:
+              paths:
+              - path: /production/api/audits(/|$)(.*)
+                pathType: Prefix

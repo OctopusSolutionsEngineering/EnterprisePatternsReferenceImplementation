@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: octopub-frontend
+  namespace: argocd
+spec:
+  source:
+    helm:
+      values: |
+        productEndpointOverride: /development/api/products
+        productHealthEndpointOverride: /development/health/products
+        auditsEndpointOverride: /development/api/audits
+        auditsHealthEndpointOverride: /development/health/audits
+        ingress:
+          enabled: true
+          annotations:
+            nginx.ingress.kubernetes.io/use-regex: "true"
+            nginx.ingress.kubernetes.io/rewrite-target: /$2
+          hosts:
+            - host:
+              paths:
+              - path: /development(/|$)(.*)
+                pathType: Prefix
