@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: octopub-frontend
+  name: octopub-products
   namespace: argocd
 spec:
   source:
