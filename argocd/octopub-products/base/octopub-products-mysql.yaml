@@ -4,6 +4,8 @@ kind: Application
 metadata:
   name: octopub-products
   namespace: argocd
+  labels:
+    environment: unknown
 spec:
   project: default
   source:

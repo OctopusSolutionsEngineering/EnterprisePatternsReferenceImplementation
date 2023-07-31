@@ -15,3 +15,12 @@ patches:
       - op: replace
         path: /spec/destination/namespace
         value: octopub-production
+  - target:
+      group: argoproj.io
+      version: v1alpha1
+      kind: Application
+      name: octopub-audits
+    patch: |-
+      - op: replace
+        path: /metadata/labels/environment
+        value: production
