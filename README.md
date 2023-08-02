@@ -95,6 +95,7 @@ Set these variables to complete the deployment of the sample Azure application:
 * `TF_VAR_azure_subscription_id` - set to your Azure subscription ID.
 * `TF_VAR_azure_password` - set to your Azure password.
 * `TF_VAR_azure_tenant_id` - set to your Azure tenant ID.
+* `INSTALL_ARGO` - set to `TRUE` to install and populate ArgoCD in minikube.
 
 ## FAQ
 
