@@ -672,6 +672,9 @@ publish_runbook "PR Checks" "PR Check"
 # Push the sample ArgoCD app
 if [[ "${INSTALL_ARGO}" == "TRUE" ]]
 then
+  PASSWORD=$(KUBECONFIG=/tmp/octoconfig.yml argocd admin initial-password -n argocd)
+  PASSWORDARRAY=(${PASSWORD[@]})
+  TOKEN=$(KUBECONFIG=/tmp/octoconfig.yml kubectl run --rm -i --image=argoproj/argocd argocdinit -- /bin/bash -c "argocd login --insecure argocd-server.argocd.svc.cluster.local --username admin --password ${PASSWORDARRAY[0]} >/dev/null; argocd account generate-token --account octopus")
   KUBECONFIG=/tmp/octoconfig.yml kubectl apply -f argocd/app-of-apps-gitea.yaml
 fi
 
@@ -685,5 +688,6 @@ then
   echo "Wait for the Argo CD pods to start. You can see their status with: KUBECONFIG=/tmp/octoconfig.yml kubectl get pods -n argocd"
   echo "Find the Argo CD IP address with: KUBECONFIG=/tmp/octoconfig.yml kubectl get service argocd-server -n argocd"
   echo "Get the initial Argo CD admin password with: KUBECONFIG=/tmp/octoconfig.yml argocd admin initial-password -n argocd"
+  echo "ArgoCD token for account octopus is: ${TOKEN}"
 fi
 echo "###############################################################################################################################"
