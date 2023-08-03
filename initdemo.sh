@@ -688,6 +688,6 @@ then
   echo "Wait for the Argo CD pods to start. You can see their status with: KUBECONFIG=/tmp/octoconfig.yml kubectl get pods -n argocd"
   echo "Find the Argo CD IP address with: KUBECONFIG=/tmp/octoconfig.yml kubectl get service argocd-server -n argocd"
   echo "Get the initial Argo CD admin password with: KUBECONFIG=/tmp/octoconfig.yml argocd admin initial-password -n argocd"
-  echo "ArgoCD token for account octopus is: ${TOKEN}"
+  echo "ArgoCD token for account octopus is: ${TOKEN%%pod \"*}"
 fi
 echo "###############################################################################################################################"
