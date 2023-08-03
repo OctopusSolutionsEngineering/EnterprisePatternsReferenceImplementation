@@ -41,6 +41,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: octoargosync
+  namespace: argocd
 spec:
   selector:
     app: octoargosync

@@ -12,7 +12,7 @@ data:
       when: app.status.operationState.phase in ['Succeeded'] and app.status.health.status == 'Healthy'
   template.octopus-deployment-status: |
     webhook:
-      gitlab:
+      octopus:
         method: POST
         path: /api/octopusrelease
         body: |
