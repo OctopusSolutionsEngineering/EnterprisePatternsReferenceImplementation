@@ -21,6 +21,20 @@ spec:
           image: octopussamples/octoargosync
           ports:
             - containerPort: 8080
+          env:
+            - name: ARGOCD_SERVER
+              value: argocd-server.argocd.svc.cluster.local:443
+            - name: ARGOCD_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: octoargosync-secret
+                  key: argotoken
+            - name: OCTOPUS_SERVER
+              value: http://octopus:8080
+            - name: OCTOPUS_SPACE_ID
+              value: Spaces-4
+            - name: OCTOPUS_API_KEY
+              value: API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 ---
 apiVersion: v1
 kind: Service

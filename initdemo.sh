@@ -138,6 +138,7 @@ then
   kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
   kubectl apply -f argocd/argocd-config/argocd-cm.yaml
   kubectl apply -f argocd/argocd-config/argocd-rbac-cm.yaml
+  kubectl apply -f argocd/argocd-config/argocd-notifications-cm.yaml
 fi
 
 # Set the initial admin Gitea user
@@ -672,9 +673,17 @@ publish_runbook "PR Checks" "PR Check"
 # Push the sample ArgoCD app
 if [[ "${INSTALL_ARGO}" == "TRUE" ]]
 then
+  # Get the Argo CD password
   PASSWORD=$(KUBECONFIG=/tmp/octoconfig.yml argocd admin initial-password -n argocd)
+  # Extract the first line of the output, which is the password
   PASSWORDARRAY=(${PASSWORD[@]})
+  # Generate a token for the user octopus
   TOKEN=$(KUBECONFIG=/tmp/octoconfig.yml kubectl run --rm -i --image=argoproj/argocd argocdinit -- /bin/bash -c "argocd login --insecure argocd-server.argocd.svc.cluster.local --username admin --password ${PASSWORDARRAY[0]} >/dev/null; argocd account generate-token --account octopus")
+  # Save the token in a secret
+  KUBECONFIG=/tmp/octoconfig.yml kubectl create secret generic octoargosync-secret --from-literal=argotoken=${TOKEN} -n argocd
+  # Deploy the octopus argo cd sync service
+  KUBECONFIG=/tmp/octoconfig.yml kubectl apply -f argocd/argocd-config/octoargosync.yaml
+  # Deploy the sample apps
   KUBECONFIG=/tmp/octoconfig.yml kubectl apply -f argocd/app-of-apps-gitea.yaml
 fi
 
