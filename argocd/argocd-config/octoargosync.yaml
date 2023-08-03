@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: octoargosync
+  namespace: argocd
   labels:
     app: octoargosync
 spec:
@@ -32,7 +33,7 @@ spec:
             - name: OCTOPUS_SERVER
               value: http://octopus:8080
             - name: OCTOPUS_SPACE_ID
-              value: Spaces-4
+              value: Spaces-1
             - name: OCTOPUS_API_KEY
               value: API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 ---
