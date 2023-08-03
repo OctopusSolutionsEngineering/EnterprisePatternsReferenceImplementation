@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-notifications-cm
+  namespace: argocd
+data:
+  trigger.on-deployed: |
+    - description: Application is synced and healthy. Triggered once per commit.
+      oncePer: app.status.sync.revision
+      send:
+      - octopus-deployment-status
+      when: app.status.operationState.phase in ['Succeeded'] and app.status.health.status == 'Healthy'
+  template.octopus-deployment-status: |
+    webhook:
+      gitlab:
+        method: POST
+        path: /api/octopusrelease
+        body: |
+          {
+            "Application": "{{.app.metadata.name}}",
+            "Namespace": "{{.app.metadata.namespace}}",
+            "Project": "{{.app.spec.project}}",
+            "State": "Success",
+            "CommitSha": "{{.app.status.operationState.operation.sync.revision}}",
+            "TargetRevision": "{{.app.spec.source.targetRevision}}",
+            "TargetUrl": "{{.context.argocdUrl}}/applications/{{.app.metadata.name}}"
+          }
+  service.webhook.octopus: |
+    url: http://octoargosync.argocd.svc.cluster.local
+    headers:
+    - name: Content-type
+      value: application/json
