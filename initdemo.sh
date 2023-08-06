@@ -66,6 +66,15 @@ then
   exit 1
 fi
 
+if [[ "${INSTALL_ARGO}" == "TRUE" ]]
+then
+  if ! which argocd
+  then
+    echo "You must install the Aro CD CLI: https://argo-cd.readthedocs.io/en/stable/cli_installation/#download-with-curl"
+    exit 1
+  fi
+fi
+
 # We know these test credentials, so hard code them
 export TF_VAR_git_username="octopus"
 export TF_VAR_git_password="Password01!"

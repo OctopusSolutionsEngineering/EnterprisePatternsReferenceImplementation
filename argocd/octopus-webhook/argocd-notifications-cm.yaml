@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-notifications-cm
+data:
+  service.webhook.application.succeeded: |
+    url: http://octopus:8080/<optional-path>
+    headers: #optional headers
+    - name: <header-name>
+      value: <header-value>
+    basicAuth: #optional username password
+      username: <username>
+      password: <api-key>
+    insecureSkipVerify: true #optional bool
