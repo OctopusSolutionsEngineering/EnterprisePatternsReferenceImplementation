@@ -82,12 +82,6 @@ export TF_VAR_git_host="gitea:3000"
 export TF_VAR_git_protocol="http"
 export TF_VAR_git_organization="octopuscac"
 
-# Start the Docker Compose stack
-pushd docker
-docker compose pull
-docker compose up -d
-popd
-
 # Create a new cluster with a custom configuration that binds to all network addresses
 if which minikube
 then
@@ -102,17 +96,25 @@ then
   counter=0
   until minikube start --container-runtime=containerd --driver=docker
   do
+     ./cleanup.sh
      minikube delete
+
      sleep 10
      [[ counter -eq $max_retry ]] && echo "Failed! Try running the ./cleanup.sh script." && exit 1
      echo "Trying again. Try #$counter"
      ((counter++))
   done
 
+  minikube addons enable ingress
+
+  # Start the Docker Compose stack
+  pushd docker
+  docker compose pull
+  docker compose up -d
+  popd
+
   docker network connect minikube octopus
   docker network connect minikube gitea
-
-  minikube addons enable ingress
 
   # This returns the IP address of the minikube network
   DOCKER_HOST_IP=$(minikube ip)
