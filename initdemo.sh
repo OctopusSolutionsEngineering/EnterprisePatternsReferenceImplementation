@@ -390,6 +390,7 @@ docker compose -f docker/compose.yml exec octopus sh -c 'if [ ! -f /usr/local/bi
 docker compose -f docker/compose.yml exec octopus sh -c 'RELEASES=$(curl --silent https://api.github.com/repos/OctopusDeployLabs/terraform-provider-octopusdeploy/releases | jq -r ".[] | .name[1:]"); echo $RELEASES; for RELEASE in ${RELEASES}; do echo "Downloading https://github.com/OctopusDeployLabs/terraform-provider-octopusdeploy/releases/download/v${RELEASE}/terraform-provider-octopusdeploy_${RELEASE}_linux_amd64.zip"; mkdir -p "/terraformcache/registry.terraform.io/octopusdeploylabs/octopusdeploy/${RELEASE}/linux_amd64"; cd "/terraformcache/registry.terraform.io/octopusdeploylabs/octopusdeploy/${RELEASE}/linux_amd64"; if [ ! -f "terraform-provider-octopusdeploy_v${RELEASE}" ]; then curl --silent -L -o "terraform-provider-octopusdeploy_${RELEASE}_linux_amd64.zip" "https://github.com/OctopusDeployLabs/terraform-provider-octopusdeploy/releases/download/v${RELEASE}/terraform-provider-octopusdeploy_${RELEASE}_linux_amd64.zip"; unzip "terraform-provider-octopusdeploy_${RELEASE}_linux_amd64.zip"; rm "terraform-provider-octopusdeploy_${RELEASE}_linux_amd64.zip"; fi; done'
 # https://developer.hashicorp.com/terraform/cli/config/config-file#explicit-installation-method-configuration
 docker compose -f docker/compose.yml exec octopus sh -c 'echo "provider_installation {\nfilesystem_mirror {\npath = \"/terraformcache\"\ninclude = [\"registry.terraform.io/octopusdeploylabs/octopusdeploy\"]\n}\n}" > ~/.terraformrc'
+docker compose -f docker/compose.yml exec octopus sh -c 'curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64; install -m 555 argocd-linux-amd64 /usr/local/bin/argocd; rm argocd-linux-amd64'
 
 # Wait for the Octopus server.
 echo "Waiting for the Octopus server"
@@ -699,6 +700,14 @@ publish_runbook "PR Checks" "PR Check"
 # Push the sample ArgoCD app
 if [[ "${INSTALL_ARGO}" == "TRUE" ]]
 then
+
+  # Create a space to monitor and manage the Octppub deployment in ArgoCD
+  execute_terraform_with_spacename 'spaces' 'shared/spaces/pgbackend' 'ArgoCD'
+  execute_terraform 'environments' 'shared/environments/dev_test_prod/pgbackend' 'Spaces-4'
+  execute_terraform 'lifecycle_simple_dev_test_prod' 'shared/lifecycles/simple_dev_test_prod/pgbackend' 'Spaces-4'
+  execute_terraform 'project_group_argo_cd' 'argocd_dashboard/project_group/octopub/pgbackend' 'Spaces-4'
+  execute_terraform 'project_argo_cd' 'argocd_dashboard/projects/octopub/pgbackend' 'Spaces-4'
+
   # Get the Argo CD password
   PASSWORD=$(KUBECONFIG=/tmp/octoconfig.yml argocd admin initial-password -n argocd)
   # Extract the first line of the output, which is the password

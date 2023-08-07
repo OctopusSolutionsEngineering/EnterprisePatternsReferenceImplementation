@@ -116,7 +116,7 @@ resource "octopusdeploy_lifecycle" "devsecops_lifecycle" {
 }
 
 resource "octopusdeploy_lifecycle" "simple_lifecycle" {
-  description = "Lifecycle including security scanning"
+  description = "Simple lifecycle"
   name        = "Simple"
 
   release_retention_policy {

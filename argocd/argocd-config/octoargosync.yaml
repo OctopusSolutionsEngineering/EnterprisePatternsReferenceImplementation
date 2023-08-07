@@ -34,7 +34,7 @@ spec:
             - name: OCTOPUS_SERVER
               value: http://octopus:8080
             - name: OCTOPUS_SPACE_ID
-              value: Spaces-1
+              value: Spaces-4
             - name: OCTOPUS_API_KEY
               value: API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 ---
