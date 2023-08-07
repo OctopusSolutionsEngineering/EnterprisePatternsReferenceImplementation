@@ -67,18 +67,18 @@ data "octopusdeploy_project_groups" "project_group_octopub" {
 resource "octopusdeploy_variable" "argocd_env_metadata" {
   owner_id    = octopusdeploy_project.project_octopub.id
   type        = "String"
-  name        = "Metadata.ArgoCD.Application[argocd/octopub-audits-development].Environment"
+  name        = "Metadata.ArgoCD.Application[argocd/octopub-frontend-development].Environment"
   value       = "Development"
-  description = "This variable links this project's Development environment to the octopub-audits-development ArgoCD application in the argocd namespace"
+  description = "This variable links this project's Development environment to the octopub-frontend-development ArgoCD application in the argocd namespace"
 }
 
 
 resource "octopusdeploy_variable" "argocd_version_metadata" {
   owner_id    = octopusdeploy_project.project_octopub.id
   type        = "String"
-  name        = "Metadata.ArgoCD.Application[argocd/octopub-audits-development].ImageForReleaseVersion"
-  value       = "octopussamples/octopub-audit-microservice"
-  description = "This variable indicates that the octopussamples/octopub-audit-microservice images deployed by the ArgoCD application is used to build the Octopus release numbers"
+  name        = "Metadata.ArgoCD.Application[argocd/octopub-frontend-development].ImageForReleaseVersion"
+  value       = "octopussamples/octopub-frontend"
+  description = "This variable indicates that the octopussamples/octopub-frontend-microservice images deployed by the ArgoCD application is used to build the Octopus release numbers"
 }
 
 # This is the Octopus project
