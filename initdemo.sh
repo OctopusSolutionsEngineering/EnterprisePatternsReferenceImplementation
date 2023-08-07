@@ -714,7 +714,7 @@ then
   PASSWORDARRAY=(${PASSWORD[@]})
 
     # Retry this because sometimes it times out
-    max_retry=2
+    max_retry=3
     counter=0
     exit_code=1
     until [[ "${exit_code}" == "0" ]]
@@ -724,7 +724,7 @@ then
       ((counter++))
 
       # Generate a token for the user octopus
-      TOKEN=$(KUBECONFIG=/tmp/octoconfig.yml kubectl run --rm -i --image=argoproj/argocd argocdinit -- /bin/bash -c "argocd login --insecure argocd-server.argocd.svc.cluster.local --username admin --password ${PASSWORDARRAY[0]} >/dev/null; argocd account generate-token --account octopus")
+      TOKEN=$(KUBECONFIG=/tmp/octoconfig.yml kubectl run --rm -i --image=argoproj/argocd argocdinit${counter} -- /bin/bash -c "argocd login --insecure argocd-server.argocd.svc.cluster.local --username admin --password ${PASSWORDARRAY[0]} >/dev/null; argocd account generate-token --account octopus")
 
       exit_code=$?
 
