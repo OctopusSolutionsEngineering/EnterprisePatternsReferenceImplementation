@@ -72,7 +72,6 @@ resource "octopusdeploy_variable" "argocd_env_metadata" {
   description = "This variable links this project's Development environment to the octopub-frontend-development ArgoCD application in the argocd namespace"
 }
 
-
 resource "octopusdeploy_variable" "argocd_version_metadata" {
   owner_id    = octopusdeploy_project.project_octopub.id
   type        = "String"
