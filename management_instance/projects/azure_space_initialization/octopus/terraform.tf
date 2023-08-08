@@ -66,7 +66,7 @@ data "octopusdeploy_environments" "sync" {
   take         = 1
 }
 
-resource "octopusdeploy_project" "project_hello_world" {
+resource "octopusdeploy_project" "project_compose_azure_resources" {
   # We want this project to be sorted higher than the template projects, so start with an underscore
   name                                 = "__ Compose Azure Resources"
   description                          = "This project is used to populate a space with any common Azure resources."
@@ -94,7 +94,7 @@ resource "octopusdeploy_project" "project_hello_world" {
 
 resource "octopusdeploy_runbook" "runbook_backend_service_deploy_project" {
   name                        = "Initialize Space"
-  project_id                  = octopusdeploy_project.project_hello_world.id
+  project_id                  = octopusdeploy_project.project_compose_azure_resources.id
   environment_scope           = "Specified"
   environments                = [data.octopusdeploy_environments.sync.environments[0].id]
   force_package_download      = false

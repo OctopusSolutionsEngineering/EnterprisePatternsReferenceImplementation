@@ -66,8 +66,8 @@ data "octopusdeploy_environments" "production" {
 }
 
 
-resource "octopusdeploy_deployment_process" "deployment_process_project_hello_world" {
-  project_id = octopusdeploy_project.project_hello_world.id
+resource "octopusdeploy_deployment_process" "deployment_process_project_hello_world_cac" {
+  project_id = octopusdeploy_project.project_hello_world_cac.id
 
   lifecycle {
     ignore_changes = [
@@ -150,7 +150,7 @@ data "octopusdeploy_git_credentials" "git" {
   take = 1
 }
 
-resource "octopusdeploy_project" "project_hello_world" {
+resource "octopusdeploy_project" "project_hello_world_cac" {
   name                                 = "Hello World CaC"
   description                          = "This project is initially created by Terraform and is then able to be updated in the Octopus UI, serialized to Terraform again with octoterra, and deployed to managed spaces."
   auto_create_release                  = false

@@ -6,7 +6,6 @@ metadata:
 data:
   trigger.on-deployed: |
     - description: Application is synced and healthy. Triggered once per commit.
-      oncePer: app.status.sync.revision
       send:
       - octopus-deployment-status
       when: app.status.operationState.phase in ['Succeeded'] and app.status.health.status == 'Healthy'
