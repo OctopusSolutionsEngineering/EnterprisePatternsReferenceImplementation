@@ -712,12 +712,28 @@ then
   PASSWORD=$(KUBECONFIG=/tmp/octoconfig.yml argocd admin initial-password -n argocd)
   # Extract the first line of the output, which is the password
   PASSWORDARRAY=(${PASSWORD[@]})
-  # Generate a token for the user octopus
-  TOKEN=$(KUBECONFIG=/tmp/octoconfig.yml kubectl run --rm -i --image=argoproj/argocd argocdinit -- /bin/bash -c "argocd login --insecure argocd-server.argocd.svc.cluster.local --username admin --password ${PASSWORDARRAY[0]} >/dev/null; argocd account generate-token --account octopus")
-  # Remove the messages captured after the token about the pod being removed
-  TOKEN=${TOKEN%%pod \"*}
-  # Remove trailing whitespace (https://stackoverflow.com/a/3352015/8246539)
-  TOKEN="${TOKEN%"${TOKEN##*[![:space:]]}"}"
+
+    # Retry this because sometimes it times out
+    max_retry=3
+    counter=0
+    exit_code=1
+    until [[ "${exit_code}" == "0" ]]
+    do
+      [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
+
+      ((counter++))
+
+      # Generate a token for the user octopus
+      TOKEN=$(KUBECONFIG=/tmp/octoconfig.yml kubectl run --rm -i --image=argoproj/argocd argocdinit${counter} -- /bin/bash -c "argocd login --insecure argocd-server.argocd.svc.cluster.local --username admin --password ${PASSWORDARRAY[0]} >/dev/null; argocd account generate-token --account octopus")
+
+      exit_code=$?
+
+      # Remove the messages captured after the token about the pod being removed
+      TOKEN=${TOKEN%%pod \"*}
+      # Remove trailing whitespace (https://stackoverflow.com/a/3352015/8246539)
+      TOKEN="${TOKEN%"${TOKEN##*[![:space:]]}"}"
+    done
+
   # Save the token in a secret
   KUBECONFIG=/tmp/octoconfig.yml kubectl create secret generic octoargosync-secret --from-literal=argotoken=${TOKEN} -n argocd
   # Deploy the octopus argo cd sync service
