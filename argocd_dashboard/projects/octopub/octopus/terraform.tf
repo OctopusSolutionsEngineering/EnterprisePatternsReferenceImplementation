@@ -109,7 +109,7 @@ resource "octopusdeploy_variable" "argocd_git_sourceitems" {
   owner_id    = octopusdeploy_project.project_octopub.id
   type        = "String"
   name        = "Project.Git.SourceItems"
-  value       = "argocd/octopub-frontend/overlays/development/frontend-versions.yaml"
+  value       = "/argocd/octopub-frontend/overlays/development/frontend-versions.yaml"
   description = "The file that represents the release settings to be promoted between environments"
 }
 
@@ -117,7 +117,7 @@ resource "octopusdeploy_variable" "argocd_git_destinationpath" {
   owner_id    = octopusdeploy_project.project_octopub.id
   type        = "String"
   name        = "Project.Git.DestinationPath"
-  value       = "argocd/octopub-frontend/overlays/#{Octopus.Environment.Name | ToLower}"
+  value       = "/argocd/octopub-frontend/overlays/#{Octopus.Environment.Name | ToLower}"
   description = "The directory that represents the release settings in the target environment"
 }
 
