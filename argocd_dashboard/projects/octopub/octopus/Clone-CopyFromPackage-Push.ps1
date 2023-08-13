@@ -101,7 +101,6 @@ Function Copy-Files
         $copyArguments.Add("Recurse", $true)
     }
 
-    # Force overwrite
     $copyArguments.Add("Force", $true)
 
     # Copy files
@@ -216,9 +215,8 @@ Function Get-GitExecutable
 $gitUrl = $OctopusParameters['Template.Git.Repo.Url']
 $gitUser = $OctopusParameters['Template.Git.User.Name']
 $gitPassword = $OctopusParameters['Template.Git.User.Password']
-$sourceItems = $OctopusParameters['Template.Git.Source.Path']
+$sourceItems = $OctopusParameters['Octopus.Action.Package[Template.Package.Reference].ExtractedPath']
 $destinationPath = $OctopusParameters['Template.Git.Destination.Path']
-$gitTag = $OctopusParameters['Template.Git.Tag']
 $gitSource = $null
 $gitDestination = $null
 
@@ -233,20 +231,11 @@ if ($IsWindows -and $OctopusParameters['Octopus.Workerpool.Name'] -eq "Hosted Wi
 # Clone repository
 $folderName = Invoke-Git -GitRepositoryUrl $gitUrl -GitUsername $gitUser -GitPassword $gitPassword -GitCommand "clone" -GitFolder "$($PWD)/default"
 
-# Check for tag
-if (![String]::IsNullOrWhitespace($gitTag))
-{
-    $gitDestination = $folderName
-    $gitSource = Invoke-Git -GitRepositoryUrl $gitUrl -GitUsername $gitUser -GitPassword $gitPassword -GitCommand "clone" -GitFolder "$($PWD)/tags/$gitTag" -AdditionalArguments @("-b", "$gitTag")
-}
-else
-{
-    $gitSource = $folderName
-    $gitDestination = $folderName
-}
+$gitSource = $sourceItems
+$gitDestination = $folderName
 
 # Copy files from source to destination
-Copy-Files -SourcePath "$($gitSource)$($sourceItems)" -DestinationPath "$($gitDestination)$($destinationPath)"
+Copy-Files -SourcePath "$($gitSource)/*" -DestinationPath "$($gitDestination)$($destinationPath)"
 
 # Set user
 $gitAuthorName = $OctopusParameters['Octopus.Deployment.CreatedBy.DisplayName']

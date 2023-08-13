@@ -83,7 +83,7 @@ resource "octopusdeploy_variable" "argocd_version_metadata" {
 resource "octopusdeploy_variable" "argocd_git_url" {
   owner_id    = octopusdeploy_project.project_octopub.id
   type        = "String"
-  name        = "Project.Git.Url"
+  name        = "Template.Git.Repo.Url"
   value       = "http://gitea:3000/octopuscac/argo_cd.git"
   description = "The git URL repo"
 }
@@ -91,7 +91,7 @@ resource "octopusdeploy_variable" "argocd_git_url" {
 resource "octopusdeploy_variable" "argocd_git_username" {
   owner_id    = octopusdeploy_project.project_octopub.id
   type        = "String"
-  name        = "Project.Git.Username"
+  name        = "Template.Git.User.Name"
   value       = "octopus"
   description = "The git username"
 }
@@ -99,7 +99,7 @@ resource "octopusdeploy_variable" "argocd_git_username" {
 resource "octopusdeploy_variable" "argocd_git_password" {
   owner_id        = octopusdeploy_project.project_octopub.id
   type            = "Sensitive"
-  name            = "Project.Git.Password"
+  name            = "Template.Git.User.Password"
   is_sensitive    = true
   sensitive_value = "Password01!"
   description     = "The git password"
@@ -108,7 +108,7 @@ resource "octopusdeploy_variable" "argocd_git_password" {
 resource "octopusdeploy_variable" "argocd_git_sourceitems" {
   owner_id    = octopusdeploy_project.project_octopub.id
   type        = "String"
-  name        = "Project.Git.SourceItems"
+  name        = "Template.Git.Source.Path"
   value       = "/argocd/octopub-frontend/overlays/development/frontend-versions.yaml"
   description = "The file that represents the release settings to be promoted between environments"
 }
@@ -116,9 +116,17 @@ resource "octopusdeploy_variable" "argocd_git_sourceitems" {
 resource "octopusdeploy_variable" "argocd_git_destinationpath" {
   owner_id    = octopusdeploy_project.project_octopub.id
   type        = "String"
-  name        = "Project.Git.DestinationPath"
+  name        = "Template.Git.Destination.Path"
   value       = "/argocd/octopub-frontend/overlays/#{Octopus.Environment.Name | ToLower}"
   description = "The directory that represents the release settings in the target environment"
+}
+
+resource "octopusdeploy_variable" "argocd_git_source_tag" {
+  owner_id    = octopusdeploy_project.project_octopub.id
+  type        = "String"
+  name        = "Template.Git.Tag"
+  value       = "#{Octopus.Release.Number}"
+  description = "The tag to source the environment files from"
 }
 
 # This is the Octopus project

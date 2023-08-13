@@ -106,10 +106,10 @@ Function Execute-Command
 
 
 # Get variables
-$gitUrl = $OctopusParameters['Project.Git.Url']
-$gitUser = $OctopusParameters['Project.Git.Username']
-$gitPassword = $OctopusParameters['Project.Git.Password']
-$gitTag = $OctopusParameters['Octopus.Release.Number']
+$gitUrl = $OctopusParameters['Template.Git.Repo.Url']
+$gitUser = $OctopusParameters['Template.Git.User.Name']
+$gitPassword = $OctopusParameters['Template.Git.User.Password']
+$gitTag = $OctopusParameters['Template.Git.Tag']
 
 # Clone repository
 $folderName = Invoke-Git -GitRepositoryUrl $gitUrl -GitUsername $gitUser -GitPassword $gitPassword -GitCommand "clone"
