@@ -41,6 +41,7 @@ You also require these additional dependencies:
 * Minikube
 * Openssl
 * jq
+* argocd
 
 Open the console as root:
 
