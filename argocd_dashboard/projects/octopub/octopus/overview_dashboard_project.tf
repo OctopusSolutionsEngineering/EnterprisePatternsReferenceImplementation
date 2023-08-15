@@ -34,7 +34,7 @@ resource "octopusdeploy_variable" "argocd_overview_dashboard_test_version_metada
 resource "octopusdeploy_variable" "argocd_overview_dashboard_prod_env_metadata" {
   owner_id    = octopusdeploy_project.project_overview_dashboard.id
   type        = "String"
-  name        = "Metadata.ArgoCD.Application[argocd/octopub-frontend-prod].Environment"
+  name        = "Metadata.ArgoCD.Application[argocd/octopub-frontend-production].Environment"
   value       = "Production"
   description = "This variable links this project's Test environment to the octopub-frontend-prod ArgoCD application in the argocd namespace"
 }
