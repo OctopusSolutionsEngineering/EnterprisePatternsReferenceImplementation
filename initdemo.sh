@@ -730,7 +730,7 @@ then
       exit_code=$?
 
       # sometimes these pods do not clean themselves up, so force the deletion
-      KUBECONFIG=/tmp/octoconfig.yml kubectl delete pod argocdinit${counter} -n default --grace-period=0 --force
+      KUBECONFIG=/tmp/octoconfig.yml kubectl delete pod argocdinit${counter} -n default --grace-period=0 --force >/dev/null 2>&1
 
       # Remove the messages captured after the token about the pod being removed
       TOKEN=${TOKEN%%pod \"*}
