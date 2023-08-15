@@ -92,7 +92,7 @@ resource "octopusdeploy_deployment_process" "deployment_process_project_octopub"
         "Octopus.Action.Script.Syntax"       = "PowerShell"
         "Octopus.Action.Script.ScriptBody"   = "echo \"Integration tests can be run after a deployment has succeeded.\""
       }
-      environments          = [data.octopusdeploy_environments.development.environments[0].id]
+      environments          = []
       excluded_environments = []
       channels              = []
       tenant_tags           = []
