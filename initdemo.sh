@@ -366,6 +366,8 @@ then
   cwd=$(pwd)
   pushd "$argocddir"
     git clone http://octopus:Password01!@localhost:3000/octopuscac/argo_cd.git .
+    git config user.email "octopus@local"
+    git config user.name "Octopus"
     cp -r "$cwd/argocd" "$argocddir"
     git add .
     git commit -m "Added Argo CD apps"
