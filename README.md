@@ -113,7 +113,8 @@ Q. How do I fix the `"command failed" err="failed complete: too many open files"
 
 A. [This post](https://github.com/kubeflow/manifests/issues/2087) has some suggestions. Linux users can run these commands:
 ```bash
-sudo sysctl fs.inotify.max_user_instances=1280
-sudo sysctl fs.inotify.max_user_watches=655360
+sudo sysctl fs.inotify.max_user_instances=8192
+sudo sysctl fs.inotify.max_user_watches=524288
+sudo sysctl -p
 ```
 [This page](https://www.suse.com/support/kb/doc/?id=000020048) has details on setting these values permanently.
