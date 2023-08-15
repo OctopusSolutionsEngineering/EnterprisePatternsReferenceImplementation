@@ -52,6 +52,9 @@ echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://
 apt update && apt-get install -y terraform
 if [ ! -f /usr/local/bin/kubectl ]; then curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"; install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl; fi
 if [ ! -f /usr/local/bin/minikube ]; then curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64; install minikube-linux-amd64 /usr/local/bin/minikube; fi
+curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
+rm argocd-linux-amd64
 ```
 
 ## ARM macOS Prerequisites
