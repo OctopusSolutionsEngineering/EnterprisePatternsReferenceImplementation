@@ -163,6 +163,8 @@ then
   kubectl apply -f argocd/argocd-config/argocd-rbac-cm.yaml
   # Setup some triggers
   kubectl apply -f argocd/argocd-config/argocd-notifications-cm.yaml
+  # Restart the argocd server to pick up the new settings
+  kubectl -n argocd rollout restart deploy argocd-repo-server
 fi
 
 # Set the initial admin Gitea user
