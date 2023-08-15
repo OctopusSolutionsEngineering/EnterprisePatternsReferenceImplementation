@@ -705,6 +705,7 @@ then
   execute_terraform_with_spacename 'spaces' 'shared/spaces/pgbackend' 'ArgoCD'
   execute_terraform 'environments' 'shared/environments/dev_test_prod/pgbackend' 'Spaces-4'
   execute_terraform 'lifecycle_simple_dev_test_prod' 'shared/lifecycles/simple_dev_test_prod/pgbackend' 'Spaces-4'
+  execute_terraform 'single_phase_simple_dev_test_prod' 'argocd_dashboard/lifecycles/single_phase_dev_test_prod/pgbackend' 'Spaces-4'
   execute_terraform 'project_group_argo_cd' 'argocd_dashboard/project_group/octopub/pgbackend' 'Spaces-4'
   execute_terraform 'project_argo_cd' 'argocd_dashboard/projects/octopub/pgbackend' 'Spaces-4'
 

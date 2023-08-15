@@ -6,6 +6,13 @@ data "octopusdeploy_lifecycles" "lifecycle_simple" {
   take         = 1
 }
 
+data "octopusdeploy_lifecycles" "argocd" {
+  ids          = null
+  partial_name = "ArgoCD Overview"
+  skip         = 0
+  take         = 1
+}
+
 # Look up the "Docker" feed that is expected to exist in the management space.
 data "octopusdeploy_feeds" "feed_docker" {
   feed_type    = "Docker"

@@ -1,5 +1,5 @@
 
-resource "octopusdeploy_variable" "argocd_overview_dashboard_env_metadata" {
+resource "octopusdeploy_variable" "argocd_overview_dashboard_dev_env_metadata" {
   owner_id    = octopusdeploy_project.project_overview_dashboard.id
   type        = "String"
   name        = "Metadata.ArgoCD.Application[argocd/octopub-frontend-development].Environment"
@@ -7,10 +7,42 @@ resource "octopusdeploy_variable" "argocd_overview_dashboard_env_metadata" {
   description = "This variable links this project's Development environment to the octopub-frontend-development ArgoCD application in the argocd namespace"
 }
 
-resource "octopusdeploy_variable" "argocd_overview_dashboard_version_metadata" {
+resource "octopusdeploy_variable" "argocd_overview_dashboard_dev_version_metadata" {
   owner_id    = octopusdeploy_project.project_overview_dashboard.id
   type        = "String"
   name        = "Metadata.ArgoCD.Application[argocd/octopub-frontend-development].ImageForReleaseVersion"
+  value       = "octopussamples/octopub-frontend"
+  description = "This variable indicates that the octopussamples/octopub-frontend-microservice images deployed by the ArgoCD application is used to build the Octopus release numbers"
+}
+
+resource "octopusdeploy_variable" "argocd_overview_dashboard_test_env_metadata" {
+  owner_id    = octopusdeploy_project.project_overview_dashboard.id
+  type        = "String"
+  name        = "Metadata.ArgoCD.Application[argocd/octopub-frontend-test].Environment"
+  value       = "Test"
+  description = "This variable links this project's Test environment to the octopub-frontend-test ArgoCD application in the argocd namespace"
+}
+
+resource "octopusdeploy_variable" "argocd_overview_dashboard_test_version_metadata" {
+  owner_id    = octopusdeploy_project.project_overview_dashboard.id
+  type        = "String"
+  name        = "Metadata.ArgoCD.Application[argocd/octopub-frontend-test].ImageForReleaseVersion"
+  value       = "octopussamples/octopub-frontend"
+  description = "This variable indicates that the octopussamples/octopub-frontend-microservice images deployed by the ArgoCD application is used to build the Octopus release numbers"
+}
+
+resource "octopusdeploy_variable" "argocd_overview_dashboard_prod_env_metadata" {
+  owner_id    = octopusdeploy_project.project_overview_dashboard.id
+  type        = "String"
+  name        = "Metadata.ArgoCD.Application[argocd/octopub-frontend-prod].Environment"
+  value       = "Production"
+  description = "This variable links this project's Test environment to the octopub-frontend-prod ArgoCD application in the argocd namespace"
+}
+
+resource "octopusdeploy_variable" "argocd_overview_dashboard_prod_version_metadata" {
+  owner_id    = octopusdeploy_project.project_overview_dashboard.id
+  type        = "String"
+  name        = "Metadata.ArgoCD.Application[argocd/octopub-frontend-production].ImageForReleaseVersion"
   value       = "octopussamples/octopub-frontend"
   description = "This variable indicates that the octopussamples/octopub-frontend-microservice images deployed by the ArgoCD application is used to build the Octopus release numbers"
 }
@@ -24,7 +56,7 @@ resource "octopusdeploy_project" "project_overview_dashboard" {
   discrete_channel_release             = false
   is_disabled                          = false
   is_version_controlled                = false
-  lifecycle_id                         = data.octopusdeploy_lifecycles.lifecycle_simple.lifecycles[0].id
+  lifecycle_id                         = data.octopusdeploy_lifecycles.argocd.lifecycles[0].id
   project_group_id                     = data.octopusdeploy_project_groups.project_group_overview_dashboard.project_groups[0].id
   included_library_variable_sets       = []
   tenanted_deployment_participation    = "Untenanted"
@@ -37,7 +69,7 @@ resource "octopusdeploy_project" "project_overview_dashboard" {
 }
 
 resource "octopusdeploy_deployment_process" "deployment_process_project_octopub" {
-  project_id = octopusdeploy_project.project_environment_progression.id
+  project_id = octopusdeploy_project.project_overview_dashboard.id
 
   step {
     condition           = "Success"
