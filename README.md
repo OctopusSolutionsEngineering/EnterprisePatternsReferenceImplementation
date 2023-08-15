@@ -42,7 +42,13 @@ You also require these additional dependencies:
 * Openssl
 * jq
 
-These are installed in Ubuntu with the following script (to be run as root):
+Open the console as root:
+
+```
+sudo su -
+```
+
+These are installed in Ubuntu with the following script:
 
 ```
 apt-get update
