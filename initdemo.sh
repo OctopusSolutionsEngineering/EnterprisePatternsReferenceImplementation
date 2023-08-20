@@ -749,6 +749,8 @@ then
   KUBECONFIG=/tmp/octoconfig.yml kubectl apply -f argocd/argocd-config/octoargosync.yaml
   # Deploy the sample apps
   KUBECONFIG=/tmp/octoconfig.yml kubectl apply -f argocd/app-of-apps-gitea.yaml
+  # Get the admin login
+  ARGO_PASSWORD=$(KUBECONFIG=/tmp/octoconfig.yml argocd admin initial-password -n argocd)
 fi
 
 # All done
@@ -763,5 +765,6 @@ then
   echo "Get the initial Argo CD admin password with: KUBECONFIG=/tmp/octoconfig.yml argocd admin initial-password -n argocd"
   echo "Get the logs for the OctopusArgoCDProxy with: KUBECONFIG=/tmp/octoconfig.yml kubectl logs -f deployment/octoargosync -n argocd"
   echo "ArgoCD token for account octopus is: ${TOKEN%%pod \"*}"
+  echo "ArgoCD password is: ${ARGO_PASSWORD}"
 fi
 echo "###############################################################################################################################"
