@@ -136,6 +136,16 @@ resource "octopusdeploy_runbook_process" "runbook_process_backend_service_serial
         "Octopus.Action.Script.ScriptSource" = "Inline"
         "Octopus.Action.Script.Syntax"       = "Bash"
         "Octopus.Action.Script.ScriptBody"   = <<EOT
+echo "Verify Docker is Running"
+echo "##octopus[stdout-verbose]"
+docker info
+if ! docker info
+then
+  echo "Docker is not running. Check that Docker is installed and the daemon is running."
+  exit 1
+fi
+echo "##octopus[stdout-default]"
+
 echo "Pulling postgres image"
 echo "##octopus[stdout-verbose]"
 max_retry=12

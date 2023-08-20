@@ -134,7 +134,7 @@ resource "octopusdeploy_deployment_process" "deployment_process_project_octopub"
   }
 
   step {
-    condition            = "Variable"
+    condition            = "Success"
     name                 = "Check for Vulnerabilities"
     package_requirement  = "LetOctopusDecide"
     start_trigger        = "StartAfterPrevious"

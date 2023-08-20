@@ -1,3 +1,13 @@
+echo "Verify Docker is Running"
+echo "##octopus[stdout-verbose]"
+docker info
+if ! docker info
+then
+  echo "Docker is not running. Check that Docker is installed and the daemon is running."
+  exit 1
+fi
+echo "##octopus[stdout-default]"
+
 echo "Pulling the Cypress image"
 echo "##octopus[stdout-verbose]"
 docker pull octopussamples/cypress-included:12.8.1
