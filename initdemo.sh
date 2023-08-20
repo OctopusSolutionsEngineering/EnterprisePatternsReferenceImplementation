@@ -73,6 +73,18 @@ then
     echo "You must install the Aro CD CLI: https://argo-cd.readthedocs.io/en/stable/cli_installation/#download-with-curl"
     exit 1
   fi
+
+  if ! which zip
+  then
+    echo "You must install zip"
+    exit 1
+  fi
+
+  if ! which octo
+  then
+    echo "You must install the Octopus CLI"
+    exit 1
+  fi
 fi
 
 # We know these test credentials, so hard code them
@@ -709,6 +721,7 @@ then
   execute_terraform_with_spacename 'spaces' 'shared/spaces/pgbackend' 'ArgoCD'
   execute_terraform 'mavenfeed' 'shared/feeds/maven/pgbackend' 'Spaces-4'
   execute_terraform 'environments' 'shared/environments/dev_test_prod/pgbackend' 'Spaces-4'
+  execute_terraform 'admin_environment' 'shared/environments/administration/pgbackend' 'Spaces-4'
   execute_terraform 'lifecycle_simple_dev_test_prod' 'shared/lifecycles/simple_dev_test_prod/pgbackend' 'Spaces-4'
   execute_terraform 'single_phase_simple_dev_test_prod' 'argocd_dashboard/lifecycles/single_phase_dev_test_prod/pgbackend' 'Spaces-4'
   execute_terraform 'project_group_argo_cd' 'argocd_dashboard/project_group/octopub/pgbackend' 'Spaces-4'
@@ -755,6 +768,13 @@ then
   ARGO_PASSWORD=${ARGO_PASSWORD%%This password *}
   # Remove trailing whitespace (https://stackoverflow.com/a/3352015/8246539)
   ARGO_PASSWORD="${ARGO_PASSWORD%"${ARGO_PASSWORD##*[![:space:]]}"}"
+
+  # Create the ArgoCD template and push it to Octopus
+  pushd argocd/template
+  zip -r argocd_template.1.0.0.zip .
+  octo push --server=http://localhost:18080 --apiKey=API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA -space=Spaces-4 --package=argocd_template.1.0.0.zip --replace-existing
+  rm argocd_template.1.0.0.zip
+  popd
 fi
 
 # All done

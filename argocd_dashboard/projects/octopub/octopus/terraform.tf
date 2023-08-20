@@ -63,6 +63,14 @@ data "octopusdeploy_environments" "production" {
   take         = 1
 }
 
+# Look up the "Administration" environment that is expected to exist in the management space.
+data "octopusdeploy_environments" "admin" {
+  ids          = []
+  partial_name = "Administration"
+  skip         = 0
+  take         = 1
+}
+
 data "octopusdeploy_project_groups" "project_group_overview_dashboard" {
   ids          = null
   partial_name = "Scenario 1: Overview Dashboard"

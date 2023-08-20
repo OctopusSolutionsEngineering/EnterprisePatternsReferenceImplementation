@@ -1,0 +1,36 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+
+patches:
+  - path: chart_version.yaml
+  - path: chart_values.yaml
+  - target:
+      group: argoproj.io
+      version: v1alpha1
+      kind: Application
+      name: nginx
+    patch: |-
+      - op: replace
+        path: /spec/destination/namespace
+        value: nginx-test
+  - target:
+      group: argoproj.io
+      version: v1alpha1
+      kind: Application
+      name: nginx
+    patch: |-
+      - op: replace
+        path: /metadata/labels/environment
+        value: test
+  - target:
+      group: argoproj.io
+      version: v1alpha1
+      kind: Application
+      name: nginx
+    patch: |-
+      - op: replace
+        path: /metadata/name
+        value: nginx-test

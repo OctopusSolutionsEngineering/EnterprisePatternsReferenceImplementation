@@ -1,0 +1,16 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: nginx
+  namespace: argocd
+spec:
+  source:
+    helm:
+      values: |
+        serverBlock: |-
+          server {
+            listen 0.0.0.0:8080;
+            location / {
+            return 200 "hello!";
+          }
+        }
