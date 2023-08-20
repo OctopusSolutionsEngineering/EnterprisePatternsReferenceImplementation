@@ -707,6 +707,7 @@ then
 
   # Create a space to monitor and manage the Octppub deployment in ArgoCD
   execute_terraform_with_spacename 'spaces' 'shared/spaces/pgbackend' 'ArgoCD'
+  execute_terraform 'mavenfeed' 'shared/feeds/maven/pgbackend' 'Spaces-4'
   execute_terraform 'environments' 'shared/environments/dev_test_prod/pgbackend' 'Spaces-4'
   execute_terraform 'lifecycle_simple_dev_test_prod' 'shared/lifecycles/simple_dev_test_prod/pgbackend' 'Spaces-4'
   execute_terraform 'single_phase_simple_dev_test_prod' 'argocd_dashboard/lifecycles/single_phase_dev_test_prod/pgbackend' 'Spaces-4'
