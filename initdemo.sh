@@ -751,6 +751,10 @@ then
   KUBECONFIG=/tmp/octoconfig.yml kubectl apply -f argocd/app-of-apps-gitea.yaml
   # Get the admin login
   ARGO_PASSWORD=$(KUBECONFIG=/tmp/octoconfig.yml argocd admin initial-password -n argocd)
+  # Remove the messages captured after the token about the password needing to be changed
+  ARGO_PASSWORD=${ARGO_PASSWORD%%This password *}
+  # Remove trailing whitespace (https://stackoverflow.com/a/3352015/8246539)
+  ARGO_PASSWORD="${ARGO_PASSWORD%"${ARGO_PASSWORD##*[![:space:]]}"}"
 fi
 
 # All done

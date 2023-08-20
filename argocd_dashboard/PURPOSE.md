@@ -1,0 +1,1 @@
+This directory holds Terraform modules used to populate the sample ArgoCD space.

@@ -1,0 +1,1 @@
+This directory holds the resources used to populate the sample ArgoCD instance.
