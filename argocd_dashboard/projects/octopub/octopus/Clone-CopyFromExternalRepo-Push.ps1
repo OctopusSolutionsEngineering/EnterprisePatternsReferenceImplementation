@@ -213,9 +213,12 @@ Function Get-GitExecutable
 }
 
 # Get variables
-$gitUrl = $OctopusParameters['Template.Git.Repo.Url']
-$gitUser = $OctopusParameters['Template.Git.User.Name']
-$gitPassword = $OctopusParameters['Template.Git.User.Password']
+$sourceGitUrl = $OctopusParameters['Template.Git.Source.Repo.Url']
+$destinationGitUrl = $OctopusParameters['Template.Git.Destination.Repo.Url']
+$gitSourceUser = $OctopusParameters['Template.Git.Source.User.Name']
+$gitSourcePassword = $OctopusParameters['Template.Git.Source.User.Password']
+$gitDestinationUser = $OctopusParameters['Template.Git.Destination.User.Name']
+$gitDestinationPassword = $OctopusParameters['Template.Git.Destination.User.Password']
 $sourceItems = $OctopusParameters['Template.Git.Source.Path']
 $destinationPath = $OctopusParameters['Template.Git.Destination.Path']
 $gitTag = $OctopusParameters['Template.Git.Tag']
@@ -230,23 +233,21 @@ if ($IsWindows -and $OctopusParameters['Octopus.Workerpool.Name'] -eq "Hosted Wi
     Get-GitExecutable -WorkingDirectory $PWD
 }
 
-# Clone repository
-$folderName = Invoke-Git -GitRepositoryUrl $gitUrl -GitUsername $gitUser -GitPassword $gitPassword -GitCommand "clone" -GitFolder "$($PWD)/default"
+# Clone destination repository
+$destinationFolderName = Invoke-Git -GitRepositoryUrl $destinationGitUrl -GitUsername $gitDestinationUser -GitPassword $gitDestinationPassword -GitCommand "clone" -GitFolder "$($PWD)/destination/default"
 
 # Check for tag
 if (![String]::IsNullOrWhitespace($gitTag))
 {
-    $gitDestination = $folderName
-    $gitSource = Invoke-Git -GitRepositoryUrl $gitUrl -GitUsername $gitUser -GitPassword $gitPassword -GitCommand "clone" -GitFolder "$($PWD)/tags/$gitTag" -AdditionalArguments @("-b", "$gitTag")
+    $sourceFolderName = Invoke-Git -GitRepositoryUrl $sourceGitUrl -GitUsername $gitSourceUser -GitPassword $gitSourcePassword -GitCommand "clone" -GitFolder "$($PWD)/source/tags/$gitTag" -AdditionalArguments @("-b", "$gitTag")
 }
 else
 {
-    $gitSource = $folderName
-    $gitDestination = $folderName
+    $sourceFolderName = Invoke-Git -GitRepositoryUrl $sourceGitUrl -GitUsername $gitSourceUser -GitPassword $gitSourcePassword -GitCommand "clone" -GitFolder "$($PWD)/source/default"
 }
 
 # Copy files from source to destination
-Copy-Files -SourcePath "$($gitSource)$($sourceItems)" -DestinationPath "$($gitDestination)$($destinationPath)"
+Copy-Files -SourcePath "$($sourceFolderName)$($sourceItems)" -DestinationPath "$($destinationFolderName)$($destinationPath)"
 
 # Set user
 $gitAuthorName = $OctopusParameters['Octopus.Deployment.CreatedBy.DisplayName']
@@ -259,13 +260,13 @@ if ([string]::IsNullOrWhitespace($gitAuthorEmail) -and $gitAuthorName -eq "Syste
     $gitAuthorEmail = "system@octopus.local"
 }
 
-Invoke-Git -GitCommand "config" -AdditionalArguments @("user.name", $gitAuthorName) -GitFolder "$($folderName)" | Out-Null
-Invoke-Git -GitCommand "config" -AdditionalArguments @("user.email", $gitAuthorEmail) -GitFolder "$($folderName)" | Out-Null
+Invoke-Git -GitCommand "config" -AdditionalArguments @("user.name", $gitAuthorName) -GitFolder "$($destinationFolderName)" | Out-Null
+Invoke-Git -GitCommand "config" -AdditionalArguments @("user.email", $gitAuthorEmail) -GitFolder "$($destinationFolderName)" | Out-Null
 
 # Commit changes
-Invoke-Git -GitCommand "add" -GitFolder "$folderName" -AdditionalArguments @(".") | Out-Null
-Invoke-Git -GitCommand "commit" -GitFolder "$folderName" -AdditionalArguments @("-m", "`"Commit from #{Octopus.Project.Name} release version #{Octopus.Release.Number}`"") | Out-Null
+Invoke-Git -GitCommand "add" -GitFolder "$destinationFolderName" -AdditionalArguments @(".") | Out-Null
+Invoke-Git -GitCommand "commit" -GitFolder "$destinationFolderName" -AdditionalArguments @("-m", "`"Commit from #{Octopus.Project.Name} release version #{Octopus.Release.Number}`"") | Out-Null
 
 # Push the changes back to git
-Invoke-Git -GitCommand "push" -GitFolder "$folderName" | Out-Null
+Invoke-Git -GitCommand "push" -GitFolder "$destinationFolderName" | Out-Null
 

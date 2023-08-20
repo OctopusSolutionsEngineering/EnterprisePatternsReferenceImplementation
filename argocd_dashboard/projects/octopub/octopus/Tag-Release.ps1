@@ -1,8 +1,8 @@
 Function Invoke-Git
 {
-	# Define parameters
+    # Define parameters
     param (
-    	$GitRepositoryUrl,
+        $GitRepositoryUrl,
         $GitFolder,
         $GitUsername,
         $GitPassword,
@@ -20,24 +20,24 @@ Function Invoke-Git
     # Check for url
     if (![string]::IsNullOrWhitespace($GitRepositoryUrl))
     {
-      # Convert url to URI object
-      $gitUri = [System.Uri]$GitRepositoryUrl
-      $gitUrl = "{0}://{1}:{2}@{3}:{4}{5}" -f $gitUri.Scheme, $GitUsername, $GitPassword, $gitUri.Host, $gitUri.Port, $gitUri.PathAndQuery
-      $gitArguments += $gitUrl
+        # Convert url to URI object
+        $gitUri = [System.Uri]$GitRepositoryUrl
+        $gitUrl = "{0}://{1}:{2}@{3}:{4}{5}" -f $gitUri.Scheme, $GitUsername, $GitPassword, $gitUri.Host, $gitUri.Port, $gitUri.PathAndQuery
+        $gitArguments += $gitUrl
 
-      # Get the newly created folder name
-      $gitFolderName = $GitRepositoryUrl.SubString($GitRepositoryUrl.LastIndexOf("/") + 1)
-      if ($gitFolderName.Contains(".git"))
-      {
-          $gitFolderName = $gitFolderName.SubString(0, $gitFolderName.IndexOf("."))
-      }
+        # Get the newly created folder name
+        $gitFolderName = $GitRepositoryUrl.SubString($GitRepositoryUrl.LastIndexOf("/") + 1)
+        if ($gitFolderName.Contains(".git"))
+        {
+            $gitFolderName = $gitFolderName.SubString(0, $gitFolderName.IndexOf("."))
+        }
     }
 
 
     # Check for additional arguments
     if ($null -ne $AdditionalArguments)
     {
- 		# Add the additional arguments
+        # Add the additional arguments
         $gitArguments += $AdditionalArguments
     }
 
@@ -47,8 +47,11 @@ Function Invoke-Git
     Write-Host $results.stdout
     Write-Host $results.stderr
 
+    # Store results into file
+    Add-Content -Path "$PWD/$($GitCommand).txt" -Value $results.stdout
+
     # Return the foldername
-   	return $gitFolderName
+    return $gitFolderName
 }
 
 # Check to see if $IsWindows is available
@@ -60,47 +63,47 @@ if ($null -eq $IsWindows) {
 
 Function Execute-Command
 {
-	param (
-    	$commandPath,
+    param (
+        $commandPath,
         $commandArguments,
         $workingDir
     )
 
-	$gitExitCode = 0
+    $gitExitCode = 0
     $executionResults = $null
 
-  Try {
-    $pinfo = New-Object System.Diagnostics.ProcessStartInfo
-    $pinfo.FileName = $commandPath
-    $pinfo.WorkingDirectory = $workingDir
-    $pinfo.RedirectStandardError = $true
-    $pinfo.RedirectStandardOutput = $true
-    $pinfo.UseShellExecute = $false
-    $pinfo.Arguments = $commandArguments
-    $p = New-Object System.Diagnostics.Process
-    $p.StartInfo = $pinfo
-    $p.Start() | Out-Null
-    $executionResults = [pscustomobject]@{
-        stdout = $p.StandardOutput.ReadToEnd()
-        stderr = $p.StandardError.ReadToEnd()
-        ExitCode = $p.ExitCode
-    }
-    $p.WaitForExit()
-    $gitExitCode = [int]$p.ExitCode
+    Try {
+        $pinfo = New-Object System.Diagnostics.ProcessStartInfo
+        $pinfo.FileName = $commandPath
+        $pinfo.WorkingDirectory = $workingDir
+        $pinfo.RedirectStandardError = $true
+        $pinfo.RedirectStandardOutput = $true
+        $pinfo.UseShellExecute = $false
+        $pinfo.Arguments = $commandArguments
+        $p = New-Object System.Diagnostics.Process
+        $p.StartInfo = $pinfo
+        $p.Start() | Out-Null
+        $executionResults = [pscustomobject]@{
+            stdout = $p.StandardOutput.ReadToEnd()
+            stderr = $p.StandardError.ReadToEnd()
+            ExitCode = $p.ExitCode
+        }
+        $p.WaitForExit()
+        $gitExitCode = [int]$p.ExitCode
 
-    if ($gitExitCode -ge 2)
-    {
-		# Fail the step
-        throw
-    }
+        if ($gitExitCode -ge 2)
+        {
+            # Fail the step
+            throw
+        }
 
-    return $executionResults
-  }
-  Catch {
-    # Check exit code
-    Write-Error -Message "$($executionResults.stderr)" -ErrorId $gitExitCode
-    exit $gitExitCode
-  }
+        return $executionResults
+    }
+    Catch {
+        # Check exit code
+        Write-Error -Message "$($executionResults.stderr)" -ErrorId $gitExitCode
+        exit $gitExitCode
+    }
 
 }
 
@@ -121,7 +124,7 @@ $gitAuthorEmail = $OctopusParameters['Octopus.Deployment.CreatedBy.EmailAddress'
 # Check to see if user is system
 if ([string]::IsNullOrWhitespace($gitAuthorEmail) -and $gitAuthorName -eq "System")
 {
-	# Initiated by the Octopus server via automated process, put something in for the email address
+    # Initiated by the Octopus server via automated process, put something in for the email address
     $gitAuthorEmail = "system@octopus.local"
 }
 
@@ -129,8 +132,37 @@ if ([string]::IsNullOrWhitespace($gitAuthorEmail) -and $gitAuthorName -eq "Syste
 Invoke-Git -GitCommand "config" -AdditionalArguments @("user.name", $gitAuthorName) -GitFolder "$($PWD)/$($folderName)"
 Invoke-Git -GitCommand "config" -AdditionalArguments @("user.email", $gitAuthorEmail) -GitFolder "$($PWD)/$($folderName)"
 
-# Tag the repo
-Invoke-Git -GitCommand "tag" -AdditionalArguments @("-a", $gitTag, "-m", "`"Tag from #{Octopus.Project.Name} release version #{Octopus.Release.Number}`"") -GitFolder "$($PWD)/$($folderName)"
+# Record existing tags, if any
+Invoke-Git -GitCommand "tag" -GitFolder "$($PWD)/$($folderName)"
 
-# Push the new tag
-Invoke-Git -Gitcommand "push" -AdditionalArguments @("--tags") -GitFolder "$($PWD)/$($folderName)"
+# Check the file
+$existingTags = Get-Content "$PWD/tag.txt"
+
+if (![String]::IsNullOrWhitespace($existingTags))
+{
+    # Parse
+    $existingTags = $existingTags.Split("`n",[System.StringSplitOptions]::RemoveEmptyEntries)
+
+    # Check to see if tag already exists
+    if ($null -eq ($existingTags | Where-Object {$_ -eq $gitTag}))
+    {
+        # Tag the repo
+        Invoke-Git -GitCommand "tag" -AdditionalArguments @("-a", $gitTag, "-m", "`"Tag from #{Octopus.Project.Name} release version #{Octopus.Release.Number}`"") -GitFolder "$($PWD)/$($folderName)"
+
+        # Push the new tag
+        Invoke-Git -Gitcommand "push" -AdditionalArguments @("--tags") -GitFolder "$($PWD)/$($folderName)"
+    }
+    else
+    {
+        # Error, tag already exists
+        Write-Error "Error: $gitTag already exists on $gitUrl!"
+    }
+}
+else
+{
+    # Tag the repo
+    Invoke-Git -GitCommand "tag" -AdditionalArguments @("-a", $gitTag, "-m", "`"Tag from #{Octopus.Project.Name} release version #{Octopus.Release.Number}`"") -GitFolder "$($PWD)/$($folderName)"
+
+    # Push the new tag
+    Invoke-Git -Gitcommand "push" -AdditionalArguments @("--tags") -GitFolder "$($PWD)/$($folderName)"
+}
