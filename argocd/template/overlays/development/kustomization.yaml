@@ -6,7 +6,6 @@ resources:
 
 patches:
   - path: chart_version.yaml
-  - path: chart_values.yaml
   - target:
       group: argoproj.io
       version: v1alpha1

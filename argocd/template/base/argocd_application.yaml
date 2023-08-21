@@ -11,7 +11,7 @@ spec:
   project: default
   source:
     chart: nginx
-    repoURL: oci://registry-1.docker.io/bitnamicharts
+    repoURL: registry-1.docker.io/bitnamicharts
     targetRevision: 15.1.4
     helm:
       releaseName: '#{ArgoCD.Project.Name | ToLower | Replace "[^a-zA-Z0-9]" "-"}'
