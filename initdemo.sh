@@ -201,7 +201,9 @@ fi
 docker exec -it gitea su git bash -c "gitea admin user create --username editor --password Password01! --email editor@example.com --must-change-password=false"
 
 # Create the orgs.
-curl \
+max_retry=6
+counter=0
+until curl \
   --output /dev/null \
   --silent \
   -u "octopus:Password01!" \
@@ -209,10 +211,19 @@ curl \
   "http://localhost:3000/api/v1/admin/users/octopus/orgs" \
   -H "Content-Type: application/json" \
   -H "accept: application/json" \
-  --data '{"username": "octopuscac"}'
+  --data '{"username": "octopuscac"}' \
+  --fail
+do
+   sleep 10
+   [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
+   echo "Trying again. Try #$counter"
+   ((counter++))
+done
 
 # Create a users team in the new org
-curl \
+max_retry=6
+counter=0
+until curl \
   --output /dev/null \
   --silent \
   -u "octopus:Password01!" \
@@ -251,7 +262,14 @@ curl \
           "repo.wiki": "write"
       },
       "can_create_org_repo": false
-  }'
+  }' \
+  --fail
+do
+   sleep 10
+   [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
+   echo "Trying again. Try #$counter"
+   ((counter++))
+done
 
 # Add the editor user to the users team
 curl \
@@ -260,7 +278,8 @@ curl \
   -u "octopus:Password01!" \
   -X PUT \
   "http://localhost:3000/api/v1/teams/2/members/editor" \
-  -H "accept: application/json"
+  -H "accept: application/json" \
+  --fail
 
 # Create the repos and populate with an initial commit.
 for repo in hello_world_cac azure_web_app_cac k8s_microservice_template
