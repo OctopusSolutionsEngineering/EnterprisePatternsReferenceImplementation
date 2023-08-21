@@ -15,7 +15,7 @@ patches:
     patch: |-
       - op: replace
         path: /spec/destination/namespace
-        value: '#{ArgoCD.Project.Name | ToLower | Replace "[^a-zA-Z0-9]" "-"}'-development
+        value: '#{ArgoCD.Project.Name | ToLower | Replace "[^a-zA-Z0-9]" "-"}-development'
   - target:
       group: argoproj.io
       version: v1alpha1
@@ -33,4 +33,4 @@ patches:
     patch: |-
       - op: replace
         path: /metadata/name
-        value: '#{ArgoCD.Project.Name | ToLower | Replace "[^a-zA-Z0-9]" "-"}'-development
+        value: '#{ArgoCD.Project.Name | ToLower | Replace "[^a-zA-Z0-9]" "-"}-development'
