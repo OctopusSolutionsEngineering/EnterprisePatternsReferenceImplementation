@@ -11,16 +11,16 @@ patches:
       group: argoproj.io
       version: v1alpha1
       kind: Application
-      name: nginx
+      name: '#{ArgoCD.Project.Name | ToLower | Replace "[^a-zA-Z0-9]" "_"}'
     patch: |-
       - op: replace
         path: /spec/destination/namespace
-        value: nginx-development
+        value: '#{ArgoCD.Project.Name | ToLower | Replace "[^a-zA-Z0-9]" "_"}'-development
   - target:
       group: argoproj.io
       version: v1alpha1
       kind: Application
-      name: nginx
+      name: '#{ArgoCD.Project.Name | ToLower | Replace "[^a-zA-Z0-9]" "_"}'
     patch: |-
       - op: replace
         path: /metadata/labels/environment
@@ -29,8 +29,8 @@ patches:
       group: argoproj.io
       version: v1alpha1
       kind: Application
-      name: nginx
+      name: '#{ArgoCD.Project.Name | ToLower | Replace "[^a-zA-Z0-9]" "_"}'
     patch: |-
       - op: replace
         path: /metadata/name
-        value: nginx-development
+        value: '#{ArgoCD.Project.Name | ToLower | Replace "[^a-zA-Z0-9]" "_"}'-development

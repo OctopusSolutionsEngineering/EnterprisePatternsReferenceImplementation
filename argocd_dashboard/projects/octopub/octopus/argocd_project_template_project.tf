@@ -109,6 +109,7 @@ resource "octopusdeploy_runbook_process" "runbook_process_create_project" {
       is_required                        = false
       worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
       properties                         = {
+        "Octopus.Action.SubstituteInFiles.TargetFiles" : "**/*.yml\n**/*.yaml"
         "Octopus.Action.RunOnServer"         = "true"
         "Octopus.Action.Script.ScriptSource" = "Inline"
         "Octopus.Action.Script.Syntax"       = "PowerShell"
@@ -118,7 +119,7 @@ resource "octopusdeploy_runbook_process" "runbook_process_create_project" {
       excluded_environments = []
       channels              = []
       tenant_tags           = []
-      features              = []
+      features              = ["Octopus.Features.SubstituteInFiles"]
 
       # This package has been created to represent the deferred package that a step template selects
       package {
@@ -128,9 +129,9 @@ resource "octopusdeploy_runbook_process" "runbook_process_create_project" {
         extract_during_deployment = false
         feed_id                   = data.octopusdeploy_feeds.feed_octopus_server__built_in_.feeds[0].id
         properties                = {
-          Extract              = "True",
-          Purpose              = "",
-          SelectionMode        = "immediate",
+          Extract       = "True",
+          Purpose       = "",
+          SelectionMode = "immediate",
         }
       }
     }

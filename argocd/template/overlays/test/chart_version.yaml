@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: nginx
+  name: '#{ArgoCD.Project.Name | ToLower | Replace "[^a-zA-Z0-9]" "_"}'
   namespace: argocd
 spec:
   source:
