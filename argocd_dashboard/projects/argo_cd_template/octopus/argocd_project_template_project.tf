@@ -228,7 +228,7 @@ resource "octopusdeploy_runbook_process" "runbook_process_create_project" {
       features              = []
 
       primary_package {
-        package_id           = "argocd_octopus_projects"
+        package_id           = "argocd_template"
         acquisition_location = "Server"
         feed_id              = data.octopusdeploy_feeds.feed_octopus_server__built_in_.feeds[0].id
         properties           = { SelectionMode = "immediate" }
