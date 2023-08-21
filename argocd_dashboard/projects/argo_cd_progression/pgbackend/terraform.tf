@@ -1,6 +1,6 @@
 terraform {
   backend "pg" {
-      conn_str = "postgres://terraform:terraform@localhost:15432/project_argo_cd_progression?sslmode=disable"
+    conn_str = "postgres://terraform:terraform@localhost:15432/project_argo_cd_progression?sslmode=disable"
   }
 }
 
@@ -23,8 +23,16 @@ variable "octopus_space_id" {
   }
 }
 
+variable "octopus_server" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "The URL of the Octopus server e.g. https://myinstance.octopus.app."
+  default     = "http://localhost:18080"
+}
+
 provider "octopusdeploy" {
-  address  = "http://localhost:18080"
+  address  = var.octopus_server
   api_key  = "API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
   space_id = var.octopus_space_id
 }

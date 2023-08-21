@@ -48,7 +48,7 @@ resource "octopusdeploy_variable" "project_name" {
 }
 
 resource "octopusdeploy_project" "argocd_project_template" {
-  name                                 = "Template: MultiEnvironment AroCD Project"
+  name                                 = "Template ArgoCD Projects"
   description                          = "This project is used to create new ArgoCD projects from a template."
   auto_create_release                  = false
   default_guided_failure_mode          = "EnvironmentDefault"
@@ -113,7 +113,7 @@ resource "octopusdeploy_runbook_process" "runbook_process_create_project" {
         "Octopus.Action.RunOnServer"         = "true"
         "Octopus.Action.Script.ScriptSource" = "Inline"
         "Octopus.Action.Script.Syntax"       = "PowerShell"
-        "Octopus.Action.Script.ScriptBody"   = file("${path.module}/../../Clone-CopyFromPackage-Push.ps1")
+        "Octopus.Action.Script.ScriptBody"   = file("${path.module}/../../scripts/Clone-CopyFromPackage-Push.ps1")
       }
       environments          = [data.octopusdeploy_environments.admin.environments[0].id]
       excluded_environments = []
@@ -134,6 +134,64 @@ resource "octopusdeploy_runbook_process" "runbook_process_create_project" {
           SelectionMode = "immediate",
         }
       }
+    }
+
+    properties   = {}
+    target_roles = []
+  }
+
+  step {
+    condition           = "Success"
+    name                = "Deploy the Project"
+    package_requirement = "LetOctopusDecide"
+    start_trigger       = "StartAfterPrevious"
+
+    action {
+      action_type                        = "Octopus.TerraformApply"
+      name                               = "Deploy the Project"
+      condition                          = "Success"
+      run_on_server                      = true
+      is_disabled                        = false
+      can_be_used_for_project_versioning = true
+      is_required                        = false
+      worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
+      properties                         = {
+        "Octopus.Action.AutoRetry.MaximumCount"                 = "3"
+        "Octopus.Action.Terraform.GoogleCloudAccount"           = "False"
+        "Octopus.Action.Terraform.TemplateDirectory"            = "argo_cd_dashboard/pgbackend"
+        "Octopus.Action.Terraform.AdditionalActionParams"       = "-var=\"octopus_server=http://octopus:8080\" -var=\"octopus_space_id=#{Octopus.Space.Id}\" -var=\"project_name=#{ArgoCD.Project.Name}\" -var=\"project_description=Dashboard showing the status of ArgoCD deployments\" -var=\"argocd_version_image=\" -var=\"argocd_sbom_version_image=\" -var=\"argocd_application_development=argocd/#{ArgoCD.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}-development\""
+        "Octopus.Action.Aws.AssumeRole"                         = "False"
+        "Octopus.Action.Aws.Region"                             = ""
+        "Octopus.Action.Terraform.AllowPluginDownloads"         = "True"
+        "Octopus.Action.Terraform.AzureAccount"                 = "False"
+        "Octopus.Action.AwsAccount.Variable"                    = ""
+        "Octopus.Action.GoogleCloud.UseVMServiceAccount"        = "True"
+        "Octopus.Action.Script.ScriptSource"                    = "Package"
+        "Octopus.Action.Terraform.RunAutomaticFileSubstitution" = "False"
+        "Octopus.Action.Terraform.AdditionalInitParams"         = "-backend-config=\"conn_str=postgres://terraform:terraform@terraformdb:5432/project_argo_cd_dashboard?sslmode=disable\""
+        "Octopus.Action.GoogleCloud.ImpersonateServiceAccount"  = "False"
+        "Octopus.Action.Terraform.PlanJsonOutput"               = "False"
+        "Octopus.Action.Terraform.ManagedAccount"               = ""
+        "OctopusUseBundledTooling"                              = "False"
+        "Octopus.Action.AwsAccount.UseInstanceRole"             = "False"
+        "Octopus.Action.Terraform.FileSubstitution"             = ""
+        "Octopus.Action.Package.DownloadOnTentacle"             = "False"
+        "Octopus.Action.Terraform.Workspace"                    = "#{ArgoCD.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}"
+      }
+
+      environments          = []
+      excluded_environments = []
+      channels              = []
+      tenant_tags           = []
+
+      primary_package {
+        package_id           = "argocd_octopus_projects"
+        acquisition_location = "Server"
+        feed_id              = data.octopusdeploy_feeds.feed_octopus_server__built_in_.feeds[0].id
+        properties           = { SelectionMode = "immediate" }
+      }
+
+      features = []
     }
 
     properties   = {}

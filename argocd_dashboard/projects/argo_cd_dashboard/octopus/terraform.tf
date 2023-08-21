@@ -91,3 +91,10 @@ data "octopusdeploy_project_groups" "project_group_platform_engineering" {
   skip         = 0
   take         = 1
 }
+
+data "octopusdeploy_feeds" "maven" {
+  feed_type    = "Maven"
+  partial_name = "Sales Maven Feed"
+  skip         = 0
+  take         = 1
+}

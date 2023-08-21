@@ -1,85 +1,106 @@
-data "octopusdeploy_feeds" "maven" {
-  feed_type    = "Maven"
-  partial_name = "Sales Maven Feed"
-  skip         = 0
-  take         = 1
+variable "project_name" {
+  type    = string
+}
+
+variable "project_description" {
+  type    = string
+}
+
+variable "argocd_application_development" {
+  type    = string
+}
+
+variable "argocd_application_test" {
+  type    = string
+}
+
+variable "argocd_application_production" {
+  type    = string
+}
+
+variable "argocd_version_image" {
+  type    = string
+}
+
+variable "argocd_sbom_version_image" {
+  type    = string
 }
 
 resource "octopusdeploy_variable" "argocd_overview_dashboard_dev_env_metadata" {
   owner_id    = octopusdeploy_project.project_overview_dashboard.id
   type        = "String"
-  name        = "Metadata.ArgoCD.Application[argocd/octopub-frontend-development].Environment"
+  name        = "Metadata.ArgoCD.Application[${var.argocd_application_development}].Environment"
   value       = "Development"
-  description = "This variable links this project's Development environment to the octopub-frontend-development ArgoCD application in the argocd namespace"
+  description = "This variable links this project's Development environment to the ${var.argocd_application_development} ArgoCD application in the argocd namespace"
 }
 
 resource "octopusdeploy_variable" "argocd_overview_dashboard_dev_version_metadata" {
   owner_id    = octopusdeploy_project.project_overview_dashboard.id
   type        = "String"
-  name        = "Metadata.ArgoCD.Application[argocd/octopub-frontend-development].ImageForReleaseVersion"
-  value       = "octopussamples/octopub-frontend"
-  description = "This variable indicates that the octopussamples/octopub-frontend-microservice images deployed by the ArgoCD application is used to build the Octopus release numbers"
+  name        = "Metadata.ArgoCD.Application[${var.argocd_application_development}].ImageForReleaseVersion"
+  value       = var.argocd_version_image
+  description = "This variable indicates that the ${var.argocd_application_development} images deployed by the ArgoCD application is used to build the Octopus release numbers"
 }
 
 resource "octopusdeploy_variable" "argocd_overview_dashboard_test_env_metadata" {
   owner_id    = octopusdeploy_project.project_overview_dashboard.id
   type        = "String"
-  name        = "Metadata.ArgoCD.Application[argocd/octopub-frontend-test].Environment"
+  name        = "Metadata.ArgoCD.Application[${var.argocd_application_test}].Environment"
   value       = "Test"
-  description = "This variable links this project's Test environment to the octopub-frontend-test ArgoCD application in the argocd namespace"
+  description = "This variable links this project's Test environment to the ${var.argocd_application_test} ArgoCD application in the argocd namespace"
 }
 
 resource "octopusdeploy_variable" "argocd_overview_dashboard_test_version_metadata" {
   owner_id    = octopusdeploy_project.project_overview_dashboard.id
   type        = "String"
-  name        = "Metadata.ArgoCD.Application[argocd/octopub-frontend-test].ImageForReleaseVersion"
-  value       = "octopussamples/octopub-frontend"
-  description = "This variable indicates that the octopussamples/octopub-frontend-microservice images deployed by the ArgoCD application is used to build the Octopus release numbers"
+  name        = "Metadata.ArgoCD.Application[${var.argocd_application_test}].ImageForReleaseVersion"
+  value       = var.argocd_version_image
+  description = "This variable indicates that the ${var.argocd_application_test} images deployed by the ArgoCD application is used to build the Octopus release numbers"
 }
 
 resource "octopusdeploy_variable" "argocd_overview_dashboard_prod_env_metadata" {
   owner_id    = octopusdeploy_project.project_overview_dashboard.id
   type        = "String"
-  name        = "Metadata.ArgoCD.Application[argocd/octopub-frontend-production].Environment"
+  name        = "Metadata.ArgoCD.Application[${var.argocd_application_production}].Environment"
   value       = "Production"
-  description = "This variable links this project's Test environment to the octopub-frontend-prod ArgoCD application in the argocd namespace"
+  description = "This variable links this project's Production environment to the ${var.argocd_application_production} ArgoCD application in the argocd namespace"
 }
 
 resource "octopusdeploy_variable" "argocd_overview_dashboard_prod_version_metadata" {
   owner_id    = octopusdeploy_project.project_overview_dashboard.id
   type        = "String"
-  name        = "Metadata.ArgoCD.Application[argocd/octopub-frontend-production].ImageForReleaseVersion"
-  value       = "octopussamples/octopub-frontend"
-  description = "This variable indicates that the octopussamples/octopub-frontend-microservice images deployed by the ArgoCD application is used to build the Octopus release numbers"
+  name        = "Metadata.ArgoCD.Application[${var.argocd_application_production}].ImageForReleaseVersion"
+  value       = var.argocd_version_image
+  description = "This variable indicates that the ${var.argocd_application_production} images deployed by the ArgoCD application is used to build the Octopus release numbers"
 }
 
 resource "octopusdeploy_variable" "argocd_overview_dashboard_prod_package_version_metadata" {
   owner_id    = octopusdeploy_project.project_overview_dashboard.id
   type        = "String"
-  name        = "Metadata.ArgoCD.Application[argocd/octopub-frontend-production].ImageForPackageVersion[Check for Vulnerabilities:sbom]"
-  value       = "octopussamples/octopub-frontend"
-  description = "This variable indicates that the octopussamples/octopub-frontend-microservice images deployed by the ArgoCD application is used to build the Octopus release numbers"
+  name        = "Metadata.ArgoCD.Application[${var.argocd_application_production}].ImageForPackageVersion[Check for Vulnerabilities:sbom]"
+  value       = var.argocd_version_image
+  description = "This variable indicates that the ${var.argocd_application_production} images deployed by the ArgoCD application is used to build the Octopus release numbers"
 }
 
 resource "octopusdeploy_variable" "argocd_overview_dashboard_test_package_version_metadata" {
   owner_id    = octopusdeploy_project.project_overview_dashboard.id
   type        = "String"
-  name        = "Metadata.ArgoCD.Application[argocd/octopub-frontend-test].ImageForPackageVersion[Check for Vulnerabilities:sbom]"
-  value       = "octopussamples/octopub-frontend"
-  description = "This variable indicates that the octopussamples/octopub-frontend-microservice images deployed by the ArgoCD application is used to build the Octopus release numbers"
+  name        = "Metadata.ArgoCD.Application[${var.argocd_application_test}].ImageForPackageVersion[Check for Vulnerabilities:sbom]"
+  value       = var.argocd_version_image
+  description = "This variable indicates that the ${var.argocd_application_test} images deployed by the ArgoCD application is used to build the Octopus release numbers"
 }
 
 resource "octopusdeploy_variable" "argocd_overview_dashboard_dev_package_version_metadata" {
   owner_id    = octopusdeploy_project.project_overview_dashboard.id
   type        = "String"
-  name        = "Metadata.ArgoCD.Application[argocd/octopub-frontend-development].ImageForPackageVersion[Check for Vulnerabilities:sbom]"
-  value       = "octopussamples/octopub-frontend"
-  description = "This variable indicates that the octopussamples/octopub-frontend-microservice images deployed by the ArgoCD application is used to build the Octopus release numbers"
+  name        = "Metadata.ArgoCD.Application[${var.argocd_application_development}].ImageForPackageVersion[Check for Vulnerabilities:sbom]"
+  value       = var.argocd_version_image
+  description = "This variable indicates that the ${var.argocd_application_development} images deployed by the ArgoCD application is used to build the Octopus release numbers"
 }
 
 resource "octopusdeploy_project" "project_overview_dashboard" {
-  name                                 = "Overview: Octopub Frontend"
-  description                          = "This project is used to manage the deployment of the Octopub Frontend via ArgoCD."
+  name                                 = var.project_name
+  description                          = var.project_description
   auto_create_release                  = false
   default_guided_failure_mode          = "EnvironmentDefault"
   default_to_skip_if_already_installed = false
@@ -134,10 +155,10 @@ resource "octopusdeploy_deployment_process" "deployment_process_project_octopub"
   }
 
   step {
-    condition            = "Success"
-    name                 = "Check for Vulnerabilities"
-    package_requirement  = "LetOctopusDecide"
-    start_trigger        = "StartAfterPrevious"
+    condition           = "Success"
+    name                = "Check for Vulnerabilities"
+    package_requirement = "LetOctopusDecide"
+    start_trigger       = "StartAfterPrevious"
 
     action {
       action_type                        = "Octopus.Script"
@@ -151,7 +172,7 @@ resource "octopusdeploy_deployment_process" "deployment_process_project_octopub"
       worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
       properties                         = {
         "Octopus.Action.SubstituteInFiles.Enabled" = "True"
-        "Octopus.Action.Script.ScriptBody"         = file("../scripts/vulnerability_scan.sh")
+        "Octopus.Action.Script.ScriptBody"         = file("${path.module}/../scripts/vulnerability_scan.sh")
         "Octopus.Action.Script.ScriptSource"       = "Inline"
         "Octopus.Action.Script.Syntax"             = "Bash"
       }

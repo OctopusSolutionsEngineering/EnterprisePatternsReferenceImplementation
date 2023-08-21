@@ -207,8 +207,8 @@ max_retry=12
 counter=0
 until /usr/bin/flock /tmp/dockerpull.lock docker pull postgres 2>&1
 do
-   sleep 5
    [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
+   [[ counter -ne 0 ]] && sleep 5
    echo "Trying again. Try #$counter"
    ((counter++))
 done
@@ -221,8 +221,8 @@ max_retry=2
 counter=0
 until /usr/bin/flock /tmp/${local.backend}.lock docker run --rm -e "PGPASSWORD=terraform" --entrypoint '/bin/bash' postgres -c "echo \"SELECT 'CREATE DATABASE ${local.backend}' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '${local.backend}')\gexec\" | /usr/bin/psql -h $${DATABASE} -v ON_ERROR_STOP=1 --username 'terraform'" 2>&1
 do
-   sleep 5
    [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
+   [[ counter -ne 0 ]] && sleep 5
    echo "Trying again. Try #$counter"
    ((counter++))
 done

@@ -1,3 +1,12 @@
+variable "project_name" {
+  default = "Progression: Octopub Frontend"
+  type    = string
+}
+
+variable "project_description" {
+  default = "This project is used to manage the deployment of the Octopub Frontend via ArgoCD."
+  type    = string
+}
 
 resource "octopusdeploy_variable" "argocd_environment_progression_env_metadata" {
   owner_id    = octopusdeploy_project.project_environment_progression.id
@@ -65,8 +74,8 @@ resource "octopusdeploy_variable" "argocd_environment_progression_git_source_tag
 }
 
 resource "octopusdeploy_project" "project_environment_progression" {
-  name                                 = "Progression: Octopub Frontend"
-  description                          = "This project is used to manage the deployment of the Octopub Frontend via ArgoCD."
+  name                                 = var.project_name
+  description                          = var.project_description
   auto_create_release                  = false
   default_guided_failure_mode          = "EnvironmentDefault"
   default_to_skip_if_already_installed = false
@@ -107,7 +116,7 @@ resource "octopusdeploy_deployment_process" "deployment_process_project_environm
         "Octopus.Action.RunOnServer"         = "true"
         "Octopus.Action.Script.ScriptSource" = "Inline"
         "Octopus.Action.Script.Syntax"       = "PowerShell"
-        "Octopus.Action.Script.ScriptBody"   = file("${path.module}/../../Tag-Release.ps1")
+        "Octopus.Action.Script.ScriptBody"   = file("${path.module}/../../scripts/Tag-Release.ps1")
       }
       environments          = [data.octopusdeploy_environments.development.environments[0].id]
       excluded_environments = []
@@ -139,7 +148,7 @@ resource "octopusdeploy_deployment_process" "deployment_process_project_environm
         "Octopus.Action.RunOnServer"         = "true"
         "Octopus.Action.Script.ScriptSource" = "Inline"
         "Octopus.Action.Script.Syntax"       = "PowerShell"
-        "Octopus.Action.Script.ScriptBody"   = file("${path.module}/../../Copy-Git-Files.ps1")
+        "Octopus.Action.Script.ScriptBody"   = file("${path.module}/../../scripts/Copy-Git-Files.ps1")
       }
       environments          = []
       excluded_environments = [data.octopusdeploy_environments.development.environments[0].id]

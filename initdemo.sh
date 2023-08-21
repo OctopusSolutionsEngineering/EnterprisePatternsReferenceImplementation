@@ -435,8 +435,40 @@ execute_terraform () {
   until [[ "${exit_code}" == "0" ]]
   do
     [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
+    [[ counter -ne 0 ]] && sleep 5
     ((counter++))
     terraform apply -auto-approve "-var=octopus_space_id=${SPACE_ID}"
+    exit_code=$?
+  done
+
+  popd || exit 1
+}
+
+execute_terraform_with_workspace () {
+  PG_DATABASE="${1}"
+  WORKSPACE="${2}"
+  TF_MODULE_PATH="${3}"
+  SPACE_ID="${4}"
+
+  docker compose -f docker/compose.yml exec terraformdb sh -c "/usr/bin/psql -v ON_ERROR_STOP=1 --username \"\$POSTGRES_USER\" -c \"CREATE DATABASE $PG_DATABASE\""
+  pushd "${TF_MODULE_PATH}" || exit 1
+  terraform init -reconfigure -upgrade
+  terraform workspace select -or-create "${SPACE_ID}-${WORKSPACE}"
+
+  # Sometimes the TF provider fails, especially with scoped variables. A retry usually fixes it.
+  max_retry=2
+  counter=0
+  exit_code=1
+  until [[ "${exit_code}" == "0" ]]
+  do
+    [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
+    [[ counter -ne 0 ]] && sleep 5
+    ((counter++))
+    # This function is assumed to be used by modules that create resources outside of Octopus,
+    # in which case the octopus_server is http://localhost:18080, or inside Octopus, in which case
+    # the step deploying this module will set octopus_server to http://octopus:8080.
+    # Exposing the octopus_server variable is unique to modules applied with execute_terraform_with_workspace.
+    terraform apply -auto-approve "-var=octopus_space_id=${SPACE_ID}" "-var=octopus_server=http://localhost:18080"
     exit_code=$?
   done
 
@@ -467,6 +499,7 @@ execute_terraform_with_project () {
     until [[ "${exit_code}" == "0" ]]
     do
        [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
+       [[ counter -ne 0 ]] && sleep 5
        ((counter++))
 
        if [[ -z "${COMPOSE_PROJECT}" && -z "${CREATE_SPACE_PROJECT}"  ]]
@@ -504,6 +537,7 @@ execute_terraform_with_spacename () {
   until [[ "${exit_code}" == "0" ]]
   do
    [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
+   [[ counter -ne 0 ]] && sleep 5
    ((counter++))
 
     terraform apply -auto-approve "-var=space_name=${SPACENAME}"
@@ -725,8 +759,8 @@ then
   execute_terraform 'lifecycle_simple_dev_test_prod' 'shared/lifecycles/simple_dev_test_prod/pgbackend' 'Spaces-4'
   execute_terraform 'single_phase_simple_dev_test_prod' 'argocd_dashboard/lifecycles/single_phase_dev_test_prod/pgbackend' 'Spaces-4'
   execute_terraform 'project_group_argo_cd' 'argocd_dashboard/project_group/octopub/pgbackend' 'Spaces-4'
-  execute_terraform 'project_argo_cd_dashboard' 'argocd_dashboard/projects/argo_cd_dashboard/pgbackend' 'Spaces-4'
-  execute_terraform 'project_argo_cd_progression' 'argocd_dashboard/projects/argo_cd_progression/pgbackend' 'Spaces-4'
+  execute_terraform_with_workspace 'project_argo_cd_dashboard' 'initial_project' 'argocd_dashboard/projects/argo_cd_dashboard/pgbackend' 'Spaces-4'
+  execute_terraform_with_workspace 'project_argo_cd_progression' 'initial_project' 'argocd_dashboard/projects/argo_cd_progression/pgbackend' 'Spaces-4'
   execute_terraform 'project_argo_cd_template' 'argocd_dashboard/projects/argo_cd_template/pgbackend' 'Spaces-4'
 
   # Get the Argo CD password
@@ -776,6 +810,13 @@ then
   zip -r argocd_template.1.0.0.zip .
   octo push --server=http://localhost:18080 --apiKey=API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA -space=Spaces-4 --package=argocd_template.1.0.0.zip --replace-existing
   rm argocd_template.1.0.0.zip
+  popd
+
+  # Create the ArgoCD project Terraform module package and push it to Octopus
+  pushd argocd_dashboard/projects
+  zip -r argocd_octopus_projects.1.0.0.zip . -i '*.tf' '*.sh'
+  octo push --server=http://localhost:18080 --apiKey=API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA -space=Spaces-4 --package=argocd_octopus_projects.1.0.0.zip --replace-existing
+  rm argocd_octopus_projects.1.0.0.zip
   popd
 fi
 

@@ -1,13 +1,13 @@
 terraform {
   required_providers {
-    octopusdeploy = { source = "OctopusDeployLabs/octopusdeploy", version = "0.11.1" }
+    octopusdeploy = { source = "OctopusDeployLabs/octopusdeploy", version = "0.12.5" }
   }
 }
 
 provider "octopusdeploy" {
-  address  = "${var.octopus_server}"
-  api_key  = "${var.octopus_apikey}"
-  space_id = "${var.octopus_space_id}"
+  address  = var.octopus_server
+  api_key  = var.octopus_apikey
+  space_id = var.octopus_space_id
 }
 
 variable "octopus_server" {
