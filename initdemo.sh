@@ -814,18 +814,18 @@ then
   ARGO_PASSWORD="${ARGO_PASSWORD%"${ARGO_PASSWORD##*[![:space:]]}"}"
 
   # Create the ArgoCD template and push it to Octopus
-  pushd argocd/template
+  pushd argocd/template || exit 1
   zip -r argocd_template.1.0.0.zip .
   octo push --server=http://localhost:18080 --apiKey=API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA -space=Spaces-4 --package=argocd_template.1.0.0.zip --replace-existing
   rm argocd_template.1.0.0.zip
-  popd
+  popd || exit 1
 
   # Create the ArgoCD project Terraform module package and push it to Octopus
-  pushd argocd_dashboard/projects
+  pushd argocd_dashboard/projects || exit 1
   zip -r argocd_octopus_projects.1.0.0.zip . -i '*.tf' '*.sh'
   octo push --server=http://localhost:18080 --apiKey=API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA -space=Spaces-4 --package=argocd_octopus_projects.1.0.0.zip --replace-existing
   rm argocd_octopus_projects.1.0.0.zip
-  popd
+  popd || exit 1
 
   # Create a space to monitor and manage the Octppub deployment in ArgoCD
   execute_terraform_with_spacename 'spaces' 'shared/spaces/pgbackend' 'ArgoCD'
@@ -839,7 +839,7 @@ then
     -auto-approve \
     -var=octopus_space_id=Spaces-4 \
     "-var=argocd_token=${TOKEN}"
-  popd
+  popd || exit 1
 
   execute_terraform 'mavenfeed' 'shared/feeds/maven/pgbackend' 'Spaces-4'
   execute_terraform 'environments' 'shared/environments/dev_test_prod/pgbackend' 'Spaces-4'
@@ -854,7 +854,7 @@ then
     -var=octopus_space_id=Spaces-4 \
     "-var=k8s_cluster_url=https://${DOCKER_HOST_IP}:${CLUSTER_PORT}" \
     "-var=k8s_client_cert=${COMBINED_CERT}"
-  popd
+  popd || exit 1
 
   execute_terraform 'lifecycle_simple_dev_test_prod' 'shared/lifecycles/simple_dev_test_prod/pgbackend' 'Spaces-4'
   execute_terraform 'single_phase_simple_dev_test_prod' 'argocd_dashboard/lifecycles/single_phase_dev_test_prod/pgbackend' 'Spaces-4'
