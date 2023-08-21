@@ -201,75 +201,81 @@ fi
 docker exec -it gitea su git bash -c "gitea admin user create --username editor --password Password01! --email editor@example.com --must-change-password=false"
 
 # Create the orgs.
-max_retry=6
-counter=0
-until curl \
-  --output /dev/null \
-  --silent \
-  -u "octopus:Password01!" \
-  -X POST \
-  "http://localhost:3000/api/v1/admin/users/octopus/orgs" \
-  -H "Content-Type: application/json" \
-  -H "accept: application/json" \
-  --data '{"username": "octopuscac"}' \
-  --fail
-do
-   sleep 10
-   [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
-   echo "Trying again. Try #$counter"
-   ((counter++))
-done
+if ! curl -u "octopus:Password01!" http://localhost:3000/api/v1/admin/users/octopus/orgs --fail --silent
+then
+  max_retry=6
+  counter=0
+  until curl \
+    --output /dev/null \
+    --silent \
+    -u "octopus:Password01!" \
+    -X POST \
+    "http://localhost:3000/api/v1/admin/users/octopus/orgs" \
+    -H "Content-Type: application/json" \
+    -H "accept: application/json" \
+    --data '{"username": "octopuscac"}' \
+    --fail
+  do
+     sleep 10
+     [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
+     echo "Trying again. Try #$counter"
+     ((counter++))
+  done
+fi
 
 # Create a users team in the new org
-max_retry=6
-counter=0
-until curl \
-  --output /dev/null \
-  --silent \
-  -u "octopus:Password01!" \
-  -X POST \
-  "http://localhost:3000/api/v1/orgs/octopuscac/teams" \
-  -H "Content-Type: application/json" \
-  -H "accept: application/json" \
-  --data '{
-      "name": "Users",
-      "description": "",
-      "organization": null,
-      "includes_all_repositories": true,
-      "permission": "write",
-      "units": [
-          "repo.releases",
-          "repo.packages",
-          "repo.ext_issues",
-          "actions.actions",
-          "repo.projects",
-          "repo.ext_wiki",
-          "repo.issues",
-          "repo.wiki",
-          "repo.pulls",
-          "repo.code"
-      ],
-      "units_map": {
-          "actions.actions": "write",
-          "repo.code": "write",
-          "repo.ext_issues": "read",
-          "repo.ext_wiki": "read",
-          "repo.issues": "write",
-          "repo.packages": "write",
-          "repo.projects": "write",
-          "repo.pulls": "write",
-          "repo.releases": "write",
-          "repo.wiki": "write"
-      },
-      "can_create_org_repo": false
-  }' \
-  --fail
-do
-   sleep 10
-   [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
-   echo "Trying again. Try #$counter"
-   ((counter++))
-done
+if ! curl -u "octopus:Password01!" http://localhost:3000/api/v1/teams/2 --fail --silent
+then
+  max_retry=6
+  counter=0
+  until curl \
+    --output /dev/null \
+    --silent \
+    -u "octopus:Password01!" \
+    -X POST \
+    "http://localhost:3000/api/v1/orgs/octopuscac/teams" \
+    -H "Content-Type: application/json" \
+    -H "accept: application/json" \
+    --data '{
+        "name": "Users",
+        "description": "",
+        "organization": null,
+        "includes_all_repositories": true,
+        "permission": "write",
+        "units": [
+            "repo.releases",
+            "repo.packages",
+            "repo.ext_issues",
+            "actions.actions",
+            "repo.projects",
+            "repo.ext_wiki",
+            "repo.issues",
+            "repo.wiki",
+            "repo.pulls",
+            "repo.code"
+        ],
+        "units_map": {
+            "actions.actions": "write",
+            "repo.code": "write",
+            "repo.ext_issues": "read",
+            "repo.ext_wiki": "read",
+            "repo.issues": "write",
+            "repo.packages": "write",
+            "repo.projects": "write",
+            "repo.pulls": "write",
+            "repo.releases": "write",
+            "repo.wiki": "write"
+        },
+        "can_create_org_repo": false
+    }' \
+    --fail
+  do
+     sleep 10
+     [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
+     echo "Trying again. Try #$counter"
+     ((counter++))
+  done
+fi
 
 # Add the editor user to the users team
 curl \
