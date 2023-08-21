@@ -40,7 +40,7 @@ spec:
       source:
         repoURL: http://gitea:3000/octopuscac/argo_cd.git
         targetRevision: HEAD
-        path: argocd/{{name}}/overlays/{{environment}}
+        path: argo_cd/{{name}}/overlays/{{environment}}
       destination:
         server: "https://kubernetes.default.svc"
         namespace: argocd
