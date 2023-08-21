@@ -91,3 +91,9 @@ data "octopusdeploy_project_groups" "project_group_platform_engineering" {
   skip         = 0
   take         = 1
 }
+
+data "octopusdeploy_library_variable_sets" "argo_cd" {
+  partial_name = "Argo CD"
+  skip = 0
+  take = 1
+}

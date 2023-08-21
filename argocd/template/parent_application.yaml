@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: '#{ArgoCD.Project.Name | ToLower | Replace "[^a-zA-Z0-9]" "-"}-development'
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: '#{ArgoCD.Project.Name | ToLower | Replace "[^a-zA-Z0-9]" "-"}-test'
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: '#{ArgoCD.Project.Name | ToLower | Replace "[^a-zA-Z0-9]" "-"}-production'
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: '#{ArgoCD.Project.Name | ToLower | Replace "[^a-zA-Z0-9]" "-"}'
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          - name: '#{ArgoCD.Project.Name | ToLower | Replace "[^a-zA-Z0-9]" "-"}'
+            environment: development
+          - name: '#{ArgoCD.Project.Name | ToLower | Replace "[^a-zA-Z0-9]" "-"}'
+            environment: test
+          - name: '#{ArgoCD.Project.Name | ToLower | Replace "[^a-zA-Z0-9]" "-"}'
+            environment: production
+  template:
+    metadata:
+      name: '{{name}}-{{environment}}-parent'
+    spec:
+      project: default
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+      source:
+        repoURL: http://gitea:3000/octopuscac/argo_cd.git
+        targetRevision: HEAD
+        path: argocd/{{name}}/overlays/{{environment}}
+      destination:
+        server: "https://kubernetes.default.svc"
+        namespace: argocd

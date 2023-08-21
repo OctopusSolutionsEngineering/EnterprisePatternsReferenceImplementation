@@ -58,7 +58,7 @@ resource "octopusdeploy_project" "argocd_project_template" {
   is_version_controlled                = false
   lifecycle_id                         = data.octopusdeploy_lifecycles.lifecycle_simple.lifecycles[0].id
   project_group_id                     = data.octopusdeploy_project_groups.project_group_platform_engineering.project_groups[0].id
-  included_library_variable_sets       = []
+  included_library_variable_sets       = [data.octopusdeploy_library_variable_sets.argo_cd.library_variable_sets[0].id]
   tenanted_deployment_participation    = "Untenanted"
 
   connectivity_policy {
@@ -109,11 +109,11 @@ resource "octopusdeploy_runbook_process" "runbook_process_create_project" {
       is_required                        = false
       worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
       properties                         = {
-        "Octopus.Action.SubstituteInFiles.TargetFiles" : "**/*.yml\n**/*.yaml"
-        "Octopus.Action.RunOnServer"         = "true"
-        "Octopus.Action.Script.ScriptSource" = "Inline"
-        "Octopus.Action.Script.Syntax"       = "PowerShell"
-        "Octopus.Action.Script.ScriptBody"   = file("${path.module}/../../scripts/Clone-CopyFromPackage-Push.ps1")
+        "Octopus.Action.SubstituteInFiles.TargetFiles" = "**/*.yaml"
+        "Octopus.Action.RunOnServer"                   = "true"
+        "Octopus.Action.Script.ScriptSource"           = "Inline"
+        "Octopus.Action.Script.Syntax"                 = "PowerShell"
+        "Octopus.Action.Script.ScriptBody"             = file("${path.module}/../../scripts/Clone-CopyFromPackage-Push.ps1")
       }
       environments          = [data.octopusdeploy_environments.admin.environments[0].id]
       excluded_environments = []
@@ -196,5 +196,46 @@ resource "octopusdeploy_runbook_process" "runbook_process_create_project" {
 
     properties   = {}
     target_roles = []
+  }
+
+  step {
+    condition            = "Success"
+    name                 = "Create ArgoCD Application"
+    package_requirement  = "LetOctopusDecide"
+    start_trigger        = "StartAfterPrevious"
+
+    action {
+      action_type                        = "Octopus.KubernetesDeployRawYaml"
+      name                               = "Create ArgoCD Application"
+      condition                          = "Success"
+      run_on_server                      = true
+      is_disabled                        = false
+      can_be_used_for_project_versioning = false
+      is_required                        = false
+      worker_pool_id                     = ""
+      worker_pool_variable               = ""
+      properties                         = {
+        "Octopus.Action.Script.ScriptSource" = "Package"
+        "Octopus.Action.KubernetesContainers.CustomResourceYamlFileName" = "parent_application.yaml"
+        "Octopus.Action.Package.DownloadOnTentacle" = "False"
+        "Octopus.Action.Kubernetes.ResourceStatusCheck" = "False"
+        "Octopus.Action.Kubernetes.DeploymentTimeout" = "180"
+      }
+      environments          = []
+      excluded_environments = []
+      channels              = []
+      tenant_tags           = []
+      features              = []
+
+      primary_package {
+        package_id           = "argocd_octopus_projects"
+        acquisition_location = "Server"
+        feed_id              = data.octopusdeploy_feeds.feed_octopus_server__built_in_.feeds[0].id
+        properties           = { SelectionMode = "immediate" }
+      }
+    }
+
+    properties   = {}
+    target_roles = ["k8s"]
   }
 }

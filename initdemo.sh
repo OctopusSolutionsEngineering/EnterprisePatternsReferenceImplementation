@@ -750,47 +750,34 @@ publish_runbook "PR Checks" "PR Check"
 # Push the sample ArgoCD app
 if [[ "${INSTALL_ARGO}" == "TRUE" ]]
 then
-
-  # Create a space to monitor and manage the Octppub deployment in ArgoCD
-  execute_terraform_with_spacename 'spaces' 'shared/spaces/pgbackend' 'ArgoCD'
-  execute_terraform 'mavenfeed' 'shared/feeds/maven/pgbackend' 'Spaces-4'
-  execute_terraform 'environments' 'shared/environments/dev_test_prod/pgbackend' 'Spaces-4'
-  execute_terraform 'admin_environment' 'shared/environments/administration/pgbackend' 'Spaces-4'
-  execute_terraform 'lifecycle_simple_dev_test_prod' 'shared/lifecycles/simple_dev_test_prod/pgbackend' 'Spaces-4'
-  execute_terraform 'single_phase_simple_dev_test_prod' 'argocd_dashboard/lifecycles/single_phase_dev_test_prod/pgbackend' 'Spaces-4'
-  execute_terraform 'project_group_argo_cd' 'argocd_dashboard/project_group/octopub/pgbackend' 'Spaces-4'
-  execute_terraform_with_workspace 'project_argo_cd_dashboard' 'initial_project' 'argocd_dashboard/projects/argo_cd_dashboard/pgbackend' 'Spaces-4'
-  execute_terraform_with_workspace 'project_argo_cd_progression' 'initial_project' 'argocd_dashboard/projects/argo_cd_progression/pgbackend' 'Spaces-4'
-  execute_terraform 'project_argo_cd_template' 'argocd_dashboard/projects/argo_cd_template/pgbackend' 'Spaces-4'
-
   # Get the Argo CD password
   PASSWORD=$(KUBECONFIG=/tmp/octoconfig.yml argocd admin initial-password -n argocd)
   # Extract the first line of the output, which is the password
   PASSWORDARRAY=(${PASSWORD[@]})
 
-    # Retry this because sometimes it times out
-    max_retry=3
-    counter=0
-    exit_code=1
-    until [[ "${exit_code}" == "0" ]]
-    do
-      [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
+  # Retry this because sometimes it times out
+  max_retry=3
+  counter=0
+  exit_code=1
+  until [[ "${exit_code}" == "0" ]]
+  do
+    [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
 
-      ((counter++))
+    ((counter++))
 
-      # Generate a token for the user octopus
-      TOKEN=$(KUBECONFIG=/tmp/octoconfig.yml kubectl run --rm -i --image=argoproj/argocd argocdinit${counter} -- /bin/bash -c "argocd login --insecure argocd-server.argocd.svc.cluster.local --username admin --password ${PASSWORDARRAY[0]} >/dev/null; argocd account generate-token --account octopus")
+    # Generate a token for the user octopus
+    TOKEN=$(KUBECONFIG=/tmp/octoconfig.yml kubectl run --rm -i --image=argoproj/argocd argocdinit${counter} -- /bin/bash -c "argocd login --insecure argocd-server.argocd.svc.cluster.local --username admin --password ${PASSWORDARRAY[0]} >/dev/null; argocd account generate-token --account octopus")
 
-      exit_code=$?
+    exit_code=$?
 
-      # sometimes these pods do not clean themselves up, so force the deletion
-      KUBECONFIG=/tmp/octoconfig.yml kubectl delete pod argocdinit${counter} -n default --grace-period=0 --force >/dev/null 2>&1
+    # sometimes these pods do not clean themselves up, so force the deletion
+    KUBECONFIG=/tmp/octoconfig.yml kubectl delete pod argocdinit${counter} -n default --grace-period=0 --force >/dev/null 2>&1
 
-      # Remove the messages captured after the token about the pod being removed
-      TOKEN=${TOKEN%%pod \"*}
-      # Remove trailing whitespace (https://stackoverflow.com/a/3352015/8246539)
-      TOKEN="${TOKEN%"${TOKEN##*[![:space:]]}"}"
-    done
+    # Remove the messages captured after the token about the pod being removed
+    TOKEN=${TOKEN%%pod \"*}
+    # Remove trailing whitespace (https://stackoverflow.com/a/3352015/8246539)
+    TOKEN="${TOKEN%"${TOKEN##*[![:space:]]}"}"
+  done
 
   # Save the token in a secret
   KUBECONFIG=/tmp/octoconfig.yml kubectl create secret generic octoargosync-secret --from-literal=argotoken=${TOKEN} -n argocd
@@ -818,6 +805,41 @@ then
   octo push --server=http://localhost:18080 --apiKey=API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA -space=Spaces-4 --package=argocd_octopus_projects.1.0.0.zip --replace-existing
   rm argocd_octopus_projects.1.0.0.zip
   popd
+
+  # Create a space to monitor and manage the Octppub deployment in ArgoCD
+  execute_terraform_with_spacename 'spaces' 'shared/spaces/pgbackend' 'ArgoCD'
+
+  # Create the library variable set with the argocd token
+  docker compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE lib_var_argo"'
+  pushd argocd_dashboard/variables/argo/pgbackend || exit 1
+  terraform init -reconfigure -upgrade
+  terraform workspace select -or-create "Spaces-4"
+  terraform apply \
+    -auto-approve \
+    -var=octopus_space_id=Spaces-4 \
+    "-var=argocd_token=${TOKEN}"
+  popd
+
+  # Setup targets
+  pushd argocd_dashboard/targets/k8s/pgbackend || exit 1
+  terraform init -reconfigure -upgrade
+  terraform workspace select -or-create "Spaces-4"
+  terraform apply \
+    -auto-approve \
+    -var=octopus_space_id=Spaces-4 \
+    "-var=k8s_cluster_url=https://${DOCKER_HOST_IP}:${CLUSTER_PORT}" \
+    "-var=k8s_client_cert=${COMBINED_CERT}"
+  popd
+
+  execute_terraform 'mavenfeed' 'shared/feeds/maven/pgbackend' 'Spaces-4'
+  execute_terraform 'environments' 'shared/environments/dev_test_prod/pgbackend' 'Spaces-4'
+  execute_terraform 'admin_environment' 'shared/environments/administration/pgbackend' 'Spaces-4'
+  execute_terraform 'lifecycle_simple_dev_test_prod' 'shared/lifecycles/simple_dev_test_prod/pgbackend' 'Spaces-4'
+  execute_terraform 'single_phase_simple_dev_test_prod' 'argocd_dashboard/lifecycles/single_phase_dev_test_prod/pgbackend' 'Spaces-4'
+  execute_terraform 'project_group_argo_cd' 'argocd_dashboard/project_group/octopub/pgbackend' 'Spaces-4'
+  execute_terraform_with_workspace 'project_argo_cd_dashboard' 'initial_project' 'argocd_dashboard/projects/argo_cd_dashboard/pgbackend' 'Spaces-4'
+  execute_terraform_with_workspace 'project_argo_cd_progression' 'initial_project' 'argocd_dashboard/projects/argo_cd_progression/pgbackend' 'Spaces-4'
+  execute_terraform 'project_argo_cd_template' 'argocd_dashboard/projects/argo_cd_template/pgbackend' 'Spaces-4'
 fi
 
 # All done
