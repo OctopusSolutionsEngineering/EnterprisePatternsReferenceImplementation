@@ -725,7 +725,9 @@ then
   execute_terraform 'lifecycle_simple_dev_test_prod' 'shared/lifecycles/simple_dev_test_prod/pgbackend' 'Spaces-4'
   execute_terraform 'single_phase_simple_dev_test_prod' 'argocd_dashboard/lifecycles/single_phase_dev_test_prod/pgbackend' 'Spaces-4'
   execute_terraform 'project_group_argo_cd' 'argocd_dashboard/project_group/octopub/pgbackend' 'Spaces-4'
-  execute_terraform 'project_argo_cd' 'argocd_dashboard/projects/octopub/pgbackend' 'Spaces-4'
+  execute_terraform 'project_argo_cd_dashboard' 'argocd_dashboard/projects/argo_cd_dashboard/pgbackend' 'Spaces-4'
+  execute_terraform 'project_argo_cd_progression' 'argocd_dashboard/projects/argo_cd_progression/pgbackend' 'Spaces-4'
+  execute_terraform 'project_argo_cd_template' 'argocd_dashboard/projects/argo_cd_template/pgbackend' 'Spaces-4'
 
   # Get the Argo CD password
   PASSWORD=$(KUBECONFIG=/tmp/octoconfig.yml argocd admin initial-password -n argocd)
