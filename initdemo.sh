@@ -813,6 +813,9 @@ then
   # Remove trailing whitespace (https://stackoverflow.com/a/3352015/8246539)
   ARGO_PASSWORD="${ARGO_PASSWORD%"${ARGO_PASSWORD##*[![:space:]]}"}"
 
+  # Create a space to monitor and manage the Octppub deployment in ArgoCD
+  execute_terraform_with_spacename 'spaces' 'shared/spaces/pgbackend' 'ArgoCD'
+
   # Create the ArgoCD template and push it to Octopus
   pushd argocd/template || exit 1
   zip -r argocd_template.1.0.0.zip .
@@ -826,9 +829,6 @@ then
   octo push --server=http://localhost:18080 --apiKey=API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA -space=Spaces-4 --package=argocd_octopus_projects.1.0.0.zip --replace-existing
   rm argocd_octopus_projects.1.0.0.zip
   popd || exit 1
-
-  # Create a space to monitor and manage the Octppub deployment in ArgoCD
-  execute_terraform_with_spacename 'spaces' 'shared/spaces/pgbackend' 'ArgoCD'
 
   # Create the library variable set with the argocd token
   docker compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE lib_var_argo"'
