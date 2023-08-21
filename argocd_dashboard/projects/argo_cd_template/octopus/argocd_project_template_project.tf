@@ -159,7 +159,7 @@ resource "octopusdeploy_runbook_process" "runbook_process_create_project" {
         "Octopus.Action.AutoRetry.MaximumCount"                 = "3"
         "Octopus.Action.Terraform.GoogleCloudAccount"           = "False"
         "Octopus.Action.Terraform.TemplateDirectory"            = "argo_cd_dashboard/pgbackend"
-        "Octopus.Action.Terraform.AdditionalActionParams"       = "-var=\"octopus_server=http://octopus:8080\" -var=\"octopus_space_id=#{Octopus.Space.Id}\" -var=\"project_name=#{ArgoCD.Project.Name}\" -var=\"project_description=Dashboard showing the status of ArgoCD deployments\" -var=\"argocd_version_image=\" -var=\"argocd_sbom_version_image=\" -var=\"argocd_application_development=argocd/#{ArgoCD.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}-development\""
+        "Octopus.Action.Terraform.AdditionalActionParams"       = "-var=\"octopus_server=http://octopus:8080\" -var=\"octopus_space_id=#{Octopus.Space.Id}\" -var=\"project_name=#{ArgoCD.Project.Name}\" -var=\"project_description=Dashboard showing the status of ArgoCD deployments\" -var=\"argocd_version_image=\" -var=\"argocd_sbom_version_image=\" -var=\"argocd_application_development=argocd/#{ArgoCD.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}-development\" -var=\"argocd_application_test=argocd/#{ArgoCD.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}-test\" -var=\"argocd_application_production=argocd/#{ArgoCD.Project.Name | ToLower | Replace \"[^a-zA-Z0-9]\" \"_\"}-production\""
         "Octopus.Action.Aws.AssumeRole"                         = "False"
         "Octopus.Action.Aws.Region"                             = ""
         "Octopus.Action.Terraform.AllowPluginDownloads"         = "True"
