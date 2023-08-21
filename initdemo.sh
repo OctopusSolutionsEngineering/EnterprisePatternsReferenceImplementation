@@ -822,6 +822,10 @@ then
     "-var=argocd_token=${TOKEN}"
   popd
 
+  execute_terraform 'mavenfeed' 'shared/feeds/maven/pgbackend' 'Spaces-4'
+  execute_terraform 'environments' 'shared/environments/dev_test_prod/pgbackend' 'Spaces-4'
+  execute_terraform 'admin_environment' 'shared/environments/administration/pgbackend' 'Spaces-4'
+
   # Setup targets
   pushd argocd_dashboard/targets/k8s/pgbackend || exit 1
   terraform init -reconfigure -upgrade
@@ -833,9 +837,6 @@ then
     "-var=k8s_client_cert=${COMBINED_CERT}"
   popd
 
-  execute_terraform 'mavenfeed' 'shared/feeds/maven/pgbackend' 'Spaces-4'
-  execute_terraform 'environments' 'shared/environments/dev_test_prod/pgbackend' 'Spaces-4'
-  execute_terraform 'admin_environment' 'shared/environments/administration/pgbackend' 'Spaces-4'
   execute_terraform 'lifecycle_simple_dev_test_prod' 'shared/lifecycles/simple_dev_test_prod/pgbackend' 'Spaces-4'
   execute_terraform 'single_phase_simple_dev_test_prod' 'argocd_dashboard/lifecycles/single_phase_dev_test_prod/pgbackend' 'Spaces-4'
   execute_terraform 'project_group_argo_cd' 'argocd_dashboard/project_group/octopub/pgbackend' 'Spaces-4'

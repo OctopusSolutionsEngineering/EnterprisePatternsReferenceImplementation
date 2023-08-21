@@ -11,16 +11,16 @@ patches:
       group: argoproj.io
       version: v1alpha1
       kind: Application
-      name: '#{ArgoCD.Project.Name | ToLower | Replace "[^a-zA-Z0-9]" "_"}'
+      name: '#{ArgoCD.Project.Name | ToLower | Replace "[^a-zA-Z0-9]" "-"}'
     patch: |-
       - op: replace
         path: /spec/destination/namespace
-        value: '#{ArgoCD.Project.Name | ToLower | Replace "[^a-zA-Z0-9]" "_"}'-production
+        value: '#{ArgoCD.Project.Name | ToLower | Replace "[^a-zA-Z0-9]" "-"}'-production
   - target:
       group: argoproj.io
       version: v1alpha1
       kind: Application
-      name: '#{ArgoCD.Project.Name | ToLower | Replace "[^a-zA-Z0-9]" "_"}'
+      name: '#{ArgoCD.Project.Name | ToLower | Replace "[^a-zA-Z0-9]" "-"}'
     patch: |-
       - op: replace
         path: /metadata/labels/environment
@@ -29,8 +29,8 @@ patches:
       group: argoproj.io
       version: v1alpha1
       kind: Application
-      name: '#{ArgoCD.Project.Name | ToLower | Replace "[^a-zA-Z0-9]" "_"}'
+      name: '#{ArgoCD.Project.Name | ToLower | Replace "[^a-zA-Z0-9]" "-"}'
     patch: |-
       - op: replace
         path: /metadata/name
-        value: '#{ArgoCD.Project.Name | ToLower | Replace "[^a-zA-Z0-9]" "_"}'-production
+        value: '#{ArgoCD.Project.Name | ToLower | Replace "[^a-zA-Z0-9]" "-"}'-production

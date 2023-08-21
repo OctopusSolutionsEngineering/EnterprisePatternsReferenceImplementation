@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: '#{ArgoCD.Project.Name | ToLower | Replace "[^a-zA-Z0-9]" "_"}'
+  name: '#{ArgoCD.Project.Name | ToLower | Replace "[^a-zA-Z0-9]" "-"}'
   namespace: argocd
 spec:
   source:

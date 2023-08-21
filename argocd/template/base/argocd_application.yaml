@@ -1,7 +1,7 @@
 argocd_application: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: '#{ArgoCD.Project.Name | ToLower | Replace "[^a-zA-Z0-9]" "_"}'
+  name: '#{ArgoCD.Project.Name | ToLower | Replace "[^a-zA-Z0-9]" "-"}'
   namespace: argocd
   labels:
     environment: unknown
@@ -14,9 +14,9 @@ spec:
     repoURL: oci://registry-1.docker.io/bitnamicharts
     targetRevision: 15.1.4
     helm:
-      releaseName: '#{ArgoCD.Project.Name | ToLower | Replace "[^a-zA-Z0-9]" "_"}'
+      releaseName: '#{ArgoCD.Project.Name | ToLower | Replace "[^a-zA-Z0-9]" "-"}'
   destination:
     server: "https://kubernetes.default.svc"
-    namespace: '#{ArgoCD.Project.Name | ToLower | Replace "[^a-zA-Z0-9]" "_"}'
+    namespace: '#{ArgoCD.Project.Name | ToLower | Replace "[^a-zA-Z0-9]" "-"}'
   syncPolicy:
     automated: {}
