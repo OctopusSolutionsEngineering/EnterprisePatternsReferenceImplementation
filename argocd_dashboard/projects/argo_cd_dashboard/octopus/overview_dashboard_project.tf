@@ -26,6 +26,10 @@ variable "argocd_sbom_version_image" {
   type    = string
 }
 
+variable "argocd_sbom_package_id" {
+  type    = string
+}
+
 resource "octopusdeploy_variable" "argocd_overview_dashboard_dev_env_metadata" {
   owner_id    = octopusdeploy_project.project_overview_dashboard.id
   type        = "String"
@@ -183,7 +187,7 @@ resource "octopusdeploy_deployment_process" "deployment_process_project_octopub"
 
       package {
         name                      = "sbom"
-        package_id                = "com.octopus:octopub-frontend-sbom"
+        package_id                = var.argocd_sbom_package_id
         acquisition_location      = "Server"
         extract_during_deployment = false
         feed_id                   = data.octopusdeploy_feeds.maven.feeds[0].id

@@ -45,6 +45,11 @@ variable "argocd_sbom_version_image" {
   type    = string
 }
 
+variable "argocd_sbom_package_id" {
+  default = "com.octopus:octopub-frontend-sbom"
+  type    = string
+}
+
 variable "octopus_server" {
   type        = string
   nullable    = false
