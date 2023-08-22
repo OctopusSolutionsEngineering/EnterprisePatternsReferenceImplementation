@@ -524,7 +524,7 @@ execute_terraform_with_project () {
 
     terraform init -reconfigure -upgrade
     terraform workspace new "${SPACE_ID}_${WORKSPACE}" || echo "Workspace already exists"
-    terraform workspace select "${SPACE_ID}-${WORKSPACE}"
+    terraform workspace select "${SPACE_ID}_${WORKSPACE}"
 
     # Sometimes the TF provider fails, especially with scoped variables. A retry usually fixes it.
     max_retry=2
