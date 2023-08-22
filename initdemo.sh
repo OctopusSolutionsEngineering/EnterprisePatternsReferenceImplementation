@@ -455,6 +455,7 @@ execute_terraform () {
 
   terraform init -reconfigure -upgrade
   terraform workspace new "${SPACE_ID}" || echo "Workspace already exists"
+  terraform workspace select "${SPACE_ID}"
 
   # Sometimes the TF provider fails, especially with scoped variables. A retry usually fixes it.
   max_retry=2
@@ -485,6 +486,7 @@ execute_terraform_with_workspace () {
 
   terraform init -reconfigure -upgrade
   terraform workspace new "${SPACE_ID}-${WORKSPACE}" || echo "Workspace already exists"
+  terraform workspace select "${SPACE_ID}-${WORKSPACE}"
 
   # Sometimes the TF provider fails, especially with scoped variables. A retry usually fixes it.
   max_retry=2
@@ -522,6 +524,7 @@ execute_terraform_with_project () {
 
     terraform init -reconfigure -upgrade
     terraform workspace new "${SPACE_ID}_${WORKSPACE}" || echo "Workspace already exists"
+    terraform workspace select "${SPACE_ID}-${WORKSPACE}"
 
     # Sometimes the TF provider fails, especially with scoped variables. A retry usually fixes it.
     max_retry=2
@@ -560,6 +563,7 @@ execute_terraform_with_spacename () {
 
   terraform init -reconfigure -upgrade
   terraform workspace new "${SPACENAME//[^[:alnum:]]/_}" || echo "Workspace already exists"
+  terraform workspace select "${SPACENAME//[^[:alnum:]]/_}"
 
   # Sometimes the TF provider fails, especially with scoped variables. A retry usually fixes it.
   max_retry=2
@@ -697,6 +701,7 @@ docker compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON
 pushd shared/targets/k8s/pgbackend || exit 1
 terraform init -reconfigure -upgrade
 terraform workspace new "Spaces-1" || echo "Workspace already exists"
+terraform workspace select "Spaces-1"
 terraform apply \
   -auto-approve \
   -var=octopus_space_id=Spaces-1 \
@@ -709,6 +714,7 @@ docker compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON
 pushd management_instance/tenants/regional_tenants/pgbackend || exit 1
 terraform init -reconfigure -upgrade
 terraform workspace new "Spaces-1" || echo "Workspace already exists"
+terraform workspace select "Spaces-1"
 terraform apply -auto-approve \
   "-var=octopus_space_id=Spaces-1" \
   "-var=america_k8s_cert=${COMBINED_CERT}" \
@@ -845,6 +851,7 @@ then
   pushd argocd_dashboard/variables/argo/pgbackend || exit 1
   terraform init -reconfigure -upgrade
   terraform workspace new "Spaces-4" || echo "Workspace already exists"
+  terraform workspace select "Spaces-4"
   terraform apply \
     -auto-approve \
     -var=octopus_space_id=Spaces-4 \
@@ -857,6 +864,7 @@ then
 
   # Setup targets
   terraform workspace new "Spaces-4" || echo "Workspace already exists"
+  terraform workspace select "Spaces-4"
   pushd argocd_dashboard/targets/k8s/pgbackend || exit 1
   terraform init -reconfigure -upgrade
   terraform apply \
