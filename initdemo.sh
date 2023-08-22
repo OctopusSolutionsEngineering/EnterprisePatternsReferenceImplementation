@@ -863,10 +863,10 @@ then
   execute_terraform 'admin_environment' 'shared/environments/administration/pgbackend' 'Spaces-4'
 
   # Setup targets
+  terraform init -reconfigure -upgrade
   terraform workspace new "Spaces-4" || echo "Workspace already exists"
   terraform workspace select "Spaces-4"
   pushd argocd_dashboard/targets/k8s/pgbackend || exit 1
-  terraform init -reconfigure -upgrade
   terraform apply \
     -auto-approve \
     -var=octopus_space_id=Spaces-4 \
