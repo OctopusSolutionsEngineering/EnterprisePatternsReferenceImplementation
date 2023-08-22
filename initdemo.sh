@@ -430,7 +430,7 @@ docker compose -f docker/compose.yml exec octopus sh -c 'curl -sL https://aka.ms
 # Use a specific versions that still supports the --short argument
 docker compose -f docker/compose.yml exec octopus sh -c 'if [ ! -f /usr/local/bin/kubectl ]; then curl -LO "https://dl.k8s.io/release/v1.27.0/bin/linux/amd64/kubectl"; install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl; fi'
 # Download all the terraform provider versions. This removes a point of failure during demos, as well as speeding complex deployments up.
-docker compose -f docker/compose.yml exec octopus sh -c 'RELEASES=$(curl --silent https://api.github.com/repos/OctopusDeployLabs/terraform-provider-octopusdeploy/releases | jq -r ".[:5] | .name[1:]"); echo $RELEASES; for RELEASE in ${RELEASES}; do echo "Downloading https://github.com/OctopusDeployLabs/terraform-provider-octopusdeploy/releases/download/v${RELEASE}/terraform-provider-octopusdeploy_${RELEASE}_linux_amd64.zip"; mkdir -p "/terraformcache/registry.terraform.io/octopusdeploylabs/octopusdeploy/${RELEASE}/linux_amd64"; cd "/terraformcache/registry.terraform.io/octopusdeploylabs/octopusdeploy/${RELEASE}/linux_amd64"; if [ ! -f "terraform-provider-octopusdeploy_v${RELEASE}" ]; then curl --silent -L -o "terraform-provider-octopusdeploy_${RELEASE}_linux_amd64.zip" "https://github.com/OctopusDeployLabs/terraform-provider-octopusdeploy/releases/download/v${RELEASE}/terraform-provider-octopusdeploy_${RELEASE}_linux_amd64.zip"; unzip "terraform-provider-octopusdeploy_${RELEASE}_linux_amd64.zip"; rm "terraform-provider-octopusdeploy_${RELEASE}_linux_amd64.zip"; fi; done'
+docker compose -f docker/compose.yml exec octopus sh -c 'RELEASES=$(curl --silent https://api.github.com/repos/OctopusDeployLabs/terraform-provider-octopusdeploy/releases | jq -r ".[0:3] | .[].name[1:]"); echo $RELEASES; for RELEASE in ${RELEASES}; do echo "Downloading https://github.com/OctopusDeployLabs/terraform-provider-octopusdeploy/releases/download/v${RELEASE}/terraform-provider-octopusdeploy_${RELEASE}_linux_amd64.zip"; mkdir -p "/terraformcache/registry.terraform.io/octopusdeploylabs/octopusdeploy/${RELEASE}/linux_amd64"; cd "/terraformcache/registry.terraform.io/octopusdeploylabs/octopusdeploy/${RELEASE}/linux_amd64"; if [ ! -f "terraform-provider-octopusdeploy_v${RELEASE}" ]; then curl --silent -L -o "terraform-provider-octopusdeploy_${RELEASE}_linux_amd64.zip" "https://github.com/OctopusDeployLabs/terraform-provider-octopusdeploy/releases/download/v${RELEASE}/terraform-provider-octopusdeploy_${RELEASE}_linux_amd64.zip"; unzip "terraform-provider-octopusdeploy_${RELEASE}_linux_amd64.zip"; rm "terraform-provider-octopusdeploy_${RELEASE}_linux_amd64.zip"; fi; done'
 # https://developer.hashicorp.com/terraform/cli/config/config-file#explicit-installation-method-configuration
 docker compose -f docker/compose.yml exec octopus sh -c 'echo "provider_installation {\nfilesystem_mirror {\npath = \"/terraformcache\"\ninclude = [\"registry.terraform.io/octopusdeploylabs/octopusdeploy\"]\n}\n}" > ~/.terraformrc'
 docker compose -f docker/compose.yml exec octopus sh -c 'curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64; install -m 555 argocd-linux-amd64 /usr/local/bin/argocd; rm argocd-linux-amd64'
@@ -452,8 +452,9 @@ execute_terraform () {
 
   docker compose -f docker/compose.yml exec terraformdb sh -c "/usr/bin/psql -v ON_ERROR_STOP=1 --username \"\$POSTGRES_USER\" -c \"CREATE DATABASE $PG_DATABASE\""
   pushd "${TF_MODULE_PATH}" || exit 1
-  terraform workspace select -or-create "${SPACE_ID}"
+
   terraform init -reconfigure -upgrade
+  terraform workspace new "${SPACE_ID}" || echo "Workspace already exists"
 
   # Sometimes the TF provider fails, especially with scoped variables. A retry usually fixes it.
   max_retry=2
@@ -472,15 +473,18 @@ execute_terraform () {
 }
 
 execute_terraform_with_workspace () {
+  ALL_ARGS=("$@")
   PG_DATABASE="${1}"
   WORKSPACE="${2}"
   TF_MODULE_PATH="${3}"
   SPACE_ID="${4}"
+  OTHER_ARGS=("${ALL_ARGS[@]:4}")
 
   docker compose -f docker/compose.yml exec terraformdb sh -c "/usr/bin/psql -v ON_ERROR_STOP=1 --username \"\$POSTGRES_USER\" -c \"CREATE DATABASE $PG_DATABASE\""
   pushd "${TF_MODULE_PATH}" || exit 1
-  terraform workspace select -or-create "${SPACE_ID}-${WORKSPACE}"
+
   terraform init -reconfigure -upgrade
+  terraform workspace new "${SPACE_ID}-${WORKSPACE}" || echo "Workspace already exists"
 
   # Sometimes the TF provider fails, especially with scoped variables. A retry usually fixes it.
   max_retry=2
@@ -495,7 +499,7 @@ execute_terraform_with_workspace () {
     # in which case the octopus_server is http://localhost:18080, or inside Octopus, in which case
     # the step deploying this module will set octopus_server to http://octopus:8080.
     # Exposing the octopus_server variable is unique to modules applied with execute_terraform_with_workspace.
-    terraform apply -auto-approve "-var=octopus_space_id=${SPACE_ID}" "-var=octopus_server=http://localhost:18080"
+    terraform apply -auto-approve "-var=octopus_space_id=${SPACE_ID}" "-var=octopus_server=http://localhost:18080" "${OTHER_ARGS[@]}"
     exit_code=$?
   done
 
@@ -516,8 +520,8 @@ execute_terraform_with_project () {
     docker compose -f docker/compose.yml exec terraformdb sh -c "/usr/bin/psql -v ON_ERROR_STOP=1 --username \"\$POSTGRES_USER\" -c \"CREATE DATABASE $PG_DATABASE\""
     pushd "${TF_MODULE_PATH}" || exit 1
 
-    terraform workspace select -or-create "${SPACE_ID}_${WORKSPACE}"
     terraform init -reconfigure -upgrade
+    terraform workspace new "${SPACE_ID}_${WORKSPACE}" || echo "Workspace already exists"
 
     # Sometimes the TF provider fails, especially with scoped variables. A retry usually fixes it.
     max_retry=2
@@ -554,9 +558,8 @@ execute_terraform_with_spacename () {
   docker compose -f docker/compose.yml exec terraformdb sh -c "/usr/bin/psql -v ON_ERROR_STOP=1 --username \"\$POSTGRES_USER\" -c \"CREATE DATABASE $PG_DATABASE\""
   pushd "${TF_MODULE_PATH}" || exit 1
 
-
-  terraform workspace select -or-create "${SPACENAME//[^[:alnum:]]/_}"
   terraform init -reconfigure -upgrade
+  terraform workspace new "${SPACENAME//[^[:alnum:]]/_}" || echo "Workspace already exists"
 
   # Sometimes the TF provider fails, especially with scoped variables. A retry usually fixes it.
   max_retry=2
@@ -692,8 +695,8 @@ execute_terraform 'project_pr_checks' 'management_instance/projects/pr_checks/pg
 # Setup targets
 docker compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE target_k8s"'
 pushd shared/targets/k8s/pgbackend || exit 1
-terraform workspace select -or-create "Spaces-1"
 terraform init -reconfigure -upgrade
+terraform workspace new "Spaces-1" || echo "Workspace already exists"
 terraform apply \
   -auto-approve \
   -var=octopus_space_id=Spaces-1 \
@@ -704,8 +707,8 @@ popd
 # Add the tenants
 docker compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE tenants_region"'
 pushd management_instance/tenants/regional_tenants/pgbackend || exit 1
-terraform workspace select -or-create "Spaces-1"
 terraform init -reconfigure -upgrade
+terraform workspace new "Spaces-1" || echo "Workspace already exists"
 terraform apply -auto-approve \
   "-var=octopus_space_id=Spaces-1" \
   "-var=america_k8s_cert=${COMBINED_CERT}" \
@@ -840,8 +843,8 @@ then
   # Create the library variable set with the argocd token
   docker compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE lib_var_argo"'
   pushd argocd_dashboard/variables/argo/pgbackend || exit 1
-  terraform workspace select -or-create "Spaces-4"
   terraform init -reconfigure -upgrade
+  terraform workspace new "Spaces-4" || echo "Workspace already exists"
   terraform apply \
     -auto-approve \
     -var=octopus_space_id=Spaces-4 \
@@ -853,8 +856,8 @@ then
   execute_terraform 'admin_environment' 'shared/environments/administration/pgbackend' 'Spaces-4'
 
   # Setup targets
+  terraform workspace new "Spaces-4" || echo "Workspace already exists"
   pushd argocd_dashboard/targets/k8s/pgbackend || exit 1
-  terraform workspace select -or-create "Spaces-4"
   terraform init -reconfigure -upgrade
   terraform apply \
     -auto-approve \
@@ -866,7 +869,8 @@ then
   execute_terraform 'lifecycle_simple_dev_test_prod' 'shared/lifecycles/simple_dev_test_prod/pgbackend' 'Spaces-4'
   execute_terraform 'single_phase_simple_dev_test_prod' 'argocd_dashboard/lifecycles/single_phase_dev_test_prod/pgbackend' 'Spaces-4'
   execute_terraform 'project_group_argo_cd' 'argocd_dashboard/project_group/octopub/pgbackend' 'Spaces-4'
-  execute_terraform_with_workspace 'project_argo_cd_dashboard' 'initial_project' 'argocd_dashboard/projects/argo_cd_dashboard/pgbackend' 'Spaces-4'
+  execute_terraform_with_workspace 'project_argo_cd_dashboard' 'initial_project' 'argocd_dashboard/projects/argo_cd_dashboard/pgbackend' 'Spaces-4' '-var=project_name=Overview: Octopus Fontend' '-var=project_description=This project is used to manage the deployment of the Octopub Frontend via ArgoCD.' '-var=argocd_application_development=argocd/octopub-frontend-development' '-var=argocd_application_test=argocd/octopub-frontend-test' '-var=argocd_application_production=octopub-frontend-production' '-var=argocd_version_image=octopussamples/octopub-frontend' '-var=argocd_sbom_version_image=octopussamples/octopub-frontend'
+  execute_terraform_with_workspace 'project_argo_cd_dashboard' 'initial_project' 'argocd_dashboard/projects/argo_cd_dashboard/pgbackend' 'Spaces-4' '-var=project_name=Overview: Octopus Products' '-var=project_description=This project is used to manage the deployment of the Octopub Products service via ArgoCD.' '-var=argocd_application_development=argocd/octopub-products-development' '-var=argocd_application_test=argocd/octopub-products-test' '-var=argocd_application_production=octopub-products-production' '-var=argocd_version_image=octopussamples/octopub-products-microservice' '-var=argocd_sbom_version_image=octopussamples/octopub-products-microservice'
   execute_terraform_with_workspace 'project_argo_cd_progression' 'initial_project' 'argocd_dashboard/projects/argo_cd_progression/pgbackend' 'Spaces-4'
   execute_terraform 'project_argo_cd_template' 'argocd_dashboard/projects/argo_cd_template/pgbackend' 'Spaces-4'
 fi
