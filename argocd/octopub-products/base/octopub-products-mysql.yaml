@@ -6,6 +6,8 @@ metadata:
   namespace: argocd
   labels:
     environment: unknown
+  annotations:
+    notifications.argoproj.io/subscribe.on-deployed.octopus: ""
 spec:
   project: default
   source:
