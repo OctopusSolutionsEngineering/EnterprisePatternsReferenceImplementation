@@ -86,4 +86,5 @@ module "octopus" {
   argocd_application_production  = var.argocd_application_production
   argocd_version_image           = var.argocd_version_image
   argocd_sbom_version_image      = var.argocd_sbom_version_image
+  argocd_sbom_package_id         = var.argocd_sbom_package_id
 }
