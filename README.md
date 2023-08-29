@@ -53,7 +53,7 @@ These are installed in Ubuntu with the following script:
 
 ```
 apt-get update
-apt-get install -y openssl jq gnupg curl ca-certificates apt-transport-https wget
+apt-get install -y openssl jq gnupg curl ca-certificates apt-transport-https wget zip unzip
 wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor > /usr/share/keyrings/hashicorp-archive-keyring.gpg
 echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" > /etc/apt/sources.list.d/hashicorp.list
 apt update && apt-get install -y terraform
@@ -62,6 +62,9 @@ if [ ! -f /usr/local/bin/minikube ]; then curl -LO https://storage.googleapis.co
 curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
 install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
 rm argocd-linux-amd64
+curl -L -o octo.tar.gz https://github.com/OctopusDeploy/OctopusCLI/releases/download/v9.1.7/OctopusTools.9.1.7.linux-x64.tar.gz
+tar xzf octo.tar.gz
+mv octo /usr/local/bin/octo
 ```
 
 ## ARM macOS Prerequisites
