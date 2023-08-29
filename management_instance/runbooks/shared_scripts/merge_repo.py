@@ -204,13 +204,13 @@ def merge_changes(branch, new_repo, template_repo_name_url, new_repo_url):
             _, _, push_result = execute(['git', 'push', 'origin'], cwd=new_repo)
             if push_result == 0:
                 printhighlight('Changes merged successfully from upstream repo ' + template_repo_name_url
-                      + ' into the downstream repo ' + new_repo_url)
+                               + ' into the downstream repo ' + new_repo_url)
             else:
                 print('The git push operation failed. Check the verbose logs for more details.')
                 sys.exit(1)
         else:
             printhighlight('No changes found in the upstream repo ' + template_repo_name_url +
-                  ' that do not exist in the downstream repo ' + new_repo_url)
+                           ' that do not exist in the downstream repo ' + new_repo_url)
     else:
         print('Template repo branch could not be automatically merged into project branch. ' +
               'This merge will need to be resolved manually.')
