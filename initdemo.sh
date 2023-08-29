@@ -201,7 +201,7 @@ fi
 docker exec -it gitea su git bash -c "gitea admin user create --username editor --password Password01! --email editor@example.com --must-change-password=false"
 
 # Create the orgs.
-if ! curl -u "octopus:Password01!" http://localhost:3000/api/v1/admin/users/octopus/orgs --fail --silent
+if ! curl -u "octopus:Password01!" http://localhost:3000/api/v1/orgs/octopuscac/teams --fail --silent
 then
   max_retry=6
   counter=0
