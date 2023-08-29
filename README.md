@@ -64,7 +64,7 @@ install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
 rm argocd-linux-amd64
 curl -L -o octo.tar.gz https://github.com/OctopusDeploy/OctopusCLI/releases/download/v9.1.7/OctopusTools.9.1.7.linux-x64.tar.gz
 tar xzf octo.tar.gz
-sudo mv octo /usr/local/bin/octo
+mv octo /usr/local/bin/octo
 ```
 
 ## ARM macOS Prerequisites
