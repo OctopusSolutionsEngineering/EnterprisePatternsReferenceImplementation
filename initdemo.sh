@@ -217,7 +217,7 @@ then
     --fail
   do
      sleep 10
-     [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
+     [[ counter -eq $max_retry ]] && echo "Failed to create gitea org!" && exit 1
      echo "Trying again. Try #$counter"
      ((counter++))
   done
@@ -271,7 +271,7 @@ then
     --fail
   do
      sleep 10
-     [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
+     [[ counter -eq $max_retry ]] && echo "Failed to add users to Gitea org!" && exit 1
      echo "Trying again. Try #$counter"
      ((counter++))
   done
