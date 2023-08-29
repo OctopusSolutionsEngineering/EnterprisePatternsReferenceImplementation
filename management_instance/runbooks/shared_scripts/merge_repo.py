@@ -11,6 +11,10 @@ if "printverbose" not in globals():
     def printverbose(msg):
         print(msg)
 
+if "printhighlight" not in globals():
+    def printhighlight(msg):
+        print(msg)
+
 # If this script is not being run as part of an Octopus step, return variables from environment variables.
 # Periods are replaced with underscores, and the variable name is converted to uppercase
 if "get_octopusvariable" not in globals():
@@ -209,21 +213,20 @@ def merge_changes(branch, new_repo, template_repo_name_url, new_repo_url):
                   ' that do not exist in the downstream repo ' + new_repo_url)
     else:
         print('Template repo branch could not be automatically merged into project branch. ' +
-              'This merge will need to be resolved manually. ' +
-              'See the verbose logs for instructions on resolving the conflict.')
-        printverbose('To resolve the conflicts, run the following commands:')
-        printverbose('mkdir cac')
-        printverbose('cd cac')
-        printverbose('git clone ' + new_repo_url + ' .')
-        printverbose('git remote add upstream ' + template_repo_name_url)
-        printverbose('git fetch --all')
-        printverbose('git checkout -b upstream-' + branch + ' upstream/' + branch)
+              'This merge will need to be resolved manually.')
+        printhighlight('To resolve the conflicts, run the following commands:')
+        printhighlight('mkdir cac')
+        printhighlight('cd cac')
+        printhighlight('git clone ' + new_repo_url + ' .')
+        printhighlight('git remote add upstream ' + template_repo_name_url)
+        printhighlight('git fetch --all')
+        printhighlight('git checkout -b upstream-' + branch + ' upstream/' + branch)
         if branch != 'master' and branch != 'main':
-            printverbose('git checkout -b ' + branch + ' origin/' + branch)
+            printhighlight('git checkout -b ' + branch + ' origin/' + branch)
         else:
-            printverbose('git checkout ' + branch)
-        printverbose('git merge-base ' + branch + ' upstream-' + branch)
-        printverbose('git merge --no-commit --no-ff upstream-' + branch)
+            printhighlight('git checkout ' + branch)
+        printhighlight('git merge-base ' + branch + ' upstream-' + branch)
+        printhighlight('git merge --no-commit --no-ff upstream-' + branch)
         sys.exit(1)
 
 
