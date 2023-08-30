@@ -88,6 +88,8 @@ print("Verbose logs contain instructions for resolving merge conflicts.")
 workspaces, _, _ = execute(['terraform', 'workspace', 'list'])
 workspaces = workspaces.replace('*', '').split('\n')
 
+downstream_count = 0
+
 for workspace in workspaces:
     trimmed_workspace = workspace.strip()
 
@@ -115,6 +117,8 @@ for workspace in workspaces:
         name = resource.get('values', {}).get('name', None)
 
         if url is not None:
+            downstream_count += 1
+
             os.mkdir(trimmed_workspace)
 
             execute(['git', 'clone', url, trimmed_workspace])
@@ -152,3 +156,7 @@ for workspace in workspaces:
                 printverbose('git merge --no-commit --no-ff upstream-' + branch)
             else:
                 print(str(space_name or space_id or '') + ' "' + str(name or '') + '" ' + str(url or '') + " ▶")
+
+if downstream_count != 0:
+    print('Run the "Merge All Downstream Projects" runbook to merge changes in the upstream repo ' +
+          'to the downstream repos that do not have a conflict.')
