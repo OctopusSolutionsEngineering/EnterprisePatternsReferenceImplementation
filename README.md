@@ -121,3 +121,7 @@ sudo sysctl fs.inotify.max_user_watches=524288
 sudo sysctl -p
 ```
 [This page](https://www.suse.com/support/kb/doc/?id=000020048) has details on setting these values permanently.
+
+Q. Running `KUBECONFIG=/tmp/octoconfig.yml minikube tunnel` in WSL says `sudo permissions will be asked for it`. Where is the `sudo` prompt?
+
+A. It appears that you can ignore these messages. ArgoCD may take a while to start (so you may need to refresh the page a few times), but will eventually be available on the `EXTERNAL-IP` shown by the command `KUBECONFIG=/tmp/octoconfig.yml kubectl get serviceargocd-server -n argocd`.
