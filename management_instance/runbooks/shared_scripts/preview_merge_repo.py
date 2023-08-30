@@ -20,6 +20,10 @@ if "printverbose" not in globals():
     def printverbose(msg):
         print(msg)
 
+if "printhighlight" not in globals():
+    def printhighlight(msg):
+        print(msg)
+
 # If this script is not being run as part of an Octopus step, return variables from environment variables.
 # Periods are replaced with underscores, and the variable name is converted to uppercase
 if "get_octopusvariable" not in globals():
@@ -205,6 +209,7 @@ if parser.generate_diff:
         f.write(git_diff_out)
 
     execute(['diff2html', '-F', 'diff.html', '-i', 'file', '--', 'upstream.diff'])
-    createartifact('diff.html', 'diff.html')
+    createartifact('diff.html', 'Git Diff')
+    printhighlight('Run the "Merge from Upstream" runbook to merge the changes shown in the diff into this project\'s repo')
 else:
     print('The upstream repo has changes available to be merged into this project.')
