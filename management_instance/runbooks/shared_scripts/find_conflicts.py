@@ -8,9 +8,14 @@ import subprocess
 if "get_octopusvariable" not in globals():
     def get_octopusvariable(variable):
         return os.environ[re.sub('\\.', '_', variable.upper())]
+
 # If this script is not being run as part of an Octopus step, print directly to std out.
 if "printverbose" not in globals():
     def printverbose(msg):
+        print(msg)
+
+if "printhighlight" not in globals():
+    def printhighlight(msg):
         print(msg)
 
 
