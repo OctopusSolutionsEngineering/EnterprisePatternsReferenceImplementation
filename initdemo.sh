@@ -416,9 +416,14 @@ then
 fi
 
 # Install all the tools we'll need to perform deployments. This means we don't need a separate worker to do deployments,
-# and can do deployments idrectly on the Octopus server.
-docker compose -f docker/compose.yml exec octopus sh -c 'curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && apt-get install -y nodejs'
-docker compose -f docker/compose.yml exec octopus sh -c 'apt-get install -y jq git dnsutils zip gnupg software-properties-common python3 python3-pip'
+# and can do deployments directly on the Octopus server.
+docker compose -f docker/compose.yml exec octopus sh -c 'apt-get update'
+docker compose -f docker/compose.yml exec octopus sh -c 'apt-get install -y ca-certificates curl gnupg jq git dnsutils zip gnupg software-properties-common python3 python3-pip'
+docker compose -f docker/compose.yml exec octopus sh -c 'mkdir -p /etc/apt/keyrings'
+docker compose -f docker/compose.yml exec octopus sh -c 'curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg'
+docker compose -f docker/compose.yml exec octopus sh -c 'echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list'
+docker compose -f docker/compose.yml exec octopus sh -c 'apt-get update'
+docker compose -f docker/compose.yml exec octopus sh -c 'apt-get install nodejs -y'
 docker compose -f docker/compose.yml exec octopus sh -c 'pip install slack_sdk'
 docker compose -f docker/compose.yml exec octopus sh -c 'pip install pycryptodome'
 docker compose -f docker/compose.yml exec octopus sh -c 'apt update --allow-insecure-repositories; apt install -y --no-install-recommends gnupg curl ca-certificates apt-transport-https && curl -sSfL https://apt.octopus.com/public.key | apt-key add - && sh -c "echo deb https://apt.octopus.com/ stable main > /etc/apt/sources.list.d/octopus.com.list" && apt update; apt install -y octopuscli'
