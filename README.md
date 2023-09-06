@@ -46,7 +46,7 @@ You also require these additional dependencies:
 Ubuntu dependencies are installed with the command:
 
 ```
-curl https://raw.githubusercontent.com/OctopusSolutionsEngineering/EnterprisePatternsReferenceImplementation/main/ubuntu-dependencies.sh | sudo bash
+curl --silent https://raw.githubusercontent.com/OctopusSolutionsEngineering/EnterprisePatternsReferenceImplementation/main/ubuntu-dependencies.sh | sudo bash
 ```
 
 ## ARM macOS Prerequisites
