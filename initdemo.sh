@@ -890,7 +890,8 @@ echo "Open Octopus at http://localhost:18080 - username is \"admin\" and passwor
 echo "Open Gitea at http://localhost:3000 - username is \"octopus\" and password is \"Password01!\""
 if [[ "${INSTALL_ARGO}" == "TRUE" ]]
 then
-  echo "Start a minikube tunnel with: KUBECONFIG=/tmp/octoconfig.yml minikube tunnel"
+  echo "Start a minikube tunnel in Linux/macOS with: KUBECONFIG=/tmp/octoconfig.yml minikube tunnel"
+  echo "Start a minikube tunnel in WSL with: MINIKUBE_HOME=\"\$HOME/.minikube\" KUBECONFIG=/tmp/octoconfig.yml sudo --preserve-env=MINIKUBE_HOME --preserve-env=KUBECONFIG minikube tunnel"
   echo "Wait for the Argo CD pods to start. You can see their status with: KUBECONFIG=/tmp/octoconfig.yml kubectl get pods -n argocd"
   echo "Find the Argo CD IP address with: KUBECONFIG=/tmp/octoconfig.yml kubectl get service argocd-server -n argocd"
   echo "Get the initial Argo CD admin password with: KUBECONFIG=/tmp/octoconfig.yml argocd admin initial-password -n argocd"
