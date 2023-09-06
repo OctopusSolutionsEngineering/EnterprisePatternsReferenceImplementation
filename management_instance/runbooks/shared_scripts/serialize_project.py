@@ -103,13 +103,6 @@ if len(get_octopusvariable_quiet('ThisInstance.Api.Key')) == 0:
 
 parser, _ = init_argparse()
 
-print("""============================================================================================================
-Octoterra is an open source tool that serializes an Octopus project to a Terraform module.
-Please note that, as part of the pilot program, octoterra is not covered by existing Octopus support SLAs.
-This tool is also not recommended for production deployments.
-============================================================================================================
-""")
-
 print("Pulling the Docker images")
 execute(['docker', 'pull', 'octopussamples/octoterra'])
 execute(['docker', 'pull', 'octopusdeploy/octo'])
