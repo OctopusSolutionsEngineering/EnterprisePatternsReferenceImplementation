@@ -1,4 +1,11 @@
 #!/bin/bash
+
+# Return the Ubuntu release name in distros like Linux Mint
+if [[ -f /etc/upstream-release/lsb-release ]]
+then
+  export LSB_ETC_LSB_RELEASE=/etc/upstream-release/lsb-release
+fi
+
 apt-get update
 apt-get install -y openssl jq gnupg curl ca-certificates apt-transport-https wget zip unzip
 wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor > /usr/share/keyrings/hashicorp-archive-keyring.gpg
