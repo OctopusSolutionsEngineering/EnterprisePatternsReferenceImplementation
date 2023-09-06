@@ -88,13 +88,20 @@ def init_argparse():
     parser.add_argument('--original-project-name', action='store',
                         default=get_octopusvariable_quiet('Octopus.Project.Name'))
     parser.add_argument('--new-project-name', action='store',
-                        default=get_octopusvariable_quiet('Exported.Project.Name'))
-    parser.add_argument('--github-app-id', action='store', default=get_octopusvariable_quiet('GitHub.App.Id'))
+                        default=get_octopusvariable_quiet('Exported.Project.Name') or get_octopusvariable_quiet(
+                            'ForkGithubRepo.Exported.Project.Name'))
+    parser.add_argument('--github-app-id', action='store',
+                        default=get_octopusvariable_quiet('GitHub.App.Id') or get_octopusvariable_quiet(
+                            'ForkGithubRepo.GitHub.App.Id'))
     parser.add_argument('--github-app-installation-id', action='store',
-                        default=get_octopusvariable_quiet('GitHub.App.InstallationId'))
+                        default=get_octopusvariable_quiet('GitHub.App.InstallationId') or get_octopusvariable_quiet(
+                            'ForkGithubRepo.GitHub.App.InstallationId'))
     parser.add_argument('--github-app-private-key', action='store',
-                        default=get_octopusvariable_quiet('GitHub.App.PrivateKey'))
-    parser.add_argument('--git-organization', action='store', default=get_octopusvariable_quiet('Git.Url.Organization'))
+                        default=get_octopusvariable_quiet('GitHub.App.PrivateKey') or get_octopusvariable_quiet(
+                            'ForkGithubRepo.GitHub.App.PrivateKey'))
+    parser.add_argument('--git-organization', action='store',
+                        default=get_octopusvariable_quiet('Git.Url.Organization') or get_octopusvariable_quiet(
+                            'ForkGithubRepo.Git.Url.Organization'))
     parser.add_argument('--tenant-name', action='store',
                         default=get_octopusvariable_quiet('Octopus.Deployment.Tenant.Name'))
     parser.add_argument('--template-repo-name', action='store',

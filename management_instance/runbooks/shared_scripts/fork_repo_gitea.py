@@ -78,47 +78,47 @@ def init_argparse():
     parser.add_argument('--cac-username',
                         action='store',
                         default=get_octopusvariable_quiet('Git.Credentials.Username') or get_octopusvariable_quiet(
-                            'ForkRepo.Git.Credentials.Username'),
+                            'ForkGiteaRepo.Git.Credentials.Username'),
                         help='The Git username')
     parser.add_argument('--cac-password',
                         action='store',
                         default=get_octopusvariable_quiet('Git.Credentials.Password') or get_octopusvariable_quiet(
-                            'ForkRepo.Git.Credentials.Password'),
+                            'ForkGiteaRepo.Git.Credentials.Password'),
                         help='The Git password')
     parser.add_argument('--git-protocol',
                         action='store',
                         default=get_octopusvariable_quiet('Git.Url.Protocol') or get_octopusvariable_quiet(
-                            'ForkRepo.Git.Url.Protocol'),
+                            'ForkGiteaRepo.Git.Url.Protocol'),
                         help='The Git protocol (http or https)')
     parser.add_argument('--git-host',
                         action='store',
                         default=get_octopusvariable_quiet('Git.Url.Host') or get_octopusvariable_quiet(
-                            'ForkRepo.Git.Url.Host'),
+                            'ForkGiteaRepo.Git.Url.Host'),
                         help='The Git hostname (e.g. github.com or gitlab.com)')
     parser.add_argument('--git-organization',
                         action='store',
                         default=get_octopusvariable_quiet('Git.Url.Organization') or get_octopusvariable_quiet(
-                            'ForkRepo.Git.Url.Organization'),
+                            'ForkGiteaRepo.Git.Url.Organization'),
                         help='The Git organization')
     parser.add_argument('--template-repo',
                         action='store',
                         default=get_octopusvariable_quiet('Git.Url.Template') or get_octopusvariable_quiet(
-                            'ForkRepo.Git.Url.Template'),
+                            'ForkGiteaRepo.Git.Url.Template'),
                         help='The name of the repository holding the upstream template project')
     parser.add_argument('--new-repo',
                         action='store',
                         default=get_octopusvariable_quiet('Git.Url.NewRepo') or get_octopusvariable_quiet(
-                            'ForkRepo.Git.Url.NewRepo'),
+                            'ForkGiteaRepo.Git.Url.NewRepo'),
                         help='The name of the repository holding the new downstream template project')
     parser.add_argument('--new-project-name',
                         action='store',
                         default=get_octopusvariable_quiet('Exported.Project.Name') or get_octopusvariable_quiet(
-                            'ForkRepo.Exported.Project.Name'),
+                            'ForkGiteaRepo.Exported.Project.Name'),
                         help='The name of the new project. This name is combined with the tenant to produce the new repo name. This value is ignored if --new-repo is supplied.')
     parser.add_argument('--mainline-branch',
                         action='store',
                         default=get_octopusvariable_quiet('Git.Branch.MainLine') or get_octopusvariable_quiet(
-                            'ForkRepo.Git.Branch.MainLine'),
+                            'ForkGiteaRepo.Git.Branch.MainLine'),
                         help='The branch name to use for the fork. Defaults to "main".')
 
     return parser.parse_known_args()

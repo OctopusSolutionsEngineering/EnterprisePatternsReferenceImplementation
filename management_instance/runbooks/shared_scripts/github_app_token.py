@@ -44,13 +44,16 @@ def init_argparse():
     )
     parser.add_argument('--github-app-id',
                         action='store',
-                        default=get_octopusvariable_quiet('GitHub.App.Id'))
+                        default=get_octopusvariable_quiet('GitHub.App.Id') or get_octopusvariable_quiet(
+                            'GitHubAppToken.GitHub.App.Id'))
     parser.add_argument('--github-app-installation-id',
                         action='store',
-                        default=get_octopusvariable_quiet('GitHub.App.InstallationId'))
+                        default=get_octopusvariable_quiet('GitHub.App.InstallationId') or get_octopusvariable_quiet(
+                            'GitHubAppToken.GitHub.App.InstallationId'))
     parser.add_argument('--github-app-private-key',
                         action='store',
-                        default=get_octopusvariable_quiet('GitHub.App.PrivateKey'))
+                        default=get_octopusvariable_quiet('GitHub.App.PrivateKey') or get_octopusvariable_quiet(
+                            'GitHubAppToken.GitHub.App.PrivateKey'))
 
     return parser.parse_known_args()
 

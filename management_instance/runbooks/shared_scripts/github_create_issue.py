@@ -85,15 +85,27 @@ def init_argparse():
         usage='%(prog)s [OPTION] [FILE]...',
         description='Create a GitHub issue'
     )
-    parser.add_argument('--github-app-id', action='store', default=get_octopusvariable_quiet('GitHub.App.Id'))
+    parser.add_argument('--github-app-id', action='store',
+                        default=get_octopusvariable_quiet('GitHub.App.Id') or get_octopusvariable_quiet(
+                            'GithubIssue.GitHub.App.Id'))
     parser.add_argument('--github-app-installation-id', action='store',
-                        default=get_octopusvariable_quiet('GitHub.App.InstallationId'))
+                        default=get_octopusvariable_quiet('GitHub.App.InstallationId') or get_octopusvariable_quiet(
+                            'GithubIssue.GitHub.App.InstallationId'))
     parser.add_argument('--github-app-private-key', action='store',
-                        default=get_octopusvariable_quiet('GitHub.App.PrivateKey'))
-    parser.add_argument('--git-organization', action='store', default=get_octopusvariable_quiet('Git.Url.Organization'))
-    parser.add_argument('--git-repo', action='store')
-    parser.add_argument('--issue-title', action='store')
-    parser.add_argument('--issue-body', action='store')
+                        default=get_octopusvariable_quiet('GitHub.App.PrivateKey') or get_octopusvariable_quiet(
+                            'GithubIssue.GitHub.App.PrivateKey'))
+    parser.add_argument('--git-organization', action='store',
+                        default=get_octopusvariable_quiet('Git.Url.Organization') or get_octopusvariable_quiet(
+                            'GithubIssue.Git.Url.Organization'))
+    parser.add_argument('--git-repo', action='store',
+                        default=get_octopusvariable_quiet('Git.Url.Repo') or get_octopusvariable_quiet(
+                            'GithubIssue.Git.Url.Repo'))
+    parser.add_argument('--issue-title', action='store',
+                        default=get_octopusvariable_quiet('GitHub.Issue.Title') or get_octopusvariable_quiet(
+                            'GithubIssue.GitHub.Issue.Title'))
+    parser.add_argument('--issue-body', action='store',
+                        default=get_octopusvariable_quiet('GitHub.Issue.Body') or get_octopusvariable_quiet(
+                            'GithubIssue.GitHub.Issue.Body'))
     return parser.parse_known_args()
 
 
