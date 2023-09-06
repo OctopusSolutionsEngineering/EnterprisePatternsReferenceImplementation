@@ -382,7 +382,7 @@ EOT
       worker_pool_id                     = data.octopusdeploy_worker_pools.workerpool_default.worker_pools[0].id
       properties                         = {
         "Octopus.Action.Script.Syntax"     = "Python"
-        "Octopus.Action.Script.ScriptBody" = file("../../shared_scripts/fork_repo.py")
+        "Octopus.Action.Script.ScriptBody" = file("../../shared_scripts/fork_repo_gitea.py")
         "Octopus.Action.Script.ScriptSource" = "Inline"
       }
       environments          = []
