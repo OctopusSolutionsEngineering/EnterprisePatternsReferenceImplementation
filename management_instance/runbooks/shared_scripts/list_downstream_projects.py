@@ -2,6 +2,7 @@ import json
 import re
 import subprocess
 import os
+import argparse
 
 # If this script is not being run as part of an Octopus step, return variables from environment variables.
 # Periods are replaced with underscores, and the variable name is converted to uppercase
@@ -22,6 +23,18 @@ def printverbose_noansi(output):
     """
     output_no_ansi = re.sub('\x1b\[[0-9;]*m', '', output)
     printverbose(output_no_ansi)
+
+
+def get_octopusvariable_quiet(variable):
+    """
+    Gets an octopus variable, or an empty string if it does not exist.
+    :param variable: The variable name
+    :return: The variable value, or an empty string if the variable does not exist
+    """
+    try:
+        return get_octopusvariable(variable)
+    except:
+        return ''
 
 
 def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose_noansi):
@@ -48,21 +61,77 @@ def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose
     return stdout, stderr, retcode
 
 
-backend = re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable('Octopus.Project.Name').lower())
+def init_argparse():
+    """
+    init_argparse does triple duty. It supports running the script as a regular CLI command, supports running the
+    script in the context of a plain script step, and supports the script when embedded in a step template. This is
+    why the values of all arguments are sourced from Octopus variables, and why we source from two styles of variables:
+    regular project variables and prefixed step template variables.
+    """
+    parser = argparse.ArgumentParser(
+        usage='%(prog)s [OPTION] [FILE]...',
+        description='Find conflicts between Git repos'
+    )
+    parser.add_argument('--terraform-backend-type',
+                        action='store',
+                        default=get_octopusvariable_quiet('Terraform.Backend.Type') or get_octopusvariable_quiet(
+                            'ListDownstream.Terraform.Backend.Type'),
+                        help='The Terraform backend holding the state of downstream projects')
+    parser.add_argument('--terraform-backend-init-1',
+                        action='store',
+                        default=get_octopusvariable_quiet('Terraform.Backend.Init1') or get_octopusvariable_quiet(
+                            'ListDownstream.Terraform.Backend.Init1'),
+                        help='The first additional argument to pass to "terraform init", usually the "-backend-config" arguments required to connect to a custom backend')
+    parser.add_argument('--terraform-backend-init-2',
+                        action='store',
+                        default=get_octopusvariable_quiet('Terraform.Backend.Init2') or get_octopusvariable_quiet(
+                            'ListDownstream.Terraform.Backend.Init2'),
+                        help='The second additional argument to pass to "terraform init", usually the "-backend-config" arguments required to connect to a custom backend')
+    parser.add_argument('--terraform-backend-init-3',
+                        action='store',
+                        default=get_octopusvariable_quiet('Terraform.Backend.Init3') or get_octopusvariable_quiet(
+                            'ListDownstream.Terraform.Backend.Init3'),
+                        help='The third additional argument to pass to "terraform init", usually the "-backend-config" arguments required to connect to a custom backend')
+    parser.add_argument('--terraform-backend-init-4',
+                        action='store',
+                        default=get_octopusvariable_quiet('Terraform.Backend.Init4') or get_octopusvariable_quiet(
+                            'ListDownstream.Terraform.Backend.Init4'),
+                        help='The fourth additional argument to pass to "terraform init", usually the "-backend-config" arguments required to connect to a custom backend')
+    parser.add_argument('--terraform-backend-init-5',
+                        action='store',
+                        default=get_octopusvariable_quiet('Terraform.Backend.Init5') or get_octopusvariable_quiet(
+                            'ListDownstream.Terraform.Backend.Init5'),
+                        help='The fifth additional argument to pass to "terraform init", usually the "-backend-config" arguments required to connect to a custom backend')
+
+    return parser.parse_known_args()
+
+
+parser, _ = init_argparse()
+
+backend_type = parser.terraform_backend_type or 'pg'
 
 with open('backend.tf', 'w') as f:
-    f.write("""
-    terraform {
-        backend "pg" {
-      }
-      required_providers {
-        octopusdeploy = { source = "OctopusDeployLabs/octopusdeploy", version = "0.12.5" }
-      }
-    }
+    f.write(f"""
+    terraform {{
+        backend "{backend_type}" {{
+      }}
+      required_providers {{
+        octopusdeploy = {{ source = "OctopusDeployLabs/octopusdeploy", version = "0.12.5" }}
+      }}
+    }}
     """)
 
-execute(['terraform', 'init', '-no-color',
-         '-backend-config=conn_str=postgres://terraform:terraform@terraformdb:5432/' + backend + '?sslmode=disable'])
+# Allow all the init args to be supplied as variables
+custom_args = [x for x in
+               [parser.terraform_backend_init_1, parser.terraform_backend_init_2, parser.terraform_backend_init_3,
+                parser.terraform_backend_init_4, parser.terraform_backend_init_5] if x != '']
+backend = re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable('Octopus.Project.Name').lower())
+# Use default values that make sense for the reference implementation if no custom values are provided
+init_args = custom_args or [
+    '-backend-config=conn_str=postgres://terraform:terraform@terraformdb:5432/' + backend + '?sslmode=disable']
+full_init_args = ['terraform', 'init', '-no-color'] + init_args
+execute(full_init_args)
+
 workspaces, _, _ = execute(['terraform', 'workspace', 'list'])
 workspaces = workspaces.replace('*', '').split('\n')
 
