@@ -100,22 +100,28 @@ def init_argparse():
                         default=get_octopusvariable_quiet('Octopus.Project.Name'))
     parser.add_argument('--new-project-name',
                         action='store',
-                        default=get_octopusvariable_quiet('Exported.Project.Name'))
+                        default=get_octopusvariable_quiet('Exported.Project.Name') or get_octopusvariable_quiet(
+                            'PreviewMerge.Exported.Project.Name'))
     parser.add_argument('--git-protocol',
                         action='store',
-                        default=get_octopusvariable_quiet('Git.Url.Protocol'))
+                        default=get_octopusvariable_quiet('Git.Url.Protocol') or get_octopusvariable_quiet(
+                            'PreviewMerge.Git.Url.Protocol'))
     parser.add_argument('--git-host',
                         action='store',
-                        default=get_octopusvariable_quiet('Git.Url.Host'))
+                        default=get_octopusvariable_quiet('Git.Url.Host') or get_octopusvariable_quiet(
+                            'PreviewMerge.Git.Url.Host'))
     parser.add_argument('--git-username',
                         action='store',
-                        default=get_octopusvariable_quiet('Git.Credentials.Username'))
+                        default=get_octopusvariable_quiet('Git.Credentials.Username') or get_octopusvariable_quiet(
+                            'PreviewMerge.Git.Credentials.Username'))
     parser.add_argument('--git-password',
                         action='store',
-                        default=get_octopusvariable_quiet('Git.Credentials.Password'))
+                        default=get_octopusvariable_quiet('Git.Credentials.Password') or get_octopusvariable_quiet(
+                            'PreviewMerge.Git.Credentials.Password'))
     parser.add_argument('--git-organization',
                         action='store',
-                        default=get_octopusvariable_quiet('Git.Url.Organization'))
+                        default=get_octopusvariable_quiet('Git.Url.Organization') or get_octopusvariable_quiet(
+                            'PreviewMerge.Git.Url.Organization'))
     parser.add_argument('--tenant-name',
                         action='store',
                         default=get_octopusvariable_quiet('Octopus.Deployment.Tenant.Name'))
@@ -124,7 +130,8 @@ def init_argparse():
                         default=re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable_quiet('Octopus.Project.Name').lower()))
     parser.add_argument('--repo-name',
                         action='store',
-                        default='')
+                        default=get_octopusvariable_quiet('Git.Url.RepoName') or get_octopusvariable_quiet(
+                            'PreviewMerge.Git.Url.RepoName'))
     parser.add_argument('--generate-diff',
                         action='store_true',
                         default='false')
@@ -150,10 +157,10 @@ new_repo_url = parser.git_protocol + '://' + parser.git_host + '/' + parser.git_
 new_repo_url_wth_creds = parser.git_protocol + '://' + parser.git_username + ':' + parser.git_password + '@' + \
                          parser.git_host + '/' + parser.git_organization + '/' + new_repo + '.git'
 template_repo_name_url = parser.git_protocol + '://' + parser.git_host + '/' + parser.git_organization + '/' + \
-                                parser.template_repo_name + '.git'
+                         parser.template_repo_name + '.git'
 template_repo_name_url_with_creds = parser.git_protocol + '://' + parser.git_username + ':' + \
-                                           parser.git_password + '@' + parser.git_host + '/' + \
-                                           parser.git_organization + '/' + parser.template_repo_name + '.git'
+                                    parser.git_password + '@' + parser.git_host + '/' + \
+                                    parser.git_organization + '/' + parser.template_repo_name + '.git'
 
 if not check_repo_exists(new_repo_url, parser.git_username, parser.git_password):
     print('Downstream repo ' + new_repo_url + ' is not available')
@@ -210,6 +217,7 @@ if parser.generate_diff:
 
     execute(['diff2html', '-F', 'diff.html', '-i', 'file', '--', 'upstream.diff'])
     createartifact('diff.html', 'Git Diff')
-    printhighlight('Run the "Merge from Upstream" runbook to merge the changes shown in the diff into this project\'s repo')
+    printhighlight(
+        'Run the "Merge from Upstream" runbook to merge the changes shown in the diff into this project\'s repo')
 else:
     print('The upstream repo has changes available to be merged into this project.')

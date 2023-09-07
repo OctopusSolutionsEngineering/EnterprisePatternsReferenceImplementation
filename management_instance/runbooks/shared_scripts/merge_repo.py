@@ -88,25 +88,32 @@ def init_argparse():
     )
     parser.add_argument('--original-project-name',
                         action='store',
-                        default=get_octopusvariable_quiet('Octopus.Project.Name'))
+                        default=get_octopusvariable_quiet('Octopus.Project.Name') or get_octopusvariable_quiet(
+                            'MergeRepo.Octopus.Project.Name'))
     parser.add_argument('--new-project-name',
                         action='store',
-                        default=get_octopusvariable_quiet('Exported.Project.Name'))
+                        default=get_octopusvariable_quiet('Exported.Project.Name') or get_octopusvariable_quiet(
+                            'MergeRepo.Exported.Project.Name'))
     parser.add_argument('--git-protocol',
                         action='store',
-                        default=get_octopusvariable_quiet('Git.Url.Protocol'))
+                        default=get_octopusvariable_quiet('Git.Url.Protocol') or get_octopusvariable_quiet(
+                            'MergeRepo.Git.Url.Protocol'))
     parser.add_argument('--git-host',
                         action='store',
-                        default=get_octopusvariable_quiet('Git.Url.Host'))
+                        default=get_octopusvariable_quiet('Git.Url.Host') or get_octopusvariable_quiet(
+                            'MergeRepo.Git.Url.Host'))
     parser.add_argument('--git-username',
                         action='store',
-                        default=get_octopusvariable_quiet('Git.Credentials.Username'))
+                        default=get_octopusvariable_quiet('Git.Credentials.Username') or get_octopusvariable_quiet(
+                            'MergeRepo.Git.Credentials.Username'))
     parser.add_argument('--git-password',
                         action='store',
-                        default=get_octopusvariable_quiet('Git.Credentials.Password'))
+                        default=get_octopusvariable_quiet('Git.Credentials.Password') or get_octopusvariable_quiet(
+                            'MergeRepo.Git.Credentials.Password'))
     parser.add_argument('--git-organization',
                         action='store',
-                        default=get_octopusvariable_quiet('Git.Url.Organization'))
+                        default=get_octopusvariable_quiet('Git.Url.Organization') or get_octopusvariable_quiet(
+                            'MergeRepo.Git.Url.Organization'))
     parser.add_argument('--tenant-name',
                         action='store',
                         default=get_octopusvariable_quiet('Octopus.Deployment.Tenant.Name'))
