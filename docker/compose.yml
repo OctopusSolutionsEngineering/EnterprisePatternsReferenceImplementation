@@ -42,7 +42,7 @@ services:
       - MASTER_KEY=6EdU6IWsCtMEwk0kPKflQQ==
       - OCTOPUS_SERVER_BASE64_LICENSE
     platform: linux/x86_64
-    image: octopusdeploy/octopusdeploy:2023.2
+    image: octopusdeploy/octopusdeploy:2023.3
     networks:
       - octopus
     depends_on:
