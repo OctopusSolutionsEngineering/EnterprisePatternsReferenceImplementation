@@ -67,7 +67,7 @@ def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose
 def init_argparse():
     parser = argparse.ArgumentParser(
         usage='%(prog)s [OPTION] [FILE]...',
-        description='Fork a GitHub repo'
+        description='Serialize an Octopus project to a Terraform module'
     )
     parser.add_argument('--ignore-all-changes',
                         action='store',
