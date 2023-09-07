@@ -14,6 +14,12 @@ data "octopusdeploy_library_variable_sets" "export_options" {
   partial_name = "Export Options"
   skip         = 0
   take         = 1
+  lifecycle {
+    postcondition {
+      error_message = "Failed to resolve a library variable set called \"Export Options\". This resource must exist in the space before this Terraform configuration is applied."
+      condition     = length(self.library_variable_sets) != 0
+    }
+  }
 }
 
 data "octopusdeploy_project_groups" "project_group_google_microservice_demo" {
@@ -50,42 +56,84 @@ data "octopusdeploy_worker_pools" "workerpool_default" {
   ids  = null
   skip = 0
   take = 1
+  lifecycle {
+    postcondition {
+      error_message = "Failed to resolve a worker pool called \"Default Worker Pool\". This resource must exist in the space before this Terraform configuration is applied."
+      condition     = length(self.worker_pools) != 0
+    }
+  }
 }
 
 data "octopusdeploy_library_variable_sets" "octopus_server" {
   partial_name = "Octopus Server"
   skip         = 0
   take         = 1
+  lifecycle {
+    postcondition {
+      error_message = "Failed to resolve a library variable set called \"Octopus Server\". This resource must exist in the space before this Terraform configuration is applied."
+      condition     = length(self.library_variable_sets) != 0
+    }
+  }
 }
 
 data "octopusdeploy_library_variable_sets" "variable" {
   partial_name = "This Instance"
   skip         = 0
   take         = 1
+  lifecycle {
+    postcondition {
+      error_message = "Failed to resolve a library variable set called \"This Instance\". This resource must exist in the space before this Terraform configuration is applied."
+      condition     = length(self.library_variable_sets) != 0
+    }
+  }
 }
 
 data "octopusdeploy_environments" "development" {
   partial_name = "Development"
   skip         = 0
   take         = 1
+  lifecycle {
+    postcondition {
+      error_message = "Failed to resolve an account called \"Development\". This resource must exist in the space before this Terraform configuration is applied."
+      condition     = length(self.environments) != 0
+    }
+  }
 }
 
 data "octopusdeploy_environments" "test" {
   partial_name = "Test"
   skip         = 0
   take         = 1
+  lifecycle {
+    postcondition {
+      error_message = "Failed to resolve an account called \"Test\". This resource must exist in the space before this Terraform configuration is applied."
+      condition     = length(self.environments) != 0
+    }
+  }
 }
 
 data "octopusdeploy_environments" "production" {
   partial_name = "Production"
   skip         = 0
   take         = 1
+  lifecycle {
+    postcondition {
+      error_message = "Failed to resolve an account called \"Production\". This resource must exist in the space before this Terraform configuration is applied."
+      condition     = length(self.environments) != 0
+    }
+  }
 }
 
 data "octopusdeploy_library_variable_sets" "slack" {
   partial_name = "Shared Slack"
   skip         = 0
   take         = 1
+  lifecycle {
+    postcondition {
+      error_message = "Failed to resolve a library variable set called \"Shared Slack\". This resource must exist in the space before this Terraform configuration is applied."
+      condition     = length(self.library_variable_sets) != 0
+    }
+  }
 }
 
 variable "octopusprintvariables_1" {
