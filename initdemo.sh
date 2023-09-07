@@ -450,6 +450,14 @@ done
 
 echo ""
 
+delete_project () {
+  SPACE_ID="${1}"
+  PROJECT_NAME="${2}"
+
+  PROJECT_ID=$(curl --silent --header 'X-Octopus-ApiKey: API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' "http://localhost:18080/api/${SPACE_ID}/Projects/all" | jq -r ".[] | select(.Name == \"${PROJECT_NAME}\") | .Id")
+  curl --silent -X DELETE --header 'X-Octopus-ApiKey: API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' "http://localhost:18080/api/${SPACE_ID}/Projects/${PROJECT_ID}"
+}
+
 execute_terraform () {
   PG_DATABASE="${1}"
   TF_MODULE_PATH="${2}"
@@ -474,6 +482,22 @@ execute_terraform () {
     terraform apply -auto-approve "-var=octopus_space_id=${SPACE_ID}"
     exit_code=$?
   done
+
+  popd || exit 1
+}
+
+execute_terraform_destroy () {
+  PG_DATABASE="${1}"
+  TF_MODULE_PATH="${2}"
+  SPACE_ID="${3}"
+
+  docker compose -f docker/compose.yml exec terraformdb sh -c "/usr/bin/psql -v ON_ERROR_STOP=1 --username \"\$POSTGRES_USER\" -c \"CREATE DATABASE $PG_DATABASE\""
+  pushd "${TF_MODULE_PATH}" || exit 1
+
+  terraform init -reconfigure -upgrade
+  terraform workspace new "${SPACE_ID}" || echo "Workspace already exists"
+  terraform workspace select "${SPACE_ID}"
+  terraform destroy -auto-approve "-var=octopus_space_id=${SPACE_ID}"
 
   popd || exit 1
 }
@@ -691,6 +715,8 @@ execute_terraform 'project_hello_world_cac' 'management_instance/projects/hello_
 
 execute_terraform 'project_azure_web_app_cac' 'management_instance/projects/azure_web_app_cac/pgbackend' 'Spaces-1'
 
+# Remove the project first to fix the error "Error: Octopus API error: Sequence contains no matching element []"
+delete_project 'Spaces-1' 'K8S Microservice Template'
 execute_terraform 'project_k8s_microservice' 'management_instance/projects/k8s_microservice/pgbackend' 'Spaces-1'
 
 execute_terraform 'project_azure_space_initialization' 'management_instance/projects/azure_space_initialization/pgbackend' 'Spaces-1'

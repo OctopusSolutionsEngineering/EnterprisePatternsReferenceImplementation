@@ -43,7 +43,7 @@ def init_argparse():
                         action='store',
                         default=get_octopusvariable_quiet('ThisInstance.Server.Url') or get_octopusvariable_quiet(
                             'SpaceLookup.ThisInstance.Server.Url'),
-                        help='Sets the server URL that holds the project to be serialized.')
+                        help='Sets the Octopus server URL.')
     parser.add_argument('--api-key',
                         action='store',
                         default=get_octopusvariable_quiet('ThisInstance.Api.Key') or get_octopusvariable_quiet(
@@ -58,7 +58,7 @@ def init_argparse():
 
 parser, _ = init_argparse()
 
-url = parser.server_url + '/Spaces?partialName=' + urllib.parse.quote(parser.space_name)
+url = parser.server_url + '/Spaces?partialName=' + urllib.parse.quote(parser.space_name) + "&take=1000"
 headers = {
     'X-Octopus-ApiKey': parser.api_key,
     'Accept': 'application/json'
