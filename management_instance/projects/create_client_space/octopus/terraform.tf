@@ -67,10 +67,6 @@ resource "octopusdeploy_runbook" "runbook____create_client_space_create_client_s
   }
 }
 
-resource "octopusdeploy_deployment_process" "deployment_process_project____create_client_space" {
-  project_id = octopusdeploy_project.project____create_client_space.id
-}
-
 data "octopusdeploy_lifecycles" "lifecycle_simple" {
   ids          = null
   partial_name = "Simple"
