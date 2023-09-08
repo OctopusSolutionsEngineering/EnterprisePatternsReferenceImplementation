@@ -41,18 +41,19 @@ def init_argparse():
     )
     parser.add_argument('--server-url',
                         action='store',
-                        default=get_octopusvariable_quiet('ThisInstance.Server.Url') or get_octopusvariable_quiet(
-                            'SpaceLookup.ThisInstance.Server.Url'),
+                        default=get_octopusvariable_quiet(
+                            'SpaceLookup.ThisInstance.Server.Url') or get_octopusvariable_quiet(
+                            'ThisInstance.Server.Url'),
                         help='Sets the Octopus server URL.')
     parser.add_argument('--api-key',
                         action='store',
-                        default=get_octopusvariable_quiet('ThisInstance.Api.Key') or get_octopusvariable_quiet(
-                            'SpaceLookup.ThisInstance.Api.Key'),
+                        default=get_octopusvariable_quiet(
+                            'SpaceLookup.ThisInstance.Api.Key') or get_octopusvariable_quiet('ThisInstance.Api.Key'),
                         help='Sets the Octopus API key.')
     parser.add_argument('--space-name',
                         action='store',
-                        default=get_octopusvariable_quiet('Lookup.Space.Name') or get_octopusvariable_quiet(
-                            'SpaceLookup.Lookup.Space.Name') or get_octopusvariable_quiet('Octopus.Deployment.Tenant.Name'),
+                        default=get_octopusvariable_quiet('SpaceLookup.Lookup.Space.Name') or get_octopusvariable_quiet(
+                            'Lookup.Space.Name') or get_octopusvariable_quiet('Octopus.Deployment.Tenant.Name'),
                         help='The name of the space to lookup.')
 
 
