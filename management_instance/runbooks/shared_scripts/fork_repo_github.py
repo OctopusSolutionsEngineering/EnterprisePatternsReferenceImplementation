@@ -99,6 +99,11 @@ def init_argparse():
     parser.add_argument('--github-app-private-key', action='store',
                         default=get_octopusvariable_quiet('GitHub.App.PrivateKey') or get_octopusvariable_quiet(
                             'ForkGithubRepo.GitHub.App.PrivateKey'))
+    parser.add_argument('--github-access-token', action='store',
+                        default=get_octopusvariable_quiet(
+                            'GitHub.Credentials.AccessToken') or get_octopusvariable_quiet(
+                            'ForkGithubRepo.GitHub.Credentials.AccessToken'),
+                        help='The GitHub access token. This takes precedence over the --github-app-id,  --github-app-installation-id, and --github-app-private-key')
     parser.add_argument('--git-organization', action='store',
                         default=get_octopusvariable_quiet('Git.Url.Organization') or get_octopusvariable_quiet(
                             'ForkGithubRepo.Git.Url.Organization'))
@@ -229,7 +234,8 @@ def fork_repo(token, cac_org, new_repo, template_repo):
     execute(['git', 'push', 'origin', branch], cwd=new_repo)
 
 
-token = generate_github_token()
+# The access token is generated from a github app or supplied directly as an access token
+token = generate_github_token() if len(parser.github_access_token.strip()) == 0 else parser.github_access_token.strip()
 cac_org = parser.git_organization.strip()
 tenant_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.tenant_name.lower().strip())
 new_project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.new_project_name.lower().strip())
