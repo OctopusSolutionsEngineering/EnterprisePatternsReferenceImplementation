@@ -72,56 +72,61 @@ def init_argparse():
     parser.add_argument('--ignore-all-changes',
                         action='store',
                         default=get_octopusvariable_quiet(
-                            'Exported.Project.IgnoreAllChanges') or get_octopusvariable_quiet(
-                            'SerializeProject.Exported.Project.IgnoreAllChanges') or 'false',
+                            'SerializeProject.Exported.Project.IgnoreAllChanges') or get_octopusvariable_quiet(
+                            'Exported.Project.IgnoreAllChanges') or 'false',
                         help='Set to true to set the "lifecycle.ignore_changes" ' +
                              'setting on each exported resource to "all"')
     parser.add_argument('--terraform-backend',
                         action='store',
                         default=get_octopusvariable_quiet(
-                            'ThisInstance.Terraform.Backend') or get_octopusvariable_quiet(
-                            'SerializeProject.ThisInstance.Terraform.Backend') or 'pg',
+                            'SerializeProject.ThisInstance.Terraform.Backend') or get_octopusvariable_quiet(
+                            'ThisInstance.Terraform.Backend') or 'pg',
                         help='Set this to the name of the Terraform backend to be included in the generated module.')
     parser.add_argument('--server-url',
                         action='store',
-                        default=get_octopusvariable_quiet('ThisInstance.Server.Url') or get_octopusvariable_quiet(
-                            'SerializeProject.ThisInstance.Server.Url'),
+                        default=get_octopusvariable_quiet(
+                            'SerializeProject.ThisInstance.Server.Url') or get_octopusvariable_quiet(
+                            'ThisInstance.Server.Url'),
                         help='Sets the server URL that holds the project to be serialized.')
     parser.add_argument('--api-key',
                         action='store',
-                        default=get_octopusvariable_quiet('ThisInstance.Api.Key') or get_octopusvariable_quiet(
-                            'SerializeProject.ThisInstance.Api.Key'),
+                        default=get_octopusvariable_quiet(
+                            'SerializeProject.ThisInstance.Api.Key') or get_octopusvariable_quiet(
+                            'ThisInstance.Api.Key'),
                         help='Sets the Octopus API key.')
     parser.add_argument('--space-id',
                         action='store',
-                        default=get_octopusvariable_quiet('Exported.Space.Id') or get_octopusvariable_quiet(
-                            'SerializeProject.Exported.Space.Id') or get_octopusvariable_quiet('Octopus.Space.Id'),
+                        default=get_octopusvariable_quiet(
+                            'SerializeProject.Exported.Space.Id') or get_octopusvariable_quiet(
+                            'Exported.Space.Id') or get_octopusvariable_quiet('Octopus.Space.Id'),
                         help='Set this to the space ID containing the project to be serialized.')
     parser.add_argument('--project-name',
                         action='store',
-                        default=get_octopusvariable_quiet('Exported.Project.Name') or get_octopusvariable_quiet(
+                        default=get_octopusvariable_quiet(
                             'SerializeProject.Exported.Project.Name') or get_octopusvariable_quiet(
+                            'Exported.Project.Name') or get_octopusvariable_quiet(
                             'Octopus.Project.Name'),
                         help='Set this to the name of the project to be serialized.')
     parser.add_argument('--upload-space-id',
                         action='store',
-                        default=get_octopusvariable_quiet('Octopus.UploadSpace.Id') or get_octopusvariable_quiet(
-                            'SerializeProject.Octopus.UploadSpace.Id') or get_octopusvariable_quiet('Octopus.Space.Id'),
+                        default=get_octopusvariable_quiet(
+                            'SerializeProject.Octopus.UploadSpace.Id') or get_octopusvariable_quiet(
+                            'Octopus.UploadSpace.Id') or get_octopusvariable_quiet('Octopus.Space.Id'),
                         help='Set this to the space ID of the Octopus space where ' +
                              'the resulting package will be uploaded to.')
     parser.add_argument('--ignore-cac-managed-values',
                         action='store',
                         default=get_octopusvariable_quiet(
-                            'Exported.Project.IgnoreCacValues') or get_octopusvariable_quiet(
-                            'SerializeProject.Exported.Project.IgnoreCacValues') or 'false',
+                            'SerializeProject.Exported.Project.IgnoreCacValues') or get_octopusvariable_quiet(
+                            'Exported.Project.IgnoreCacValues') or 'false',
                         help='Set this to true to exclude cac managed values like non-secret variables, ' +
                              'deployment processes, and project versioning into the Terraform module. ' +
                              'Set to false to have these values embedded into the module.')
     parser.add_argument('--ignored-library-variable-sets',
                         action='store',
                         default=get_octopusvariable_quiet(
-                            'Exported.Project.IgnoredLibraryVariableSet') or get_octopusvariable_quiet(
-                            'SerializeProject.Exported.Project.IgnoredLibraryVariableSet'),
+                            'SerializeProject.Exported.Project.IgnoredLibraryVariableSet') or get_octopusvariable_quiet(
+                            'Exported.Project.IgnoredLibraryVariableSet'),
                         help='A comma separated list of library variable sets to ignore.')
 
     return parser.parse_known_args()
