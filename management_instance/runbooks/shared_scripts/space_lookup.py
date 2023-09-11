@@ -59,6 +59,19 @@ def init_argparse():
 
 parser, _ = init_argparse()
 
+# Variable precondition checks
+if len(parser.server_url) == 0:
+    print("--server-url, ThisInstance.Server.Url, or SerializeProject.ThisInstance.Server.Url must be defined")
+    sys.exit(1)
+
+if len(parser.api_key) == 0:
+    print("--api-key, ThisInstance.Api.Key, or ThisInstance.Api.Key must be defined")
+    sys.exit(1)
+
+if len(parser.space_name) == 0:
+    print("--space-name, Lookup.Space.Name, SpaceLookup.Lookup.Space.Name, or Octopus.Deployment.Tenant.Name must be defined")
+    sys.exit(1)
+
 url = parser.server_url + '/Spaces?partialName=' + urllib.parse.quote(parser.space_name) + "&take=1000"
 headers = {
     'X-Octopus-ApiKey': parser.api_key,
