@@ -30,6 +30,11 @@ then
   echo "You must install minikube in order to automatically create the Kubernetes targets. The script will not attempt to create these targets."
 fi
 
+if ! which kubectl
+then
+  echo "You must install kubectl."
+fi
+
 if ! which openssl
 then
   echo "You must install openssl"
