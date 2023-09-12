@@ -63,11 +63,11 @@ parser, _ = init_argparse()
 
 # Variable precondition checks
 if len(parser.server_url) == 0:
-    print("--server-url, ThisInstance.Server.Url, or SerializeProject.ThisInstance.Server.Url must be defined")
+    print("--server-url, ThisInstance.Server.Url, or SpaceLookup.ThisInstance.Server.Url must be defined")
     sys.exit(1)
 
 if len(parser.api_key) == 0:
-    print("--api-key, ThisInstance.Api.Key, or ThisInstance.Api.Key must be defined")
+    print("--api-key, ThisInstance.Api.Key, or SpaceLookup.ThisInstance.Api.Key must be defined")
     sys.exit(1)
 
 if len(parser.space_name) == 0:
