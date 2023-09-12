@@ -1,6 +1,7 @@
 import argparse
 import os
 import re
+import socket
 import subprocess
 import sys
 from datetime import datetime
@@ -149,10 +150,10 @@ execute(['docker', 'pull', 'octopusdeploy/octo'])
 
 # Find out the IP address of the Octopus container
 parsed_url = urlparse(parser.server_url)
-octopus, _, _ = execute(['dig', '+short', parsed_url.hostname])
+octopus = socket.getaddrinfo(parsed_url.hostname, '80')[0][4][0]
 
-print("Octopus container hostname: " + parsed_url.hostname)
-print("Octopus container IP: " + octopus.strip())
+print("Octopus hostname: " + parsed_url.hostname)
+print("Octopus IP: " + octopus.strip())
 
 # Build the arguments to ignore library variable sets
 ignores_library_variable_sets = parser.ignored_library_variable_sets.split(',')
@@ -226,9 +227,10 @@ export_args = ['docker', 'run',
                # This is a management runbook that we do not wish to export
                '-excludeRunbookRegex', '__ .*'] + list(chain(*ignores_library_variable_sets_args))
 
+print("Exporting Terraform module")
 stdout, _, octoterra_exit = execute(export_args)
 
-print(stdout)
+printverbose(stdout)
 
 if not octoterra_exit == 0:
     print("Octoterra failed. Please check the logs for more information.")
@@ -236,6 +238,7 @@ if not octoterra_exit == 0:
 
 date = datetime.now().strftime('%Y.%m.%d.%H%M%S')
 
+print("Creating Terraform module package")
 stdout, _, _ = execute(['docker', 'run',
                         '--rm',
                         '--add-host=' + parsed_url.hostname + ':' + octopus.strip(),
@@ -248,8 +251,9 @@ stdout, _, _ = execute(['docker', 'run',
                         '--basePath', '/export',
                         '--outFolder', '/export'])
 
-print(stdout)
+printverbose(stdout)
 
+print("Uploading Terraform module package")
 stdout, _, _ = execute(['docker', 'run',
                         '--rm',
                         '--add-host=' + parsed_url.hostname + ':' + octopus.strip(),
@@ -263,7 +267,7 @@ stdout, _, _ = execute(['docker', 'run',
                         re.sub('[^0-9a-zA-Z]', '_', parser.project_name) + '.' + date + '.zip',
                         '--replace-existing'])
 
-print(stdout)
+printverbose(stdout)
 
 print("##octopus[stdout-default]")
 

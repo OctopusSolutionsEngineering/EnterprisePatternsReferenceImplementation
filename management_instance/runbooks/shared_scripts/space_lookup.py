@@ -56,10 +56,25 @@ def init_argparse():
                             'Lookup.Space.Name') or get_octopusvariable_quiet('Octopus.Deployment.Tenant.Name'),
                         help='The name of the space to lookup.')
 
+    return parser.parse_known_args()
+
 
 parser, _ = init_argparse()
 
-url = parser.server_url + '/Spaces?partialName=' + urllib.parse.quote(parser.space_name) + "&take=1000"
+# Variable precondition checks
+if len(parser.server_url) == 0:
+    print("--server-url, ThisInstance.Server.Url, or SpaceLookup.ThisInstance.Server.Url must be defined")
+    sys.exit(1)
+
+if len(parser.api_key) == 0:
+    print("--api-key, ThisInstance.Api.Key, or SpaceLookup.ThisInstance.Api.Key must be defined")
+    sys.exit(1)
+
+if len(parser.space_name) == 0:
+    print("--space-name, Lookup.Space.Name, SpaceLookup.Lookup.Space.Name, or Octopus.Deployment.Tenant.Name must be defined")
+    sys.exit(1)
+
+url = parser.server_url + '/api/Spaces?partialName=' + urllib.parse.quote(parser.space_name) + "&take=1000"
 headers = {
     'X-Octopus-ApiKey': parser.api_key,
     'Accept': 'application/json'
@@ -83,8 +98,8 @@ data = json.loads(response.read().decode("utf-8"))
 space = [x for x in data['Items'] if x['Name'] == parser.space_name]
 
 if len(space) != 0:
-    print('Matched tenant name to space')
+    print('Space ' + parser.space_name + ' has ID ' + space[0]['Id'])
     set_octopusvariable("SpaceID", space[0]['Id'])
 else:
-    print('Failed to match tenant name to space')
+    print('Failed to find space called ' + parser.space_name)
     sys.exit(1)
