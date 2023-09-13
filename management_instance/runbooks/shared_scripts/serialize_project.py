@@ -140,6 +140,35 @@ def init_argparse():
     return parser.parse_known_args()
 
 
+def ensure_octo_cli_exists():
+    if is_windows():
+        print("Checking for the Octopus CLI")
+        try:
+            stdout, _, exit_code = execute(['octo', 'help'])
+            printverbose(stdout)
+            if not exit_code == 0:
+                raise "Octo CLI not found"
+        except:
+            print("Downloading the Octopus CLI")
+            urlretrieve('https://download.octopusdeploy.com/octopus-tools/9.0.0/OctopusTools.9.0.0.win-x64.zip',
+                        'OctopusTools.zip')
+            with zipfile.ZipFile('OctopusTools.zip', 'r') as zip_ref:
+                zip_ref.extractall(os.getcwd())
+
+
+def check_docker_exists():
+    try:
+        stdout, _, exit_code = execute(['docker', 'version'])
+        printverbose(stdout)
+        if not exit_code == 0:
+            raise "Docker not found"
+    except:
+        print('Docker must be installed: https://docs.docker.com/get-docker/')
+        sys.exit(1)
+
+
+check_docker_exists()
+ensure_octo_cli_exists()
 parser, _ = init_argparse()
 
 # Variable precondition checks
@@ -150,20 +179,6 @@ if len(parser.server_url) == 0:
 if len(parser.api_key) == 0:
     print("--api-key, ThisInstance.Api.Key, or ThisInstance.Api.Key must be defined")
     sys.exit(1)
-
-if is_windows():
-    print("Checking for the Octopus CLI")
-    try:
-        stdout, _, exit_code = execute(['octo', 'help'])
-        printverbose(stdout)
-        if not exit_code == 0:
-            raise "Octo CLI not found"
-    except:
-        print("Downloading the Octopus CLI")
-        urlretrieve('https://download.octopusdeploy.com/octopus-tools/9.0.0/OctopusTools.9.0.0.win-x64.zip',
-                    'OctopusTools.zip')
-        with zipfile.ZipFile('OctopusTools.zip', 'r') as zip_ref:
-            zip_ref.extractall(os.getcwd())
 
 print("Pulling the Docker images")
 execute(['docker', 'pull', 'octopussamples/octoterra'])
