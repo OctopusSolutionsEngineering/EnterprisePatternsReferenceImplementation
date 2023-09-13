@@ -7,6 +7,9 @@ import sys
 from datetime import datetime
 from urllib.parse import urlparse
 from itertools import chain
+import platform
+from urllib.request import urlretrieve
+import zipfile
 
 # If this script is not being run as part of an Octopus step, return variables from environment variables.
 # Periods are replaced with underscores, and the variable name is converted to uppercase
@@ -63,6 +66,10 @@ def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose
         print_output(stderr)
 
     return stdout, stderr, retcode
+
+
+def is_windows():
+    return platform.system() == 'Windows'
 
 
 def init_argparse():
@@ -144,6 +151,20 @@ if len(parser.api_key) == 0:
     print("--api-key, ThisInstance.Api.Key, or ThisInstance.Api.Key must be defined")
     sys.exit(1)
 
+if is_windows():
+    print("Checking for the Octopus CLI")
+    try:
+        stdout, _, exit_code = execute(['octo', 'help'])
+        printverbose(stdout)
+        if not exit_code == 0:
+            raise "Octo CLI not found"
+    except:
+        print("Downloading the Octopus CLI")
+        urlretrieve('https://download.octopusdeploy.com/octopus-tools/9.0.0/OctopusTools.9.0.0.win-x64.zip',
+                    'OctopusTools.zip')
+        with zipfile.ZipFile('OctopusTools.zip', 'r') as zip_ref:
+            zip_ref.extractall(os.getcwd())
+
 print("Pulling the Docker images")
 execute(['docker', 'pull', 'octopussamples/octoterra'])
 execute(['docker', 'pull', 'octopusdeploy/octo'])
@@ -159,11 +180,16 @@ print("Octopus IP: " + octopus.strip())
 ignores_library_variable_sets = parser.ignored_library_variable_sets.split(',')
 ignores_library_variable_sets_args = [['-excludeLibraryVariableSet', x] for x in ignores_library_variable_sets]
 
+octoterra_image = 'octopussamples/octoterra-windows' if is_windows() else 'octopussamples/octoterra'
+octoterra_mount = 'C:/export' if is_windows() else '/export'
+
+os.mkdir(os.getcwd() + '/export')
+
 export_args = ['docker', 'run',
                '--rm',
                '--add-host=' + parsed_url.hostname + ':' + octopus.strip(),
-               '-v', os.getcwd() + "/export:/export",
-               'octopussamples/octoterra',
+               '-v', os.getcwd() + '/export:' + octoterra_mount,
+               octoterra_image,
                # the url of the instance
                '-url', parser.server_url,
                # the api key used to access the instance
@@ -223,7 +249,7 @@ export_args = ['docker', 'run',
                # be exported
                '-excludeAllTenants',
                # The directory where the exported files will be saved
-               '-dest', '/export',
+               '-dest', octoterra_mount,
                # This is a management runbook that we do not wish to export
                '-excludeRunbookRegex', '__ .*'] + list(chain(*ignores_library_variable_sets_args))
 
@@ -239,35 +265,54 @@ if not octoterra_exit == 0:
 date = datetime.now().strftime('%Y.%m.%d.%H%M%S')
 
 print("Creating Terraform module package")
-stdout, _, _ = execute(['docker', 'run',
-                        '--rm',
-                        '--add-host=' + parsed_url.hostname + ':' + octopus.strip(),
-                        '-v', os.getcwd() + "/export:/export",
-                        'octopusdeploy/octo',
-                        'pack',
-                        '--format', 'zip',
-                        '--id', re.sub('[^0-9a-zA-Z]', '_', parser.project_name),
-                        '--version', date,
-                        '--basePath', '/export',
-                        '--outFolder', '/export'])
-
-printverbose(stdout)
+if is_windows():
+    execute(['octo',
+             'pack',
+             '--format', 'zip',
+             '--id', re.sub('[^0-9a-zA-Z]', '_', parser.project_name),
+             '--version', date,
+             '--basePath', 'C:\\export',
+             '--outFolder', 'C:\\export'])
+    printverbose(stdout)
+else:
+    stdout, _, _ = execute(['docker', 'run',
+                            '--rm',
+                            '--add-host=' + parsed_url.hostname + ':' + octopus.strip(),
+                            '-v', os.getcwd() + "/export:/export",
+                            'octopusdeploy/octo',
+                            'pack',
+                            '--format', 'zip',
+                            '--id', re.sub('[^0-9a-zA-Z]', '_', parser.project_name),
+                            '--version', date,
+                            '--basePath', '/export',
+                            '--outFolder', '/export'])
+    printverbose(stdout)
 
 print("Uploading Terraform module package")
-stdout, _, _ = execute(['docker', 'run',
-                        '--rm',
-                        '--add-host=' + parsed_url.hostname + ':' + octopus.strip(),
-                        '-v', os.getcwd() + "/export:/export",
-                        'octopusdeploy/octo',
-                        'push',
-                        '--apiKey', parser.api_key,
-                        '--server', parser.server_url,
-                        '--space', parser.upload_space_id,
-                        '--package', '/export/' +
-                        re.sub('[^0-9a-zA-Z]', '_', parser.project_name) + '.' + date + '.zip',
-                        '--replace-existing'])
-
-printverbose(stdout)
+if is_windows():
+    stdout, _, _ = execute(['octo',
+                            'push',
+                            '--apiKey', parser.api_key,
+                            '--server', parser.server_url,
+                            '--space', parser.upload_space_id,
+                            '--package', 'C:\\export\\' +
+                            re.sub('[^0-9a-zA-Z]', '_', parser.project_name) + '.' + date + '.zip',
+                            '--replace-existing'])
+    printverbose(stdout)
+else:
+    stdout, _, _ = execute(['docker', 'run',
+                            '--rm',
+                            '--add-host=' + parsed_url.hostname + ':' + octopus.strip(),
+                            '-v', os.getcwd() + "/export:/export",
+                            'octopusdeploy/octo',
+                            'push',
+                            '--apiKey', parser.api_key,
+                            '--server', parser.server_url,
+                            '--space', parser.upload_space_id,
+                            '--package', '/export/' +
+                            re.sub('[^0-9a-zA-Z]', '_', parser.project_name) + '.' + date + '.zip',
+                            '--replace-existing'])
+    printverbose(stdout)
 
 print("##octopus[stdout-default]")
 
