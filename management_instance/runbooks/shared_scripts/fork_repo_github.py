@@ -5,8 +5,6 @@ import sys
 
 # Install our own dependencies
 subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'jwt'])
-subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'pyunpack'])
-subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'patool'])
 
 import json
 import subprocess
@@ -19,7 +17,6 @@ import jwt
 import time
 import argparse
 import platform
-from pyunpack import Archive
 from urllib.request import urlretrieve
 
 # If this script is not being run as part of an Octopus step, setting variables is a noop
