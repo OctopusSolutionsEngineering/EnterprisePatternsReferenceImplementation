@@ -9,6 +9,7 @@ import urllib.parse
 import os
 import sys
 import time
+import re
 
 # If this script is not being run as part of an Octopus step, return variables from environment variables.
 # Periods are replaced with underscores, and the variable name is converted to uppercase
