@@ -180,9 +180,10 @@ if len(parser.api_key) == 0:
     print("--api-key, ThisInstance.Api.Key, or ThisInstance.Api.Key must be defined")
     sys.exit(1)
 
-print("Pulling the Docker images")
-execute(['docker', 'pull', 'octopussamples/octoterra'])
-execute(['docker', 'pull', 'octopusdeploy/octo'])
+if not is_windows():
+    print("Pulling the Docker images")
+    execute(['docker', 'pull', 'octopussamples/octoterra'])
+    execute(['docker', 'pull', 'octopusdeploy/octo'])
 
 # Find out the IP address of the Octopus container
 parsed_url = urlparse(parser.server_url)
