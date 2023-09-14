@@ -14,4 +14,4 @@ jobs:
           OCTOPUS_SERVER_BASE64_LICENSE: ${{secrets.OCTOPUS_SERVER_BASE64_LICENSE}}
           TF_VAR_docker_username: ${{secrets.DOCKERHUB_USERNAME}}
           TF_VAR_docker_password: ${{secrets.DOCKERHUB_TOKEN}}
-        run: sudo --preserve-env=OCTOPUS_SERVER_BASE64_LICENSE --preserve-env=TF_VAR_docker_username --preserve-env=TF_VAR_docker_password ./initdemo.sh
+        run: ./initdemo.sh
