@@ -116,7 +116,7 @@ with open('backend.tf', 'w') as f:
         backend "{backend_type}" {{
       }}
       required_providers {{
-        octopusdeploy = {{ source = "OctopusDeployLabs/octopusdeploy", version = "0.12.5" }}
+        octopusdeploy = {{ source = "OctopusDeployLabs/octopusdeploy", version = "0.12.7" }}
       }}
     }}
     """)
