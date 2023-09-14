@@ -86,31 +86,44 @@ def init_argparse():
         description='Fork a GitHub repo'
     )
     parser.add_argument('--original-project-name', action='store',
-                        default=get_octopusvariable_quiet('Octopus.Project.Name'))
+                        default=get_octopusvariable_quiet(
+                            'ForkGithubRepo.Octopus.Project.Name') or get_octopusvariable_quiet('Octopus.Project.Name'))
     parser.add_argument('--new-project-name', action='store',
-                        default=get_octopusvariable_quiet('Exported.Project.Name') or get_octopusvariable_quiet(
-                            'ForkGithubRepo.Exported.Project.Name'))
+                        default=get_octopusvariable_quiet(
+                            'ForkGithubRepo.Exported.Project.Name') or get_octopusvariable_quiet(
+                            'Exported.Project.Name'))
     parser.add_argument('--github-app-id', action='store',
-                        default=get_octopusvariable_quiet('GitHub.App.Id') or get_octopusvariable_quiet(
-                            'ForkGithubRepo.GitHub.App.Id'))
+                        default=get_octopusvariable_quiet(
+                            'ForkGithubRepo.GitHub.App.Id') or get_octopusvariable_quiet('GitHub.App.Id'))
     parser.add_argument('--github-app-installation-id', action='store',
-                        default=get_octopusvariable_quiet('GitHub.App.InstallationId') or get_octopusvariable_quiet(
-                            'ForkGithubRepo.GitHub.App.InstallationId'))
+                        default=get_octopusvariable_quiet(
+                            'ForkGithubRepo.GitHub.App.InstallationId') or get_octopusvariable_quiet(
+                            'GitHub.App.InstallationId'))
     parser.add_argument('--github-app-private-key', action='store',
-                        default=get_octopusvariable_quiet('GitHub.App.PrivateKey') or get_octopusvariable_quiet(
-                            'ForkGithubRepo.GitHub.App.PrivateKey'))
+                        default=get_octopusvariable_quiet(
+                            'ForkGithubRepo.GitHub.App.PrivateKey') or get_octopusvariable_quiet(
+                            'GitHub.App.PrivateKey'))
     parser.add_argument('--github-access-token', action='store',
                         default=get_octopusvariable_quiet(
-                            'GitHub.Credentials.AccessToken') or get_octopusvariable_quiet(
-                            'ForkGithubRepo.GitHub.Credentials.AccessToken'),
+                            'ForkGithubRepo.GitHub.Credentials.AccessToken') or get_octopusvariable_quiet(
+                            'GitHub.Credentials.AccessToken'),
                         help='The GitHub access token. This takes precedence over the --github-app-id,  --github-app-installation-id, and --github-app-private-key')
     parser.add_argument('--git-organization', action='store',
-                        default=get_octopusvariable_quiet('Git.Url.Organization') or get_octopusvariable_quiet(
-                            'ForkGithubRepo.Git.Url.Organization'))
+                        default=get_octopusvariable_quiet(
+                            'ForkGithubRepo.Git.Url.Organization') or get_octopusvariable_quiet('Git.Url.Organization'))
     parser.add_argument('--tenant-name', action='store',
                         default=get_octopusvariable_quiet('Octopus.Deployment.Tenant.Name'))
+    parser.add_argument('--new-repo-name-prefix', action='store',
+                        default=get_octopusvariable_quiet(
+                            'ForkGithubRepo.Git.Url.NewRepoNamePrefix') or get_octopusvariable_quiet(
+                            'Git.Url.NewRepoNamePrefix'))
     parser.add_argument('--template-repo-name', action='store',
                         default=re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable_quiet('Octopus.Project.Name').lower()))
+    parser.add_argument('--mainline-branch',
+                        action='store',
+                        default=get_octopusvariable_quiet('Git.Branch.MainLine') or get_octopusvariable_quiet(
+                            'ForkGiteaRepo.Git.Branch.MainLine'),
+                        help='The branch name to use for the fork. Defaults to "main".')
     return parser.parse_known_args()
 
 
@@ -237,14 +250,24 @@ def fork_repo(token, cac_org, new_repo, template_repo):
 # The access token is generated from a github app or supplied directly as an access token
 token = generate_github_token() if len(parser.github_access_token.strip()) == 0 else parser.github_access_token.strip()
 cac_org = parser.git_organization.strip()
+template_repo = parser.template_repo_name.strip()
+new_repo_custom_prefix = re.sub('[^a-zA-Z0-9]', '_', parser.new_repo_name_prefix.strip())
 tenant_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.tenant_name.lower().strip())
 new_project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.new_project_name.lower().strip())
 original_project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.original_project_name.lower().strip())
+
+# The new project name is either the custom name, or the name of the original project
 project_name_sanitized = new_project_name_sanitized if len(new_project_name_sanitized) != 0 \
     else original_project_name_sanitized
-new_repo = tenant_name_sanitized + '_' + project_name_sanitized
-template_repo = parser.template_repo_name.strip()
-branch = 'main'
+
+# The new repo is prefixed either with the custom prefix or the tenant name if no custom prefix is defined
+new_repo_prefix = new_repo_custom_prefix if len(new_repo_custom_prefix) != 0 else tenant_name_sanitized
+
+# The new repo name is the prefix + the name of thew new project
+new_repo = new_repo_prefix + '_' + project_name_sanitized
+
+# Assume the main branch if nothing else was specified
+branch = parser.mainline_branch or 'main'
 
 # This is the value of the forked git repo
 set_octopusvariable('NewRepo', 'https://github.com/' + cac_org + '/' + new_repo)
