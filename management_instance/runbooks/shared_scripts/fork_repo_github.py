@@ -273,10 +273,31 @@ def ensure_git_exists():
 git_executable = ensure_git_exists()
 parser, _ = init_argparse()
 
+if not parser.github_access_token.strip() and not (parser.github_app_id.strip() and parser.github_app_private_key.strip() and parser.github_app_installation_id.strip()):
+    print("You must supply the GitHub token, or the GitHub App ID and private key and installation ID")
+    sys.exit(1)
+
+if not parser.template_repo_name.strip():
+    print("You must supply the upstream (or template) repo")
+    sys.exit(1)
+
+if not parser.tenant_name.strip() and not parser.new_repo_name_prefix.strip():
+    print("You must define the new repo prefix or run this script against a tenant")
+    sys.exit(1)
+
 # The access token is generated from a github app or supplied directly as an access token
 token = generate_github_token(parser.github_app_id, parser.github_app_private_key,
                               parser.github_app_installation_id) if len(
     parser.github_access_token.strip()) == 0 else parser.github_access_token.strip()
+
+# The process followed here is:
+# 1. Verify the manually supplied upstream repo exists
+# 2. Build the name of the new downstream repo with a prefix and the new project name.
+#    a. The prefix is either specified or assumed to be the name of a tenant
+#    b. The new project name is either specified or assumed to be the same as the upstream project name
+# 3. Create a new downstream repo if it doesn't exist
+# 4. Fork the upstream repo into the downstream repo with a hard git reset
+
 cac_org = parser.git_organization.strip()
 template_repo = parser.template_repo_name.strip()
 new_repo_custom_prefix = re.sub('[^a-zA-Z0-9]', '_', parser.new_repo_name_prefix.strip())
