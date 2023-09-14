@@ -1,11 +1,12 @@
 # This script forks a GitHub repo. It creates a token from a GitHub App installation to avoid
 # having to use a regular user account.
-
 import subprocess
 import sys
 
 # Install our own dependencies
 subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'jwt'])
+subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'pyunpack'])
+subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'patool'])
 
 import json
 import subprocess
@@ -17,6 +18,9 @@ import re
 import jwt
 import time
 import argparse
+import platform
+from pyunpack import Archive
+from urllib.request import urlretrieve
 
 # If this script is not being run as part of an Octopus step, setting variables is a noop
 if 'set_octopusvariable' not in globals():
@@ -127,13 +131,10 @@ def init_argparse():
     return parser.parse_known_args()
 
 
-parser, _ = init_argparse()
-
-
-def generate_github_token():
+def generate_github_token(github_app_id, github_app_private_key, github_app_installation_id):
     # Generate the tokens used by git and the GitHub API
-    app_id = parser.github_app_id
-    signing_key = jwt.jwk_from_pem(parser.github_app_private_key.encode('utf-8'))
+    app_id = github_app_id
+    signing_key = jwt.jwk_from_pem(github_app_private_key.encode('utf-8'))
 
     payload = {
         # Issued at time
@@ -149,7 +150,7 @@ def generate_github_token():
     encoded_jwt = jwt_instance.encode(payload, signing_key, alg='RS256')
 
     # Create access token
-    url = 'https://api.github.com/app/installations/' + parser.github_app_installation_id + '/access_tokens'
+    url = 'https://api.github.com/app/installations/' + github_app_installation_id + '/access_tokens'
     headers = {
         'Authorization': 'Bearer ' + encoded_jwt,
         'Accept': 'application/vnd.github+json',
@@ -215,40 +216,70 @@ def create_new_repo(token, cac_org, new_repo):
     urllib.request.urlopen(request)
 
 
-def fork_repo(token, cac_org, new_repo, template_repo):
+def fork_repo(git_executable, token, cac_org, new_repo, template_repo):
     # Clone the repo and add the upstream repo
-    execute(['git', 'clone', 'https://' + 'x-access-token:' + token + '@'
+    execute([git_executable, 'clone', 'https://' + 'x-access-token:' + token + '@'
              + 'github.com/' + cac_org + '/' + new_repo + '.git'])
     execute(
-        ['git', 'remote', 'add', 'upstream', 'https://' + 'x-access-token:' + token + '@'
+        [git_executable, 'remote', 'add', 'upstream', 'https://' + 'x-access-token:' + token + '@'
          + 'github.com/' + cac_org + '/' + template_repo + '.git'],
         cwd=new_repo)
-    execute(['git', 'fetch', '--all'], cwd=new_repo)
-    _, _, show_branch_result = execute(['git', 'show-branch', 'remotes/origin/' + branch], cwd=new_repo)
+    execute([git_executable, 'fetch', '--all'], cwd=new_repo)
+    _, _, show_branch_result = execute([git_executable, 'show-branch', 'remotes/origin/' + branch], cwd=new_repo)
 
     if show_branch_result == 0:
         # Checkout the local branch.
         if branch != 'master' and branch != 'main':
-            execute(['git', 'checkout', '-b', branch, 'origin/' + branch], cwd=new_repo)
+            execute([git_executable, 'checkout', '-b', branch, 'origin/' + branch], cwd=new_repo)
         else:
-            execute(['git', 'checkout', branch], cwd=new_repo)
+            execute([git_executable, 'checkout', branch], cwd=new_repo)
 
         if os.path.exists(new_repo + '/.octopus'):
             print('The repo https://github.com/' + cac_org + '/' + new_repo + ' has already been forked.')
             sys.exit(0)
 
     # Create a new branch representing the forked main branch.
-    execute(['git', 'checkout', '-b', branch], cwd=new_repo)
+    execute([git_executable, 'checkout', '-b', branch], cwd=new_repo)
 
     # Hard reset it to the template main branch.
-    execute(['git', 'reset', '--hard', 'upstream/' + branch], cwd=new_repo)
+    execute([git_executable, 'reset', '--hard', 'upstream/' + branch], cwd=new_repo)
 
     # Push the changes.
-    execute(['git', 'push', 'origin', branch], cwd=new_repo)
+    execute([git_executable, 'push', 'origin', branch], cwd=new_repo)
 
+
+def is_windows():
+    return platform.system() == 'Windows'
+
+
+def ensure_git_exists():
+    if is_windows():
+        print("Checking git is installed")
+        try:
+            stdout, _, exit_code = execute(['git', 'version'])
+            printverbose(stdout)
+            if not exit_code == 0:
+                raise "git not found"
+        except:
+            print("Downloading git")
+            urlretrieve('https://www.7-zip.org/a/7zr.exe', '7zr.exe')
+            urlretrieve(
+                'https://github.com/git-for-windows/git/releases/download/v2.42.0.windows.2/PortableGit-2.42.0.2-64-bit.7z.exe',
+                'PortableGit.7z.exe')
+            print("Installing git")
+            execute(['7zr.exe', 'x', 'PortableGit.7z.exe', '-o' + os.getcwd() + '\\git', '-y'])
+            return os.getcwd() + '\\git\\bin\\git'
+
+    return 'git'
+
+
+git_executable = ensure_git_exists()
+parser, _ = init_argparse()
 
 # The access token is generated from a github app or supplied directly as an access token
-token = generate_github_token() if len(parser.github_access_token.strip()) == 0 else parser.github_access_token.strip()
+token = generate_github_token(parser.github_app_id, parser.github_app_private_key,
+                              parser.github_app_installation_id) if len(
+    parser.github_access_token.strip()) == 0 else parser.github_access_token.strip()
 cac_org = parser.git_organization.strip()
 template_repo = parser.template_repo_name.strip()
 new_repo_custom_prefix = re.sub('[^a-zA-Z0-9]', '_', parser.new_repo_name_prefix.strip())
@@ -275,7 +306,7 @@ set_octopusvariable('NewRepo', 'https://github.com/' + cac_org + '/' + new_repo)
 verify_template_repo(token, cac_org, template_repo)
 if not verify_new_repo(token, cac_org, new_repo):
     create_new_repo(token, cac_org, new_repo)
-fork_repo(token, cac_org, new_repo, template_repo)
+fork_repo(git_executable, token, cac_org, new_repo, template_repo)
 
 print(
     'Repo was forked from ' + 'https://github.com/' + cac_org + '/' + template_repo + ' to '
