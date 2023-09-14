@@ -12,4 +12,6 @@ jobs:
       - name: Install dependencies
         run: curl --silent https://raw.githubusercontent.com/OctopusSolutionsEngineering/EnterprisePatternsReferenceImplementation/main/ubuntu-dependencies.sh | bash
       - name: Build Stack
+        env:
+          OCTOPUS_SERVER_BASE64_LICENSE: ${{secrets.OCTOPUS_SERVER_BASE64_LICENSE}}
         run: ./initdemo.sh
