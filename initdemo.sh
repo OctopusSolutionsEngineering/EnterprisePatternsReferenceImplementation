@@ -185,7 +185,7 @@ then
 fi
 
 # Set the initial admin Gitea user
-EXISTING=$(docker exec -it gitea su git bash -c "gitea admin user list")
+EXISTING=$(docker exec -i gitea su git bash -c "gitea admin user list")
 USER='octopus'
 if [[ "$EXISTING" == *"$USER"* ]]; then
   echo "User exists"
@@ -193,7 +193,7 @@ else
   echo "We expect to see errors here and so will retry until Gitea is started."
   max_retry=6
   counter=0
-  until docker exec -it gitea su git bash -c "gitea admin user create --admin --username octopus --password Password01! --email me@example.com"
+  until docker exec -i gitea su git bash -c "gitea admin user create --admin --username octopus --password Password01! --email me@example.com"
   do
      sleep 10
      [[ counter -eq $max_retry ]] && echo "Failed!" && exit 1
@@ -203,7 +203,7 @@ else
 fi
 
 # Create a regular Gitea users
-docker exec -it gitea su git bash -c "gitea admin user create --username editor --password Password01! --email editor@example.com --must-change-password=false"
+docker exec -i gitea su git bash -c "gitea admin user create --username editor --password Password01! --email editor@example.com --must-change-password=false"
 
 # Create the orgs.
 if ! curl -u "octopus:Password01!" http://localhost:3000/api/v1/orgs/octopuscac/teams --fail --silent
