@@ -10,8 +10,10 @@ jobs:
         with:
           fetch-depth: 0
       - name: Install dependencies
-        run: curl --silent https://raw.githubusercontent.com/OctopusSolutionsEngineering/EnterprisePatternsReferenceImplementation/main/ubuntu-dependencies.sh | bash
+        run: curl --silent https://raw.githubusercontent.com/OctopusSolutionsEngineering/EnterprisePatternsReferenceImplementation/main/ubuntu-dependencies.sh | sudo bash
       - name: Build Stack
         env:
           OCTOPUS_SERVER_BASE64_LICENSE: ${{secrets.OCTOPUS_SERVER_BASE64_LICENSE}}
+          TF_VAR_docker_username: ${{secrets.DOCKERHUB_USERNAME}}
+          TF_VAR_docker_password: ${{secrets.DOCKERHUB_TOKEN}}
         run: ./initdemo.sh
