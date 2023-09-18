@@ -308,8 +308,8 @@ token = generate_github_token(parser.github_app_id, parser.github_app_private_ke
 cac_org = parser.git_organization.strip()
 template_repo = parser.template_repo_name.strip()
 new_repo_custom_prefix = re.sub('[^a-zA-Z0-9]', '_', parser.new_repo_name_prefix.strip())
-tenant_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.tenant_name.lower().strip())
-project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.new_project_name.lower().strip())
+tenant_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.tenant_name.strip())
+project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.new_project_name.strip())
 
 # The new repo is prefixed either with the custom prefix or the tenant name if no custom prefix is defined
 new_repo_prefix = new_repo_custom_prefix if len(new_repo_custom_prefix) != 0 else tenant_name_sanitized
