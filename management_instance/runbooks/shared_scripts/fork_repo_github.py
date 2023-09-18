@@ -176,6 +176,7 @@ def verify_template_repo(token, cac_org, template_repo):
         urllib.request.urlopen(request)
     except:
         print('Could not find the template repo at ' + url)
+        print('Check that the repo exists, and that the authentication credentials are correct')
         sys.exit(1)
 
 
