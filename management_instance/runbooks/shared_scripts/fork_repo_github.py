@@ -116,9 +116,9 @@ def init_argparse():
                             'ForkGithubRepo.Git.Url.NewRepoNamePrefix') or get_octopusvariable_quiet(
                             'Git.Url.NewRepoNamePrefix'))
     parser.add_argument('--template-repo-name', action='store',
-                        default=re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable_quiet(
-                            'ForkGithubRepo.Original.Project.Name') or get_octopusvariable_quiet(
-                            'Octopus.Project.Name').lower()))
+                        default=get_octopusvariable_quiet(
+                            'ForkGithubRepo.Original.Project.Name') or
+                                re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable_quiet('Octopus.Project.Name')))
     parser.add_argument('--mainline-branch',
                         action='store',
                         default=get_octopusvariable_quiet(
@@ -165,8 +165,8 @@ def generate_auth_header(token):
 
 def verify_template_repo(token, cac_org, template_repo):
     # Attempt to view the template repo
+    url = 'https://api.github.com/repos/' + cac_org + '/' + template_repo
     try:
-        url = 'https://api.github.com/repos/' + cac_org + '/' + template_repo
         headers = {
             'Accept': 'application/vnd.github+json',
             'Authorization': 'Bearer ' + token,
