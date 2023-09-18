@@ -118,7 +118,7 @@ def init_argparse():
     parser.add_argument('--template-repo-name', action='store',
                         default=get_octopusvariable_quiet(
                             'ForkGithubRepo.Original.Project.Name') or
-                                re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable_quiet('Octopus.Project.Name')))
+                                re.sub('[^a-zA-Z0-9-]', '_', get_octopusvariable_quiet('Octopus.Project.Name')))
     parser.add_argument('--mainline-branch',
                         action='store',
                         default=get_octopusvariable_quiet(
@@ -308,9 +308,9 @@ token = generate_github_token(parser.github_app_id, parser.github_app_private_ke
 
 cac_org = parser.git_organization.strip()
 template_repo = parser.template_repo_name.strip()
-new_repo_custom_prefix = re.sub('[^a-zA-Z0-9]', '_', parser.new_repo_name_prefix.strip())
-tenant_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.tenant_name.strip())
-project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_',
+new_repo_custom_prefix = re.sub('[^a-zA-Z0-9-]', '_', parser.new_repo_name_prefix.strip())
+tenant_name_sanitized = re.sub('[^a-zA-Z0-9-]', '_', parser.tenant_name.strip())
+project_name_sanitized = re.sub('[^a-zA-Z0-9-]', '_',
                                 parser.new_project_name.strip() if parser.new_project_name.strip() else template_repo)
 
 # The new repo is prefixed either with the custom prefix or the tenant name if no custom prefix is defined
