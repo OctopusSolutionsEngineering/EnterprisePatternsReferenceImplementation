@@ -86,7 +86,7 @@ def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose
 
 def init_argparse():
     parser = argparse.ArgumentParser(
-        usage='%(prog)s [OPTION] [FILE]...',
+        usage='%(prog)s [OPTION]',
         description='Fork a GitHub repo'
     )
     parser.add_argument('--new-repo-name', action='store',
