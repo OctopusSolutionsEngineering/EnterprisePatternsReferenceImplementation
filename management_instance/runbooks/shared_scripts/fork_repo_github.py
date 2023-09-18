@@ -241,9 +241,13 @@ def fork_repo(git_executable, token, cac_org, new_repo, template_repo):
     execute(['git', 'checkout', '-b', 'upstream-' + branch, 'upstream/' + branch], cwd=new_repo)
 
     if branch != 'master' and branch != 'main':
-        execute(['git', 'checkout', '-b', branch, 'origin/' + branch], cwd=new_repo)
+        _, _, retcode = execute(['git', 'checkout', '-b', branch, 'origin/' + branch], cwd=new_repo)
     else:
-        execute(['git', 'checkout', branch], cwd=new_repo)
+        _, _, retcode =  execute(['git', 'checkout', branch], cwd=new_repo)
+
+    if not retcode == 0:
+        print('Failed to checkout branch ' + branch)
+        sys.exit(1)
 
     # Hard reset it to the template main branch.
     execute([git_executable, 'reset', '--hard', 'upstream/' + branch], cwd=new_repo)
