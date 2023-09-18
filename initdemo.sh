@@ -445,10 +445,16 @@ docker compose -f docker/compose.yml exec octopus sh -c 'curl -sSL -o argocd-lin
 
 # Wait for the Octopus server.
 echo "Waiting for the Octopus server"
-until curl --output /dev/null --silent --fail http://localhost:18080/api
+max_retry=24
+counter=0
+exit_code=1
+until [[ "${exit_code}" == "0" ]]
 do
-    printf '.'
-    sleep 5
+  [[ counter -eq $max_retry ]] && echo "Failed!" && echo "Check the Octopus logs with:" && echo "docker logs octopus" && exit 1
+  [[ counter -ne 0 ]] && sleep 5
+  ((counter++))
+  curl --output /dev/null --silent --fail http://localhost:18080/api
+  exit_code=$?
 done
 
 echo ""
