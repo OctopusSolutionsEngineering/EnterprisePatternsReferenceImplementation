@@ -99,7 +99,7 @@ def init_argparse():
                             'Git.Url.NewRepoNamePrefix'))
     parser.add_argument('--template-repo-name', action='store',
                         default=get_octopusvariable_quiet(
-                            'ForkGithubRepo.Original.Project.Name') or
+                            'ForkGithubRepo.Git.Url.OriginalRepoName') or
                                 re.sub('[^a-zA-Z0-9-]', '_', get_octopusvariable_quiet('Octopus.Project.Name')))
     parser.add_argument('--tenant-name', action='store',
                         default=get_octopusvariable_quiet('Octopus.Deployment.Tenant.Name'))
