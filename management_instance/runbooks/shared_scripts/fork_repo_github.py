@@ -57,7 +57,7 @@ def get_octopusvariable_quiet(variable):
         return ''
 
 
-def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose_noansi):
+def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose_noansi, raise_on_non_zero=False):
     """
         The execute method provides the ability to execute external processes while capturing and returning the
         output to std err and std out and exit code.
@@ -70,6 +70,9 @@ def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose
                                env=env)
     stdout, stderr = process.communicate()
     retcode = process.returncode
+
+    if not retcode == 0 and raise_on_non_zero:
+        raise Exception('command returned exit code ' + retcode)
 
     if print_args is not None:
         print_output(' '.join(args))
@@ -231,29 +234,60 @@ def create_new_repo(token, cac_org, new_repo):
 
 def fork_repo(git_executable, token, cac_org, new_repo, template_repo):
     # Clone the repo and add the upstream repo
-    execute([git_executable, 'clone', 'https://' + 'x-access-token:' + token + '@'
-             + 'github.com/' + cac_org + '/' + new_repo + '.git'])
-    execute(
+    _, _, retcode = execute([git_executable, 'clone', 'https://' + 'x-access-token:' + token + '@'
+                             + 'github.com/' + cac_org + '/' + new_repo + '.git'])
+
+    if not retcode == 0:
+        print('Failed to clone repo ' + 'https://github.com/' + cac_org + '/' + new_repo + '.git.' +
+              ' Check the verbose logs for details.')
+        sys.exit(1)
+
+    _, _, retcode = execute(
         [git_executable, 'remote', 'add', 'upstream', 'https://' + 'x-access-token:' + token + '@'
          + 'github.com/' + cac_org + '/' + template_repo + '.git'],
         cwd=new_repo)
-    execute([git_executable, 'fetch', '--all'], cwd=new_repo)
-    execute(['git', 'checkout', '-b', 'upstream-' + branch, 'upstream/' + branch], cwd=new_repo)
+
+    if not retcode == 0:
+        print('Failed to add remote ' + 'https://github.com/' + cac_org + '/' + template_repo + '.git. ' +
+              'Check the verbose logs for details.')
+        sys.exit(1)
+
+    _, _, retcode = execute([git_executable, 'fetch', '--all'], cwd=new_repo)
+
+    if not retcode == 0:
+        print('Failed to fetch. Check the verbose logs for details.')
+        sys.exit(1)
+
+    _, _, retcode = execute(['git', 'checkout', '-b', 'upstream-' + branch, 'upstream/' + branch], cwd=new_repo)
+
+    if not retcode == 0:
+        print('Failed to checkout branch ' + branch + '. Check the verbose logs for details.')
+        sys.exit(1)
 
     if branch != 'master' and branch != 'main':
         _, _, retcode = execute(['git', 'checkout', '-b', branch, 'origin/' + branch], cwd=new_repo)
     else:
-        _, _, retcode =  execute(['git', 'checkout', branch], cwd=new_repo)
+        _, _, retcode = execute(['git', 'checkout', branch], cwd=new_repo)
 
     if not retcode == 0:
-        print('Failed to checkout branch ' + branch)
+        print('Failed to checkout branch ' + branch + '. Check the verbose logs for details.')
         sys.exit(1)
 
     # Hard reset it to the template main branch.
-    execute([git_executable, 'reset', '--hard', 'upstream/' + branch], cwd=new_repo)
+    _, _, retcode = execute([git_executable, 'reset', '--hard', 'upstream/' + branch], cwd=new_repo)
+
+    if not retcode == 0:
+        print(
+            'Failed to perform a hard reset against branch upstream/' + branch + '.'
+            + ' Check the verbose logs for details.')
+        sys.exit(1)
 
     # Push the changes.
-    execute([git_executable, 'push', 'origin', branch], cwd=new_repo)
+    _, _, retcode = execute([git_executable, 'push', 'origin', branch], cwd=new_repo)
+
+    if not retcode == 0:
+        print('Failed to push changes. Check the verbose logs for details.')
+        sys.exit(1)
 
 
 def is_windows():
