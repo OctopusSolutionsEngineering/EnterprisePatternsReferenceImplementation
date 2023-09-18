@@ -236,21 +236,12 @@ def fork_repo(git_executable, token, cac_org, new_repo, template_repo):
          + 'github.com/' + cac_org + '/' + template_repo + '.git'],
         cwd=new_repo)
     execute([git_executable, 'fetch', '--all'], cwd=new_repo)
-    _, _, show_branch_result = execute([git_executable, 'show-branch', 'remotes/origin/' + branch], cwd=new_repo)
+    execute(['git', 'checkout', '-b', 'upstream-' + branch, 'upstream/' + branch], cwd=new_repo)
 
-    if show_branch_result == 0:
-        # Checkout the local branch.
-        if branch != 'master' and branch != 'main':
-            execute([git_executable, 'checkout', '-b', branch, 'origin/' + branch], cwd=new_repo)
-        else:
-            execute([git_executable, 'checkout', branch], cwd=new_repo)
-
-        if os.path.exists(new_repo + '/.octopus'):
-            print('The repo https://github.com/' + cac_org + '/' + new_repo + ' has already been forked.')
-            sys.exit(0)
-
-    # Create a new branch representing the forked main branch.
-    execute([git_executable, 'checkout', '-b', branch], cwd=new_repo)
+    if branch != 'master' and branch != 'main':
+        execute(['git', 'checkout', '-b', branch, 'origin/' + branch], cwd=new_repo)
+    else:
+        execute(['git', 'checkout', branch], cwd=new_repo)
 
     # Hard reset it to the template main branch.
     execute([git_executable, 'reset', '--hard', 'upstream/' + branch], cwd=new_repo)
@@ -333,10 +324,12 @@ branch = parser.mainline_branch or 'main'
 set_octopusvariable('NewRepo', 'https://github.com/' + cac_org + '/' + new_repo)
 
 verify_template_repo(token, cac_org, template_repo)
+
 if not verify_new_repo(token, cac_org, new_repo):
     create_new_repo(token, cac_org, new_repo)
-fork_repo(git_executable, token, cac_org, new_repo, template_repo)
-
-print(
-    'Repo was forked from ' + 'https://github.com/' + cac_org + '/' + template_repo + ' to '
-    + 'https://github.com/' + cac_org + '/' + new_repo)
+    fork_repo(git_executable, token, cac_org, new_repo, template_repo)
+    print(
+        'Repo was forked from ' + 'https://github.com/' + cac_org + '/' + template_repo + ' to '
+        + 'https://github.com/' + cac_org + '/' + new_repo)
+else:
+    print('Repo at https://github.com/' + cac_org + '/' + new_repo + ' already exists and has not been modified')
