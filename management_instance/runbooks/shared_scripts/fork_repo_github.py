@@ -86,13 +86,10 @@ def init_argparse():
         usage='%(prog)s [OPTION] [FILE]...',
         description='Fork a GitHub repo'
     )
-    parser.add_argument('--original-project-name', action='store',
-                        default=get_octopusvariable_quiet(
-                            'ForkGithubRepo.Octopus.Project.Name') or get_octopusvariable_quiet('Octopus.Project.Name'))
     parser.add_argument('--new-project-name', action='store',
                         default=get_octopusvariable_quiet(
                             'ForkGithubRepo.Exported.Project.Name') or get_octopusvariable_quiet(
-                            'Exported.Project.Name'))
+                            'Exported.Project.Name') or get_octopusvariable_quiet('Octopus.Project.Name'))
     parser.add_argument('--github-app-id', action='store',
                         default=get_octopusvariable_quiet(
                             'ForkGithubRepo.GitHub.App.Id') or get_octopusvariable_quiet('GitHub.App.Id'))
@@ -119,11 +116,13 @@ def init_argparse():
                             'ForkGithubRepo.Git.Url.NewRepoNamePrefix') or get_octopusvariable_quiet(
                             'Git.Url.NewRepoNamePrefix'))
     parser.add_argument('--template-repo-name', action='store',
-                        default=re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable_quiet('Octopus.Project.Name').lower()))
+                        default=re.sub('[^a-zA-Z0-9]', '_', get_octopusvariable_quiet(
+                            'ForkGithubRepo.Original.Project.Name') or get_octopusvariable_quiet(
+                            'Octopus.Project.Name').lower()))
     parser.add_argument('--mainline-branch',
                         action='store',
-                        default=get_octopusvariable_quiet('Git.Branch.MainLine') or get_octopusvariable_quiet(
-                            'ForkGiteaRepo.Git.Branch.MainLine'),
+                        default=get_octopusvariable_quiet(
+                            'ForkGiteaRepo.Git.Branch.MainLine') or get_octopusvariable_quiet('Git.Branch.MainLine'),
                         help='The branch name to use for the fork. Defaults to "main".')
     return parser.parse_known_args()
 
@@ -201,16 +200,31 @@ def create_new_repo(token, cac_org, new_repo):
     # https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#create-an-organization-repository
     # Note you have to use the token rather than the JWT:
     # https://stackoverflow.com/questions/39600396/bad-credentails-for-jwt-for-github-integrations-api
-    url = 'https://api.github.com/orgs/' + cac_org + '/repos'
+
     headers = {
         'Authorization': 'token ' + token,
         'Content-Type': 'application/json',
         'Accept': 'application/vnd.github+json',
         'X-GitHub-Api-Version': '2022-11-28',
     }
-    body = {'name': new_repo}
-    request = urllib.request.Request(url, headers=headers, data=json.dumps(body).encode('utf-8'))
-    urllib.request.urlopen(request)
+
+    try:
+        # First try to create an organization repo:
+        # https://docs.github.com/en/free-pro-team@latest/rest/repos/repos#create-an-organization-repository
+        url = 'https://api.github.com/orgs/' + cac_org + '/repos'
+        body = {'name': new_repo}
+        request = urllib.request.Request(url, headers=headers, data=json.dumps(body).encode('utf-8'))
+        urllib.request.urlopen(request)
+    except urllib.error.URLError as ex:
+        # Then fall back to creating a repo for the user:
+        # https://docs.github.com/en/free-pro-team@latest/rest/repos/repos?apiVersion=2022-11-28#create-a-repository-for-the-authenticated-user
+        if ex.code == 404:
+            url = 'https://api.github.com/user/repos'
+            body = {'name': new_repo}
+            request = urllib.request.Request(url, headers=headers, data=json.dumps(body).encode('utf-8'))
+            urllib.request.urlopen(request)
+        else:
+            raise ex
 
 
 def fork_repo(git_executable, token, cac_org, new_repo, template_repo):
@@ -264,6 +278,7 @@ def ensure_git_exists():
                 'https://github.com/git-for-windows/git/releases/download/v2.42.0.windows.2/PortableGit-2.42.0.2-64-bit.7z.exe',
                 'PortableGit.7z.exe')
             print("Installing git")
+            print("Consider installing git on the worker or using a standard worker-tools image")
             execute(['7zr.exe', 'x', 'PortableGit.7z.exe', '-o' + os.getcwd() + '\\git', '-y'])
             return os.getcwd() + '\\git\\bin\\git'
 
@@ -273,7 +288,8 @@ def ensure_git_exists():
 git_executable = ensure_git_exists()
 parser, _ = init_argparse()
 
-if not parser.github_access_token.strip() and not (parser.github_app_id.strip() and parser.github_app_private_key.strip() and parser.github_app_installation_id.strip()):
+if not parser.github_access_token.strip() and not (
+        parser.github_app_id.strip() and parser.github_app_private_key.strip() and parser.github_app_installation_id.strip()):
     print("You must supply the GitHub token, or the GitHub App ID and private key and installation ID")
     sys.exit(1)
 
@@ -302,18 +318,13 @@ cac_org = parser.git_organization.strip()
 template_repo = parser.template_repo_name.strip()
 new_repo_custom_prefix = re.sub('[^a-zA-Z0-9]', '_', parser.new_repo_name_prefix.strip())
 tenant_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.tenant_name.lower().strip())
-new_project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.new_project_name.lower().strip())
-original_project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.original_project_name.lower().strip())
-
-# The new project name is either the custom name, or the name of the original project
-project_name_sanitized = new_project_name_sanitized if len(new_project_name_sanitized) != 0 \
-    else original_project_name_sanitized
+project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.new_project_name.lower().strip())
 
 # The new repo is prefixed either with the custom prefix or the tenant name if no custom prefix is defined
 new_repo_prefix = new_repo_custom_prefix if len(new_repo_custom_prefix) != 0 else tenant_name_sanitized
 
 # The new repo name is the prefix + the name of thew new project
-new_repo = new_repo_prefix + '_' + project_name_sanitized
+new_repo = new_repo_prefix + '_' + project_name_sanitized if len(new_repo_prefix) != 0 else project_name_sanitized
 
 # Assume the main branch if nothing else was specified
 branch = parser.mainline_branch or 'main'
