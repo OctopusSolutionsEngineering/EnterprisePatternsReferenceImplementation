@@ -4,6 +4,10 @@ This repo contains the code required to start and configure a local Octopus inst
 enterprise deployment patterns. It is based around Docker Compose and Terraform, and has been designed to allow
 the Octopus stack to be created and destroyed with ease.
 
+## Feedback
+
+Feel free to leave feedback in the [issues](https://github.com/OctopusSolutionsEngineering/EnterprisePatternsReferenceImplementation/issues/1).
+
 ## Support Levels
 
 The process implemented by the scripts in this repo are part of a pilot programme to support platform engineering teams. It incorporates tools with varying levels of official support.
