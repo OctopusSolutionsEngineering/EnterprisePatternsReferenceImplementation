@@ -194,18 +194,20 @@ except Exception as ex:
     print('Failed to open template/' + project_dir + '/deployment_process.ocl to check for ActionTemplates')
 
 # Merge the template changes
-execute(['git', 'clone', new_repo_url_wth_creds])
-execute(['git', 'remote', 'add', 'upstream', template_repo_name_url_with_creds], cwd=new_repo)
-execute(['git', 'fetch', '--all'], cwd=new_repo)
-execute(['git', 'checkout', '-b', 'upstream-' + branch, 'upstream/' + branch], cwd=new_repo)
+repo_dir = 'repo'
+os.mkdir(repo_dir)
+execute(['git', 'clone', new_repo_url_wth_creds, repo_dir])
+execute(['git', 'remote', 'add', 'upstream', template_repo_name_url_with_creds], cwd=repo_dir)
+execute(['git', 'fetch', '--all'], cwd=repo_dir)
+execute(['git', 'checkout', '-b', 'upstream-' + branch, 'upstream/' + branch], cwd=repo_dir)
 
 # Checkout the project branch, assuming "main" or "master" are already linked upstream
 if branch != 'master' and branch != 'main':
-    execute(['git', 'checkout', '-b', branch, 'origin/' + branch], cwd=new_repo)
+    execute(['git', 'checkout', '-b', branch, 'origin/' + branch], cwd=repo_dir)
 else:
-    execute(['git', 'checkout', branch], cwd=new_repo)
+    execute(['git', 'checkout', branch], cwd=repo_dir)
 
-git_diff_out, _, _ = execute(['git', 'diff', 'main...upstream-main'], cwd=new_repo)
+git_diff_out, _, _ = execute(['git', 'diff', 'main...upstream-main'], cwd=repo_dir)
 
 if len(git_diff_out) == 0:
     print('This project is up to date with the upstream repo at ' + template_repo_name_url)

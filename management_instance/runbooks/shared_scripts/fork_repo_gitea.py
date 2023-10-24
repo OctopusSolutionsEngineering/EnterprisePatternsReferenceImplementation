@@ -175,35 +175,36 @@ except:
     urllib.request.urlopen(request)
 
 # Clone the repo and add the upstream repo
+repo_dir = 'repo'
 execute(['git', 'clone', parser.git_protocol + '://' + parser.cac_username + ':' + parser.cac_password + '@'
-         + parser.git_host + '/' + parser.git_organization + '/' + new_repo + '.git'])
+         + parser.git_host + '/' + parser.git_organization + '/' + new_repo + '.git', repo_dir])
 execute(
     ['git', 'remote', 'add', 'upstream',
      parser.git_protocol + '://' + parser.cac_username + ':' + parser.cac_password + '@'
      + parser.git_host + '/' + parser.git_organization + '/' + template_repo + '.git'],
-    cwd=new_repo)
-execute(['git', 'fetch', '--all'], cwd=new_repo)
-_, _, show_branch_result = execute(['git', 'show-branch', 'remotes/origin/' + branch], cwd=new_repo)
+    cwd=repo_dir)
+execute(['git', 'fetch', '--all'], cwd=repo_dir)
+_, _, show_branch_result = execute(['git', 'show-branch', 'remotes/origin/' + branch], cwd=repo_dir)
 
 if show_branch_result == 0:
     # Checkout the local branch.
     if branch != 'master' and branch != 'main':
-        execute(['git', 'checkout', '-b', branch, 'origin/' + branch], cwd=new_repo)
+        execute(['git', 'checkout', '-b', branch, 'origin/' + branch], cwd=repo_dir)
     else:
-        execute(['git', 'checkout', branch], cwd=new_repo)
+        execute(['git', 'checkout', branch], cwd=repo_dir)
 
     if os.path.exists(new_repo + '/.octopus'):
         print('The repo has already been forked.')
         sys.exit(0)
 
 # Create a new branch representing the forked main branch.
-execute(['git', 'checkout', '-b', branch], cwd=new_repo)
+execute(['git', 'checkout', '-b', branch], cwd=repo_dir)
 
 # Hard reset it to the template main branch.
-execute(['git', 'reset', '--hard', 'upstream/' + branch], cwd=new_repo)
+execute(['git', 'reset', '--hard', 'upstream/' + branch], cwd=repo_dir)
 
 # Push the changes.
-execute(['git', 'push', 'origin', branch], cwd=new_repo)
+execute(['git', 'push', 'origin', branch], cwd=repo_dir)
 
 print(
     'Repo was forked from ' + parser.git_protocol + '://' + parser.git_host + '/' + parser.git_organization + '/' + template_repo + ' to '

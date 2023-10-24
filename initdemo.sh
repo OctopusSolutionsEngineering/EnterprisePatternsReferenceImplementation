@@ -565,7 +565,7 @@ execute_terraform_with_project () {
     terraform workspace select "${SPACE_ID}_${WORKSPACE}"
 
     # Sometimes the TF provider fails, especially with scoped variables. A retry usually fixes it.
-    max_retry=2
+    max_retry=3
     counter=0
     exit_code=1
     until [[ "${exit_code}" == "0" ]]
