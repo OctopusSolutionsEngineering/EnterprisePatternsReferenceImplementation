@@ -17,9 +17,6 @@ if (require.main === module) {
     }
 
     checkPr(path.join(process.argv[2], 'deployment_process.ocl'))
-        .then(result => {
-            process.exit(result ? 0 : 1)
-        })
 }
 
 exports.checkPr = checkPr
@@ -27,7 +24,6 @@ exports.checkPr = checkPr
 /**
  * This function performs the validation of the Octopus CaC OCL file
  * @param ocl The OCL file to parse
- * @returns {Promise<unknown>} A promise with true if the validation succeeded, and false otherwise
  */
 function checkPr(ocl) {
     // Read the file
