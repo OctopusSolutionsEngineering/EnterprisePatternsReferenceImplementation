@@ -169,7 +169,7 @@ def init_terraform(parser):
             backend "{backend_type}" {{
           }}
           required_providers {{
-            octopusdeploy = {{ source = "OctopusDeployLabs/octopusdeploy", version = "0.12.7" }}
+            octopusdeploy = {{ source = "OctopusDeployLabs/octopusdeploy", version = "0.13.2" }}
           }}
         }}
         """)

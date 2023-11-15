@@ -116,7 +116,7 @@ with open('backend.tf', 'w') as f:
         backend "{backend_type}" {{
       }}
       required_providers {{
-        octopusdeploy = {{ source = "OctopusDeployLabs/octopusdeploy", version = "0.12.7" }}
+        octopusdeploy = {{ source = "OctopusDeployLabs/octopusdeploy", version = "0.13.2" }}
       }}
     }}
     """)
@@ -143,6 +143,7 @@ for workspace in workspaces:
 
     execute(['terraform', 'workspace', 'select', trimmed_workspace])
     workspace_json, _, _, = execute(['terraform', 'show', '-json'])
+    printverbose(workspace_json)
     state = json.loads(workspace_json)
     resources = [x for x in state.get('values', {}).get('root_module', {}).get('resources', {}) if
                  x.get('type', '') == 'octopusdeploy_project']
