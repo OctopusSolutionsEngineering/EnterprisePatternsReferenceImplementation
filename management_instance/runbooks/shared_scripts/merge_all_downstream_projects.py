@@ -3,6 +3,7 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 from urllib.parse import urlparse
 import argparse
 
@@ -216,7 +217,12 @@ def find_downstream_projects(parser, merge_repo_callback):
         if not octopus_space_name == tenant_name:
             continue
 
-        state_json, _, _ = execute(['terraform', 'show', '-json'])
+        state_json, _, ret_code = execute(['terraform', 'show', '-json'])
+
+        if ret_code != 0:
+            print(state_json)
+            sys.exit(1)
+
         state = json.loads(state_json)
 
         resources = [x for x in state.get('values', {}).get('root_module', {}).get('resources', {}) if

@@ -3,6 +3,7 @@ import os
 import re
 import subprocess
 import argparse
+import sys
 
 # If this script is not being run as part of an Octopus step, return variables from environment variables.
 # Periods are replaced with underscores, and the variable name is converted to uppercase
@@ -191,7 +192,12 @@ for workspace in workspaces:
 
     execute(['terraform', 'workspace', 'select', trimmed_workspace])
 
-    state_json, _, _ = execute(['terraform', 'show', '-json'])
+    state_json, _, ret_code = execute(['terraform', 'show', '-json'])
+
+    if ret_code != 0:
+        print(state_json)
+        sys.exit(1)
+
     state = json.loads(state_json)
 
     resources = [x for x in state.get('values', {}).get('root_module', {}).get('resources', {}) if

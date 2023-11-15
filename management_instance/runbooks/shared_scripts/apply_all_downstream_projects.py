@@ -2,6 +2,7 @@ import subprocess
 import os
 import re
 import json
+import sys
 
 # If this script is not being run as part of an Octopus step, return variables from environment variables.
 # Periods are replaced with underscores, and the variable name is converted to uppercase
@@ -92,7 +93,12 @@ def find_downstream_projects(apply_project_callback):
         if not octopus_space_name == tenant_name:
             continue
 
-        state_json, _, _ = execute(['terraform', 'show', '-json'], cwd=project_space_population_dir)
+        state_json, _, ret_code = execute(['terraform', 'show', '-json'], cwd=project_space_population_dir)
+
+        if ret_code != 0:
+            print(state_json)
+            sys.exit(1)
+
         state = json.loads(state_json)
 
         resources = [x for x in state.get('values', {}).get('root_module', {}).get('resources', {}) if
