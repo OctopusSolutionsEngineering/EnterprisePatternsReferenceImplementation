@@ -1,6 +1,7 @@
 {
   "dependencies": {
-    "@octopusdeploy/ocl": "^0.1.1"
+    "@octopusdeploy/ocl": "0.2.0",
+    "expect": "^29.7.0"
   },
   "scripts": {
     "test": "jest"
