@@ -117,7 +117,23 @@ def generate_github_token(github_app_id, github_app_private_key, github_app_inst
     return response_json['token']
 
 
-def check_repo_exists(url, username, password):
+def check_repo_exists(git_protocol, git_host, git_organization, new_repo, username, password):
+    url = git_protocol + '://' + git_host + '/' + git_organization + '/' + new_repo + '.git'
+    try:
+        auth = base64.b64encode((username + ':' + password).encode('ascii'))
+        auth_header = "Basic " + auth.decode('ascii')
+        headers = {
+            "Authorization": auth_header
+        }
+        request = urllib.request.Request(url, headers=headers)
+        urllib.request.urlopen(request)
+        return True
+    except:
+        return False
+
+
+def check_github_repo_exists(git_organization, new_repo, username, password):
+    url = 'https://api.github.com/repos/' + git_organization + '/' + new_repo
     try:
         auth = base64.b64encode((username + ':' + password).encode('ascii'))
         auth_header = "Basic " + auth.decode('ascii')
@@ -218,13 +234,22 @@ template_repo_name_url_with_creds = parser.git_protocol + '://' + username + ':'
                                     token + '@' + parser.git_host + '/' + \
                                     parser.git_organization + '/' + parser.template_repo_name + '.git'
 
-if not check_repo_exists(new_repo_url, username, token):
-    print('Downstream repo ' + new_repo_url + ' is not available')
-    sys.exit(exit_code)
+if parser.git_host == 'github.com':
+    if not check_github_repo_exists(parser.git_organization, new_repo, username, token):
+        print('Downstream repo ' + new_repo_url + ' is not available')
+        sys.exit(exit_code)
 
-if not check_repo_exists(template_repo_name_url, username, token):
-    print('Upstream repo ' + template_repo_name_url + ' is not available')
-    sys.exit(exit_code)
+    if not check_github_repo_exists(parser.git_organization, parser.template_repo_name, username, token):
+        print('Upstream repo ' + template_repo_name_url + ' is not available')
+        sys.exit(exit_code)
+else:
+    if not check_repo_exists(parser.git_protocol, parser.git_host, parser.git_organization, new_repo, username, token):
+        print('Downstream repo ' + new_repo_url + ' is not available')
+        sys.exit(exit_code)
+
+    if not check_repo_exists(parser.git_protocol, parser.git_host, parser.git_organization, parser.template_repo_name, username, token):
+        print('Upstream repo ' + template_repo_name_url + ' is not available')
+        sys.exit(exit_code)
 
 # Set some default user details
 execute(['git', 'config', '--global', 'user.email', 'octopus@octopus.com'])
