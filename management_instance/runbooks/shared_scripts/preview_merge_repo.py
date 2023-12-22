@@ -1,3 +1,12 @@
+# This script forks a GitHub repo. It creates a token from a GitHub App installation to avoid
+# having to use a regular user account.
+import json
+import subprocess
+import sys
+
+# Install our own dependencies
+subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'jwt'])
+
 # This script previews the changes to be merged in from an upstream repo. It makes use of the diff2html
 # tool. Run this script in the octopussamples/diff2html container image, which has diff2html and Python 3
 # installed and ready to use.
@@ -6,9 +15,11 @@ import argparse
 import subprocess
 import sys
 import os
+import time
 import urllib.request
 import base64
 import re
+import jwt
 
 # If this script is not being run as part of an Octopus step, createartifact is a noop
 if "createartifact" not in globals():
@@ -75,6 +86,36 @@ def execute(args, cwd=None, env=None, print_args=None, print_output=printverbose
 
     return stdout, stderr, retcode
 
+def generate_github_token(github_app_id, github_app_private_key, github_app_installation_id):
+    # Generate the tokens used by git and the GitHub API
+    app_id = github_app_id
+    signing_key = jwt.jwk_from_pem(github_app_private_key.encode('utf-8'))
+
+    payload = {
+        # Issued at time
+        'iat': int(time.time()),
+        # JWT expiration time (10 minutes maximum)
+        'exp': int(time.time()) + 600,
+        # GitHub App's identifier
+        'iss': app_id
+    }
+
+    # Create JWT
+    jwt_instance = jwt.JWT()
+    encoded_jwt = jwt_instance.encode(payload, signing_key, alg='RS256')
+
+    # Create access token
+    url = 'https://api.github.com/app/installations/' + github_app_installation_id + '/access_tokens'
+    headers = {
+        'Authorization': 'Bearer ' + encoded_jwt,
+        'Accept': 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28'
+    }
+    request = urllib.request.Request(url, headers=headers, method='POST')
+    response = urllib.request.urlopen(request)
+    response_json = json.loads(response.read().decode())
+    return response_json['token']
+
 
 def check_repo_exists(url, username, password):
     try:
@@ -122,6 +163,15 @@ def init_argparse():
                         action='store',
                         default=get_octopusvariable_quiet('Git.Url.Organization') or get_octopusvariable_quiet(
                             'PreviewMerge.Git.Url.Organization'))
+    parser.add_argument('--github-app-id', action='store',
+                        default=get_octopusvariable_quiet('GitHub.App.Id') or get_octopusvariable_quiet(
+                            'PreviewMerge.GitHub.App.Id'))
+    parser.add_argument('--github-app-installation-id', action='store',
+                        default=get_octopusvariable_quiet('GitHub.App.InstallationId') or get_octopusvariable_quiet(
+                            'PreviewMerge.GitHub.App.InstallationId'))
+    parser.add_argument('--github-app-private-key', action='store',
+                        default=get_octopusvariable_quiet('GitHub.App.PrivateKey') or get_octopusvariable_quiet(
+                            'PreviewMerge.GitHub.App.PrivateKey'))
     parser.add_argument('--tenant-name',
                         action='store',
                         default=get_octopusvariable_quiet('Octopus.Deployment.Tenant.Name'))
@@ -143,6 +193,12 @@ def init_argparse():
 
 parser, _ = init_argparse()
 
+# The access token is generated from a github app or supplied directly as an access token
+token = generate_github_token(parser.github_app_id, parser.github_app_private_key,
+                              parser.github_app_installation_id) if len(
+    parser.git_password.strip()) == 0 else parser.git_password.strip()
+username = 'x-access-token' if len(parser.git_username.strip()) == 0 else parser.git_username.strip()
+
 exit_code = 0 if parser.silent_fail else 1
 tenant_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.tenant_name.lower())
 new_project_name_sanitized = re.sub('[^a-zA-Z0-9]', '_', parser.new_project_name.lower())
@@ -154,19 +210,19 @@ project_dir = '.octopus/project'
 branch = 'main'
 
 new_repo_url = parser.git_protocol + '://' + parser.git_host + '/' + parser.git_organization + '/' + new_repo + '.git'
-new_repo_url_wth_creds = parser.git_protocol + '://' + parser.git_username + ':' + parser.git_password + '@' + \
+new_repo_url_wth_creds = parser.git_protocol + '://' + username + ':' + token + '@' + \
                          parser.git_host + '/' + parser.git_organization + '/' + new_repo + '.git'
 template_repo_name_url = parser.git_protocol + '://' + parser.git_host + '/' + parser.git_organization + '/' + \
                          parser.template_repo_name + '.git'
-template_repo_name_url_with_creds = parser.git_protocol + '://' + parser.git_username + ':' + \
-                                    parser.git_password + '@' + parser.git_host + '/' + \
+template_repo_name_url_with_creds = parser.git_protocol + '://' + username + ':' + \
+                                    token + '@' + parser.git_host + '/' + \
                                     parser.git_organization + '/' + parser.template_repo_name + '.git'
 
-if not check_repo_exists(new_repo_url, parser.git_username, parser.git_password):
+if not check_repo_exists(new_repo_url, username, token):
     print('Downstream repo ' + new_repo_url + ' is not available')
     sys.exit(exit_code)
 
-if not check_repo_exists(template_repo_name_url, parser.git_username, parser.git_password):
+if not check_repo_exists(template_repo_name_url, username, token):
     print('Upstream repo ' + template_repo_name_url + ' is not available')
     sys.exit(exit_code)
 
