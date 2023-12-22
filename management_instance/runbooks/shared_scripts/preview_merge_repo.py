@@ -1,6 +1,5 @@
 # This script forks a GitHub repo. It creates a token from a GitHub App installation to avoid
 # having to use a regular user account.
-import json
 import subprocess
 import sys
 
@@ -20,6 +19,7 @@ import urllib.request
 import base64
 import re
 import jwt
+import json
 
 # If this script is not being run as part of an Octopus step, createartifact is a noop
 if "createartifact" not in globals():
