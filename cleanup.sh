@@ -13,3 +13,6 @@ done
 popd || exit
 
 minikube delete
+
+# Clean up terraform files
+find . \( -name ".terraform" -o -name ".terraform.lock.hcl" \) -exec rm -rf -- {} +
