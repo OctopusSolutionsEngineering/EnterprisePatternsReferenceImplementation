@@ -17,5 +17,5 @@ jobs:
         run: ./initdemo.sh
       - name: Test projects exist
         run: |
-          curl -H "X-Octopus-ApiKey: API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" http://localhost:18080/api/Spaces-1/Projects/hello-world/runbooks
+          curl -H "X-Octopus-ApiKey: API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" http://localhost:18080/api/Spaces-1/Projects/hello-world
           if [[ $? != "0" ]]; then exit 1; fi
