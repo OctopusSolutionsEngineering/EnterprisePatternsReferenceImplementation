@@ -15,3 +15,7 @@ jobs:
           TF_VAR_docker_username: ${{secrets.DOCKERHUB_USERNAME}}
           TF_VAR_docker_password: ${{secrets.DOCKERHUB_TOKEN}}
         run: ./initdemo.sh
+      - name: Test projects exist
+        run: |
+          curl -h "X-Octopus-ApiKey: API-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" http://localhost:18080/api/Spaces-1/Projects/hello-world/runbooks
+          if [[ $? != "0" ]]; then exit 1; fi
