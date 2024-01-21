@@ -40,3 +40,5 @@ terraform.rc
 
 # We don't use these version locks
 **/.terraform.lock.hcl
+
+keys.txt

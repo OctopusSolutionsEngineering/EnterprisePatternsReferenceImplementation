@@ -927,18 +927,20 @@ then
 fi
 
 # All done
-echo "###############################################################################################################################"
-echo "Open Octopus at http://localhost:18080 - username is \"admin\" and password is \"Password01!\""
-echo "Open Gitea at http://localhost:3000 - username is \"octopus\" and password is \"Password01!\""
+echo "###############################################################################################################################" > keys.txt
+echo "Open Octopus at http://localhost:18080 - username is \"admin\" and password is \"Password01!\"" >> keys.txt
+echo "Open Gitea at http://localhost:3000 - username is \"octopus\" and password is \"Password01!\"" >> keys.txt
 if [[ "${INSTALL_ARGO}" == "TRUE" ]]
 then
-  echo "Start a minikube tunnel in Linux/macOS with: KUBECONFIG=/tmp/octoconfig.yml minikube tunnel"
-  echo "Start a minikube tunnel in WSL with: MINIKUBE_HOME=\"\$HOME/.minikube\" KUBECONFIG=/tmp/octoconfig.yml sudo --preserve-env=MINIKUBE_HOME --preserve-env=KUBECONFIG minikube tunnel"
-  echo "Wait for the Argo CD pods to start. You can see their status with: KUBECONFIG=/tmp/octoconfig.yml kubectl get pods -n argocd"
-  echo "Find the Argo CD IP address with: KUBECONFIG=/tmp/octoconfig.yml kubectl get service argocd-server -n argocd"
-  echo "Get the initial Argo CD admin password with: KUBECONFIG=/tmp/octoconfig.yml argocd admin initial-password -n argocd"
-  echo "Get the logs for the OctopusArgoCDProxy with: KUBECONFIG=/tmp/octoconfig.yml kubectl logs -f deployment/octoargosync -n argocd"
-  echo "ArgoCD token for account octopus is: ${TOKEN%%pod \"*}"
-  echo "ArgoCD password is: ${ARGO_PASSWORD}"
+  echo "Start a minikube tunnel in Linux/macOS with: KUBECONFIG=/tmp/octoconfig.yml minikube tunnel" >> keys.txt
+  echo "Start a minikube tunnel in WSL with: MINIKUBE_HOME=\"\$HOME/.minikube\" KUBECONFIG=/tmp/octoconfig.yml sudo --preserve-env=MINIKUBE_HOME --preserve-env=KUBECONFIG minikube tunnel" >> keys.txt
+  echo "Wait for the Argo CD pods to start. You can see their status with: KUBECONFIG=/tmp/octoconfig.yml kubectl get pods -n argocd" >> keys.txt
+  echo "Find the Argo CD IP address with: KUBECONFIG=/tmp/octoconfig.yml kubectl get service argocd-server -n argocd" >> keys.txt
+  echo "Get the initial Argo CD admin password with: KUBECONFIG=/tmp/octoconfig.yml argocd admin initial-password -n argocd" >> keys.txt
+  echo "Get the logs for the OctopusArgoCDProxy with: KUBECONFIG=/tmp/octoconfig.yml kubectl logs -f deployment/octoargosync -n argocd" >> keys.txt
+  echo "ArgoCD token for account octopus is: ${TOKEN%%pod \"*}" >> keys.txt
+  echo "ArgoCD password is: ${ARGO_PASSWORD}" >> keys.txt
 fi
-echo "###############################################################################################################################"
+echo "###############################################################################################################################" >> keys.txt
+
+cat keys.txt
