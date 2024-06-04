@@ -103,14 +103,13 @@ export TF_VAR_git_organization="octopuscac"
 if which minikube
 then
   # If the kube config file does not exist, we need to recreate the minikube cluster.
-  # Because the file is in /tmp, it will get cleaned up automatically at some point.
-  if [[ ! -f /tmp/octoconfig.yml ]]
+  if [[ ! -f /$HOME/octoconfig.yml ]]
   then
     minikube delete
   fi
 
   # KUBECONFIG is the environment variable that defines the path for a k8s config file for all k8s tooling
-  export KUBECONFIG=/tmp/octoconfig.yml
+  export KUBECONFIG=/$HOME/octoconfig.yml
 
   # It is not uncommon for minikube to fail to start, especially if the docker stack and its network is started.
   # This retry loop will attempt to start minikube, and on failure to a hard cleanup and try again.
@@ -148,8 +147,8 @@ then
   CLUSTER_PORT="8443"
 
   # Extract the client certificate data
-  CLIENT_CERTIFICATE=$(docker run --rm -v /tmp:/workdir mikefarah/yq '.users[0].user.client-certificate' octoconfig.yml)
-  CLIENT_KEY=$(docker run --rm -v /tmp:/workdir mikefarah/yq '.users[0].user.client-key' octoconfig.yml)
+  CLIENT_CERTIFICATE=$(docker run --rm -v /$HOME/octoconfig.yml:/workdir/octoconfig.yml:Z mikefarah/yq '.users[0].user.client-certificate' octoconfig.yml)
+  CLIENT_KEY=$(docker run --rm -v /$HOME/octoconfig.yml:/workdir/octoconfig.yml:Z mikefarah/yq '.users[0].user.client-key' octoconfig.yml)
 
   # Create a self contained PFX certificate
   openssl pkcs12 -export -name 'test.com' -password 'pass:Password01!' -out /tmp/kind.pfx -inkey "${CLIENT_KEY}" -in "${CLIENT_CERTIFICATE}"
