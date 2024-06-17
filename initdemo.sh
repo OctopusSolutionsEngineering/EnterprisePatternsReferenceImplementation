@@ -147,8 +147,8 @@ then
   CLUSTER_PORT="8443"
 
   # Extract the client certificate data
-  CLIENT_CERTIFICATE=$(docker run --rm -v /$HOME/octoconfig.yml:/workdir/octoconfig.yml:Z mikefarah/yq '.users[0].user.client-certificate' octoconfig.yml)
-  CLIENT_KEY=$(docker run --rm -v /$HOME/octoconfig.yml:/workdir/octoconfig.yml:Z mikefarah/yq '.users[0].user.client-key' octoconfig.yml)
+  CLIENT_CERTIFICATE=$(docker run --rm -v $HOME/octoconfig.yml:/workdir/octoconfig.yml:Z mikefarah/yq '.users[0].user.client-certificate' octoconfig.yml)
+  CLIENT_KEY=$(docker run --rm -v $HOME/octoconfig.yml:/workdir/octoconfig.yml:Z mikefarah/yq '.users[0].user.client-key' octoconfig.yml)
 
   # Create a self contained PFX certificate
   openssl pkcs12 -export -name 'test.com' -password 'pass:Password01!' -out /tmp/kind.pfx -inkey "${CLIENT_KEY}" -in "${CLIENT_CERTIFICATE}"
@@ -829,7 +829,7 @@ publish_runbook "PR Checks" "PR Check"
 if [[ "${INSTALL_ARGO}" == "TRUE" ]]
 then
   # Get the Argo CD password
-  PASSWORD=$(KUBECONFIG=/tmp/octoconfig.yml argocd admin initial-password -n argocd)
+  PASSWORD=$(KUBECONFIG=$HOME/octoconfig.yml argocd admin initial-password -n argocd)
   # Extract the first line of the output, which is the password
   PASSWORDARRAY=(${PASSWORD[@]})
 
@@ -844,12 +844,12 @@ then
     ((counter++))
 
     # Generate a token for the user octopus
-    TOKEN=$(KUBECONFIG=/tmp/octoconfig.yml kubectl run --rm -i --image=argoproj/argocd argocdinit${counter} -- /bin/bash -c "argocd login --insecure argocd-server.argocd.svc.cluster.local --username admin --password ${PASSWORDARRAY[0]} >/dev/null; argocd account generate-token --account octopus")
+    TOKEN=$(KUBECONFIG=$HOME/octoconfig.yml kubectl run --rm -i --image=argoproj/argocd argocdinit${counter} -- /bin/bash -c "argocd login --insecure argocd-server.argocd.svc.cluster.local --username admin --password ${PASSWORDARRAY[0]} >/dev/null; argocd account generate-token --account octopus")
 
     exit_code=$?
 
     # sometimes these pods do not clean themselves up, so force the deletion
-    KUBECONFIG=/tmp/octoconfig.yml kubectl delete pod argocdinit${counter} -n default --grace-period=0 --force >/dev/null 2>&1
+    KUBECONFIG=$HOME/octoconfig.yml kubectl delete pod argocdinit${counter} -n default --grace-period=0 --force >/dev/null 2>&1
 
     # Remove the messages captured after the token about the pod being removed
     TOKEN=${TOKEN%%pod \"*}
@@ -858,13 +858,13 @@ then
   done
 
   # Save the token in a secret
-  KUBECONFIG=/tmp/octoconfig.yml kubectl create secret generic octoargosync-secret --from-literal=argotoken=${TOKEN} -n argocd
+  KUBECONFIG=$HOME/octoconfig.yml kubectl create secret generic octoargosync-secret --from-literal=argotoken=${TOKEN} -n argocd
   # Deploy the octopus argo cd sync service
-  KUBECONFIG=/tmp/octoconfig.yml kubectl apply -f argocd/argocd-config/octoargosync.yaml
+  KUBECONFIG=$HOME/octoconfig.yml kubectl apply -f argocd/argocd-config/octoargosync.yaml
   # Deploy the sample apps
-  KUBECONFIG=/tmp/octoconfig.yml kubectl apply -f argocd/app-of-apps-gitea.yaml
+  KUBECONFIG=$HOME/octoconfig.yml kubectl apply -f argocd/app-of-apps-gitea.yaml
   # Get the admin login
-  ARGO_PASSWORD=$(KUBECONFIG=/tmp/octoconfig.yml argocd admin initial-password -n argocd)
+  ARGO_PASSWORD=$(KUBECONFIG=$HOME/octoconfig.yml argocd admin initial-password -n argocd)
   # Remove the messages captured after the token about the password needing to be changed
   ARGO_PASSWORD=${ARGO_PASSWORD%%This password *}
   # Remove trailing whitespace (https://stackoverflow.com/a/3352015/8246539)
@@ -931,12 +931,12 @@ echo "Open Octopus at http://localhost:18080 - username is \"admin\" and passwor
 echo "Open Gitea at http://localhost:3000 - username is \"octopus\" and password is \"Password01!\"" >> keys.txt
 if [[ "${INSTALL_ARGO}" == "TRUE" ]]
 then
-  echo "Start a minikube tunnel in Linux/macOS with: KUBECONFIG=/tmp/octoconfig.yml minikube tunnel" >> keys.txt
-  echo "Start a minikube tunnel in WSL with: MINIKUBE_HOME=\"\$HOME/.minikube\" KUBECONFIG=/tmp/octoconfig.yml sudo --preserve-env=MINIKUBE_HOME --preserve-env=KUBECONFIG minikube tunnel" >> keys.txt
-  echo "Wait for the Argo CD pods to start. You can see their status with: KUBECONFIG=/tmp/octoconfig.yml kubectl get pods -n argocd" >> keys.txt
-  echo "Find the Argo CD IP address with: KUBECONFIG=/tmp/octoconfig.yml kubectl get service argocd-server -n argocd" >> keys.txt
-  echo "Get the initial Argo CD admin password with: KUBECONFIG=/tmp/octoconfig.yml argocd admin initial-password -n argocd" >> keys.txt
-  echo "Get the logs for the OctopusArgoCDProxy with: KUBECONFIG=/tmp/octoconfig.yml kubectl logs -f deployment/octoargosync -n argocd" >> keys.txt
+  echo "Start a minikube tunnel in Linux/macOS with: KUBECONFIG=$HOME/octoconfig.yml minikube tunnel" >> keys.txt
+  echo "Start a minikube tunnel in WSL with: MINIKUBE_HOME=\"\$HOME/.minikube\" KUBECONFIG=$HOME/octoconfig.yml sudo --preserve-env=MINIKUBE_HOME --preserve-env=KUBECONFIG minikube tunnel" >> keys.txt
+  echo "Wait for the Argo CD pods to start. You can see their status with: KUBECONFIG=$HOME/octoconfig.yml kubectl get pods -n argocd" >> keys.txt
+  echo "Find the Argo CD IP address with: KUBECONFIG=$HOME/octoconfig.yml kubectl get service argocd-server -n argocd" >> keys.txt
+  echo "Get the initial Argo CD admin password with: KUBECONFIG=$HOME/octoconfig.yml argocd admin initial-password -n argocd" >> keys.txt
+  echo "Get the logs for the OctopusArgoCDProxy with: KUBECONFIG=$HOME/octoconfig.yml kubectl logs -f deployment/octoargosync -n argocd" >> keys.txt
   echo "ArgoCD token for account octopus is: ${TOKEN%%pod \"*}" >> keys.txt
   echo "ArgoCD password is: ${ARGO_PASSWORD}" >> keys.txt
 fi

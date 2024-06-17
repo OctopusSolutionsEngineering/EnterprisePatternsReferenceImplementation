@@ -43,7 +43,7 @@ services:
       - OCTOPUS_SERVER_BASE64_LICENSE
     restart: always
     platform: linux/x86_64
-    image: octopusdeploy/octopusdeploy:2023.3
+    image: octopusdeploy/octopusdeploy:latest
     networks:
       - octopus
     depends_on:
