@@ -24,7 +24,7 @@ resource "octopusdeploy_lifecycle" "admin_lifecycle" {
 
   release_retention_policy {
     quantity_to_keep    = 1
-    should_keep_forever = true
+    should_keep_forever = false
     unit                = "Days"
   }
 
@@ -41,7 +41,7 @@ resource "octopusdeploy_lifecycle" "admin_lifecycle" {
 
     release_retention_policy {
       quantity_to_keep    = 1
-      should_keep_forever = true
+      should_keep_forever = false
       unit                = "Days"
     }
 
