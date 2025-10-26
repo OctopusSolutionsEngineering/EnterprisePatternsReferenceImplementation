@@ -773,60 +773,60 @@ popd
 # Add serialize and deploy runbooks to sample projects.
 # These runbooks are common across these kinds of projects, but benefit from being able to reference the project they
 # are associated with. So they are linked up to each project individually, even though they all come from the same source.
-for project in "Hello World:__ Create Client Space:Create Client Space" "K8S Microservice Template:__ Create Client Space:Create Client Space:__ Compose K8S Resources:Initialize Space"
-do
-  IFS=':'; split=($project); unset IFS;
-
-  echo "Adding runbooks to ${split[0]}"
-
-  execute_terraform_with_project 'serialize_and_deploy' 'management_instance/runbooks/serialize_and_deploy/pgbackend' "${project//[^[:alnum:]]/_}" "${split[0]}" "Spaces-1" "${split[1]}" "${split[2]}" "${split[3]}" "${split[4]}"
-  execute_terraform_with_project 'runbooks_list' 'management_instance/runbooks/list/pgbackend' "${project//[^[:alnum:]]/_}" "${split[0]}" "Spaces-1"
-
-  for runbook in "__ 1. Serialize Project" "__ 4. List Downstream Projects"
-  do
-    publish_runbook "${split[0]}" "${runbook}"
-  done
-done
+#for project in "Hello World:__ Create Client Space:Create Client Space" "K8S Microservice Template:__ Create Client Space:Create Client Space:__ Compose K8S Resources:Initialize Space"
+#do
+#  IFS=':'; split=($project); unset IFS;
+#
+#  echo "Adding runbooks to ${split[0]}"
+#
+#  execute_terraform_with_project 'serialize_and_deploy' 'management_instance/runbooks/serialize_and_deploy/pgbackend' "${project//[^[:alnum:]]/_}" "${split[0]}" "Spaces-1" "${split[1]}" "${split[2]}" "${split[3]}" "${split[4]}"
+#  execute_terraform_with_project 'runbooks_list' 'management_instance/runbooks/list/pgbackend' "${project//[^[:alnum:]]/_}" "${split[0]}" "Spaces-1"
+#
+#  for runbook in "__ 1. Serialize Project" "__ 4. List Downstream Projects"
+#  do
+#    publish_runbook "${split[0]}" "${runbook}"
+#  done
+#done
 
 # Link up the CaC selection of runbooks. Like above, these runbooks are copied into each CaC project that is to be
 # serialized and shared with other spaces.
-for project in "Hello World CaC:__ Create Client Space:Create Client Space" "Azure Web App CaC:__ Create Client Space:Create Client Space:__ Compose Azure Resources:Initialize Space"
-do
-  IFS=':'; split=($project); unset IFS;
-
-  echo "Adding runbooks to ${split[0]}"
-
-  execute_terraform_with_project 'runbooks_fork' 'management_instance/runbooks/fork/pgbackend' "${project//[^[:alnum:]]/_}" "${split[0]}" "Spaces-1" "${split[1]}" "${split[2]}" "${split[3]}" "${split[4]}"
-  execute_terraform_with_project 'runbooks_merge' 'management_instance/runbooks/merge/pgbackend' "${project//[^[:alnum:]]/_}" "${split[0]}" "Spaces-1"
-  execute_terraform_with_project 'runbooks_list' 'management_instance/runbooks/list/pgbackend' "${project//[^[:alnum:]]/_}" "${split[0]}" "Spaces-1"
-  execute_terraform_with_project 'runbooks_updates' 'management_instance/runbooks/conflict/pgbackend' "${project//[^[:alnum:]]/_}" "${split[0]}" "Spaces-1"
-
-  for runbook in "__ 1. Serialize Project" "__ 3. Merge with Downstream Project" "__ 4. List Downstream Projects" "__ 5. Find Updates"
-  do
-    publish_runbook "${split[0]}" "${runbook}"
-  done
-done
+#for project in "Hello World CaC:__ Create Client Space:Create Client Space" "Azure Web App CaC:__ Create Client Space:Create Client Space:__ Compose Azure Resources:Initialize Space"
+#do
+#  IFS=':'; split=($project); unset IFS;
+#
+#  echo "Adding runbooks to ${split[0]}"
+#
+#  execute_terraform_with_project 'runbooks_fork' 'management_instance/runbooks/fork/pgbackend' "${project//[^[:alnum:]]/_}" "${split[0]}" "Spaces-1" "${split[1]}" "${split[2]}" "${split[3]}" "${split[4]}"
+#  execute_terraform_with_project 'runbooks_merge' 'management_instance/runbooks/merge/pgbackend' "${project//[^[:alnum:]]/_}" "${split[0]}" "Spaces-1"
+#  execute_terraform_with_project 'runbooks_list' 'management_instance/runbooks/list/pgbackend' "${project//[^[:alnum:]]/_}" "${split[0]}" "Spaces-1"
+#  execute_terraform_with_project 'runbooks_updates' 'management_instance/runbooks/conflict/pgbackend' "${project//[^[:alnum:]]/_}" "${split[0]}" "Spaces-1"
+#
+#  for runbook in "__ 1. Serialize Project" "__ 3. Merge with Downstream Project" "__ 4. List Downstream Projects" "__ 5. Find Updates"
+#  do
+#    publish_runbook "${split[0]}" "${runbook}"
+#  done
+#done
 
 # Enable branch protections after the projects are initially committed
-for repo in hello_world_cac
-do
-    curl \
-        -u "octopus:Password01!" \
-        --output /dev/null \
-        --location \
-        --silent \
-        --request POST \
-        "http://localhost:3000/api/v1/repos/octopuscac/${repo}/branch_protections" \
-        --header 'Content-Type: application/json' \
-        --data-raw '{
-            "branch_protections": "main",
-            "rule_name": "main",
-            "enable_status_check": true,
-            "status_check_contexts": [
-                "octopus"
-            ]
-        }'
-done
+#for repo in hello_world_cac
+#do
+#    curl \
+#        -u "octopus:Password01!" \
+#        --output /dev/null \
+#        --location \
+#        --silent \
+#        --request POST \
+#        "http://localhost:3000/api/v1/repos/octopuscac/${repo}/branch_protections" \
+#        --header 'Content-Type: application/json' \
+#        --data-raw '{
+#            "branch_protections": "main",
+#            "rule_name": "main",
+#            "enable_status_check": true,
+#            "status_check_contexts": [
+#                "octopus"
+#            ]
+#        }'
+#done
 
 # Publish the check PR runbook
 publish_runbook "PR Checks" "PR Check"
