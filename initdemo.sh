@@ -667,7 +667,7 @@ execute_terraform 'lib_var_this_instance' 'shared/variables/this_instance/pgback
 #execute_terraform 'project_hello_world' 'management_instance/projects/hello_world/pgbackend' "Spaces-2"
 
 # The dev instance gets a tenant representing test/prod
-execute_terraform 'tenants_environment' 'management_instance/tenants/environment_tenants/pgbackend' "Spaces-2"
+#execute_terraform 'tenants_environment' 'management_instance/tenants/environment_tenants/pgbackend' "Spaces-2"
 
 # Append the common runbooks to the sample project
 #for project in "Hello World"
@@ -757,18 +757,18 @@ terraform apply \
 popd
 
 # Add the tenants
-docker compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE tenants_region"'
-pushd management_instance/tenants/regional_tenants/pgbackend || exit 1
-terraform init -reconfigure -upgrade
-terraform workspace new "Spaces-1" || echo "Workspace already exists"
-terraform workspace select "Spaces-1"
-terraform apply -auto-approve \
-  "-var=octopus_space_id=Spaces-1" \
-  "-var=america_k8s_cert=${COMBINED_CERT}" \
-  "-var=america_k8s_url=https://${DOCKER_HOST_IP}:${CLUSTER_PORT}" \
-  "-var=europe_k8s_cert=${COMBINED_CERT}" \
-  "-var=europe_k8s_url=https://${DOCKER_HOST_IP}:${CLUSTER_PORT}" || exit 1
-popd
+#docker compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE tenants_region"'
+#pushd management_instance/tenants/regional_tenants/pgbackend || exit 1
+#terraform init -reconfigure -upgrade
+#terraform workspace new "Spaces-1" || echo "Workspace already exists"
+#terraform workspace select "Spaces-1"
+#terraform apply -auto-approve \
+#  "-var=octopus_space_id=Spaces-1" \
+#  "-var=america_k8s_cert=${COMBINED_CERT}" \
+#  "-var=america_k8s_url=https://${DOCKER_HOST_IP}:${CLUSTER_PORT}" \
+#  "-var=europe_k8s_cert=${COMBINED_CERT}" \
+#  "-var=europe_k8s_url=https://${DOCKER_HOST_IP}:${CLUSTER_PORT}" || exit 1
+#popd
 
 # Add serialize and deploy runbooks to sample projects.
 # These runbooks are common across these kinds of projects, but benefit from being able to reference the project they
