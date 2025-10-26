@@ -57,7 +57,6 @@ resource "octopusdeploy_runbook" "runbook____create_client_space_create_client_s
 
   retention_policy {
     quantity_to_keep    = 100
-    should_keep_forever = false
   }
 
   connectivity_policy {

@@ -654,27 +654,27 @@ execute_terraform 'environments' 'shared/environments/dev_test_prod/pgbackend' '
 execute_terraform 'lifecycle_simple_test_prod' 'shared/lifecycles/simple_test_prod/pgbackend' 'Spaces-3'
 
 # Prepare both spaces with the global resources needed to host the sample project
-for space in "Spaces-2" "Spaces-3"
-do
-  execute_terraform 'project_group_hello_world' 'shared/project_group/hello_world/pgbackend' "${space}"
-done
+#for space in "Spaces-2" "Spaces-3"
+#do
+#  execute_terraform 'project_group_hello_world' 'shared/project_group/hello_world/pgbackend' "${space}"
+#done
 
 # The dev instance gets library variable sets for exporting projects
 execute_terraform 'lib_var_octopus_server' 'shared/variables/octopus_server/pgbackend' "Spaces-2"
 execute_terraform 'lib_var_this_instance' 'shared/variables/this_instance/pgbackend' "Spaces-2"
 
 # Deploy the sample project to the dev space
-execute_terraform 'project_hello_world' 'management_instance/projects/hello_world/pgbackend' "Spaces-2"
+#execute_terraform 'project_hello_world' 'management_instance/projects/hello_world/pgbackend' "Spaces-2"
 
 # The dev instance gets a tenant representing test/prod
 execute_terraform 'tenants_environment' 'management_instance/tenants/environment_tenants/pgbackend' "Spaces-2"
 
 # Append the common runbooks to the sample project
-for project in "Hello World"
-do
-  execute_terraform_with_project 'serialize_and_deploy' 'management_instance/runbooks/serialize_and_deploy/pgbackend' "${project//[^[:alnum:]]/_}" "${project}" "Spaces-2"
-  execute_terraform_with_project 'runbooks_list' 'management_instance/runbooks/list/pgbackend' "${project//[^[:alnum:]]/_}" "${project}" "Spaces-2"
-done
+#for project in "Hello World"
+#do
+#  execute_terraform_with_project 'serialize_and_deploy' 'management_instance/runbooks/serialize_and_deploy/pgbackend' "${project//[^[:alnum:]]/_}" "${project}" "Spaces-2"
+#  execute_terraform_with_project 'runbooks_list' 'management_instance/runbooks/list/pgbackend' "${project//[^[:alnum:]]/_}" "${project}" "Spaces-2"
+#done
 
 execute_terraform 'team_variable_editor' 'shared/team/deployer_variable_editor/pgbackend' 'Spaces-1'
 
@@ -722,26 +722,26 @@ execute_terraform 'lib_var_git' 'shared/variables/git/pgbackend' 'Spaces-1'
 
 execute_terraform 'lib_var_export_options' 'shared/variables/export_options/pgbackend' 'Spaces-1'
 
-execute_terraform 'project_create_client_space' 'management_instance/projects/create_client_space/pgbackend' 'Spaces-1'
-publish_runbook "__ Create Client Space" "Create Client Space"
-
-execute_terraform 'project_hello_world' 'management_instance/projects/hello_world/pgbackend' 'Spaces-1'
-
-execute_terraform 'project_hello_world_cac' 'management_instance/projects/hello_world_cac/pgbackend' 'Spaces-1'
-
-execute_terraform 'project_azure_web_app_cac' 'management_instance/projects/azure_web_app_cac/pgbackend' 'Spaces-1'
+#execute_terraform 'project_create_client_space' 'management_instance/projects/create_client_space/pgbackend' 'Spaces-1'
+#publish_runbook "__ Create Client Space" "Create Client Space"
+#
+#execute_terraform 'project_hello_world' 'management_instance/projects/hello_world/pgbackend' 'Spaces-1'
+#
+#execute_terraform 'project_hello_world_cac' 'management_instance/projects/hello_world_cac/pgbackend' 'Spaces-1'
+#
+#execute_terraform 'project_azure_web_app_cac' 'management_instance/projects/azure_web_app_cac/pgbackend' 'Spaces-1'
 
 # Remove the project first to fix the error "Error: Octopus API error: Sequence contains no matching element []"
-delete_project 'Spaces-1' 'K8S Microservice Template'
-execute_terraform 'project_k8s_microservice' 'management_instance/projects/k8s_microservice/pgbackend' 'Spaces-1'
-
-execute_terraform 'project_azure_space_initialization' 'management_instance/projects/azure_space_initialization/pgbackend' 'Spaces-1'
-publish_runbook "__ Compose Azure Resources" "Initialize Space"
-
-execute_terraform 'project_k8s_space_initialization' 'management_instance/projects/k8s_space_initialization/pgbackend' 'Spaces-1'
-publish_runbook "__ Compose K8S Resources" "Initialize Space"
-
-execute_terraform 'project_pr_checks' 'management_instance/projects/pr_checks/pgbackend' 'Spaces-1'
+#delete_project 'Spaces-1' 'K8S Microservice Template'
+#execute_terraform 'project_k8s_microservice' 'management_instance/projects/k8s_microservice/pgbackend' 'Spaces-1'
+#
+#execute_terraform 'project_azure_space_initialization' 'management_instance/projects/azure_space_initialization/pgbackend' 'Spaces-1'
+#publish_runbook "__ Compose Azure Resources" "Initialize Space"
+#
+#execute_terraform 'project_k8s_space_initialization' 'management_instance/projects/k8s_space_initialization/pgbackend' 'Spaces-1'
+#publish_runbook "__ Compose K8S Resources" "Initialize Space"
+#
+#execute_terraform 'project_pr_checks' 'management_instance/projects/pr_checks/pgbackend' 'Spaces-1'
 
 # Setup targets
 docker compose -f docker/compose.yml exec terraformdb sh -c '/usr/bin/psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE target_k8s"'
