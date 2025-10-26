@@ -104,7 +104,6 @@ resource "octopusdeploy_runbook" "runbook_backend_service_deploy_project" {
 
   retention_policy {
     quantity_to_keep    = 100
-    should_keep_forever = false
   }
 
   connectivity_policy {

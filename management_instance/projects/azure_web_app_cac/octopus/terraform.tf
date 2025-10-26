@@ -376,7 +376,6 @@ resource "octopusdeploy_runbook" "runbook_delete_web_app" {
 
   retention_policy {
     quantity_to_keep    = 100
-    should_keep_forever = false
   }
 
   connectivity_policy {
@@ -445,7 +444,6 @@ resource "octopusdeploy_runbook" "runbook_get_web_app_logs" {
 
   retention_policy {
     quantity_to_keep    = 100
-    should_keep_forever = false
   }
 
   connectivity_policy {
@@ -524,7 +522,6 @@ resource "octopusdeploy_runbook" "runbook_restart_web_app" {
 
   retention_policy {
     quantity_to_keep    = 100
-    should_keep_forever = false
   }
 
   connectivity_policy {
@@ -599,7 +596,6 @@ resource "octopusdeploy_runbook" "create_incident_channel" {
 
   retention_policy {
     quantity_to_keep    = 100
-    should_keep_forever = false
   }
 
   connectivity_policy {

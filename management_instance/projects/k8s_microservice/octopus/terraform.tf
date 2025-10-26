@@ -650,7 +650,6 @@ resource "octopusdeploy_runbook" "runbook_k8s_get_service" {
 
   retention_policy {
     quantity_to_keep    = 100
-    should_keep_forever = false
   }
 
   connectivity_policy {
@@ -717,7 +716,6 @@ resource "octopusdeploy_runbook" "runbook_k8s_get_pod" {
 
   retention_policy {
     quantity_to_keep    = 100
-    should_keep_forever = false
   }
 
   connectivity_policy {
@@ -784,7 +782,6 @@ resource "octopusdeploy_runbook" "runbook_k8s_describe_pod" {
 
   retention_policy {
     quantity_to_keep    = 100
-    should_keep_forever = false
   }
 
   connectivity_policy {
@@ -851,7 +848,6 @@ resource "octopusdeploy_runbook" "runbook_k8s_pod_logs" {
 
   retention_policy {
     quantity_to_keep    = 100
-    should_keep_forever = false
   }
 
   connectivity_policy {
@@ -873,7 +869,6 @@ resource "octopusdeploy_runbook" "create_incident_channel" {
 
   retention_policy {
     quantity_to_keep    = 100
-    should_keep_forever = false
   }
 
   connectivity_policy {
@@ -937,7 +932,6 @@ resource "octopusdeploy_runbook" "runbook_k8s_microservice_template_scan_pod_log
 
   retention_policy {
     quantity_to_keep    = 100
-    should_keep_forever = false
   }
 
   connectivity_policy {

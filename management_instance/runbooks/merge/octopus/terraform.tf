@@ -78,7 +78,6 @@ resource "octopusdeploy_runbook" "runbook_merge_git" {
 
   retention_policy {
     quantity_to_keep    = 100
-    should_keep_forever = false
   }
 
   connectivity_policy {
@@ -138,7 +137,6 @@ resource "octopusdeploy_runbook" "runbook_merge_all_git" {
 
   retention_policy {
     quantity_to_keep    = 100
-    should_keep_forever = false
   }
 
   connectivity_policy {
