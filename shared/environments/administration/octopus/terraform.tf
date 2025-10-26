@@ -3,7 +3,6 @@ resource "octopusdeploy_environment" "environment_admin" {
   description                  = ""
   allow_dynamic_infrastructure = true
   use_guided_failure           = false
-  sort_order                   = 0
 
   jira_extension_settings {
     environment_type = "production"
