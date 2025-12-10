@@ -864,11 +864,11 @@ then
   done
 
   # Save the token in a secret
-  KUBECONFIG=$HOME/octoconfig.yml kubectl create secret generic octoargosync-secret --from-literal=argotoken=${TOKEN} -n argocd
+  #KUBECONFIG=$HOME/octoconfig.yml kubectl create secret generic octoargosync-secret --from-literal=argotoken=${TOKEN} -n argocd
   # Deploy the octopus argo cd sync service
-  KUBECONFIG=$HOME/octoconfig.yml kubectl apply -f argocd/argocd-config/octoargosync.yaml
+  #KUBECONFIG=$HOME/octoconfig.yml kubectl apply -f argocd/argocd-config/octoargosync.yaml
   # Deploy the sample apps
-  KUBECONFIG=$HOME/octoconfig.yml kubectl apply -f argocd/app-of-apps-gitea.yaml
+  #KUBECONFIG=$HOME/octoconfig.yml kubectl apply -f argocd/app-of-apps-gitea.yaml
   # Get the admin login
   ARGO_PASSWORD=$(KUBECONFIG=$HOME/octoconfig.yml argocd admin initial-password -n argocd)
   # Remove the messages captured after the token about the password needing to be changed
